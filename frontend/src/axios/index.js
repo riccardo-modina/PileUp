@@ -35,13 +35,13 @@ axiosInstance.interceptors.response.use(
       error.response &&
       error.response.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url.endsWith('api/auth/jwt/refresh/') &&
+      !originalRequest.url.endsWith('auth/jwt/refresh/') &&
       localStorage.getItem('refreshToken')
     ) {
       originalRequest._retry = true
       try {
         const refreshToken = localStorage.getItem('refreshToken')
-        const res = await axiosInstance.post('api/auth/jwt/refresh/', {
+        const res = await axiosInstance.post('auth/jwt/refresh/', {
           refresh: refreshToken,
         })
         const newAccess = res.data.access

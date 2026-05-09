@@ -13,10 +13,10 @@ const handleUnlock = async () => {
     error.value = null;
     loading.value = true;
     try {
-        const userRes = await axiosInstance.get('api/auth/users/me/');
+        const userRes = await axiosInstance.get('auth/users/me/');
         const username = userRes.data.username;
 
-        const profileRes = await axiosInstance.get('api/auth/profile/');
+        const profileRes = await axiosInstance.get('auth/profile/');
         const encryptedMasterKey = profileRes.data.encrypted_master_key;
 
         if (!encryptedMasterKey) {

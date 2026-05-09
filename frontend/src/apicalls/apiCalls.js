@@ -33,44 +33,44 @@ function apiRequest(endpoint, method = 'GET', data = null, params = null) {
 
 // -------------------- ACCOUNTS --------------------
 export function getConti(page = 1, pageSize = 10) {
-    return apiRequest('/api/conti/', 'GET', null, { page, page_size: pageSize });
+    return apiRequest('conti/', 'GET', null, { page, page_size: pageSize });
 }
 export function getConto(id) {
-    return apiRequest(`/api/conti/${id}/`, 'GET');
+    return apiRequest(`conti/${id}/`, 'GET');
 }
 export function createConto(data) {
-    return apiRequest('/api/conti/', 'POST', data);
+    return apiRequest('conti/', 'POST', data);
 }
 export function updateConto(id, data) {
-    return apiRequest(`/api/conti/${id}/`, 'PATCH', data);
+    return apiRequest(`conti/${id}/`, 'PATCH', data);
 }
 export function deleteConto(id) {
-    return apiRequest(`/api/conti/${id}/`, 'DELETE');
+    return apiRequest(`conti/${id}/`, 'DELETE');
 }
 
 export function getAllConti() {
-    return apiRequest('/api/conti/', 'GET', null, { page_size: 'all' });
+    return apiRequest('conti/', 'GET', null, { page_size: 'all' });
 }
 
 // -------------------- CATEGORIES --------------------
 export function getCategorie(page = 1, pageSize = 10) {
-    return apiRequest('/api/categorie/', 'GET', null, { page, page_size: pageSize });
+    return apiRequest('categorie/', 'GET', null, { page, page_size: pageSize });
 }
 export function getCategoria(id) {
-    return apiRequest(`/api/categorie/${id}/`, 'GET');
+    return apiRequest(`categorie/${id}/`, 'GET');
 }
 export function createCategoria(data) {
-    return apiRequest('/api/categorie/', 'POST', data);
+    return apiRequest('categorie/', 'POST', data);
 }
 export function updateCategoria(id, data) {
-    return apiRequest(`/api/categorie/${id}/`, 'PATCH', data);
+    return apiRequest(`categorie/${id}/`, 'PATCH', data);
 }
 export function deleteCategoria(id) {
-    return apiRequest(`/api/categorie/${id}/`, 'DELETE');
+    return apiRequest(`categorie/${id}/`, 'DELETE');
 }
 
 export function getAllCategorie() {
-    return apiRequest('/api/categorie/', 'GET', null, { page_size: 'all' });
+    return apiRequest('categorie/', 'GET', null, { page_size: 'all' });
 }
 
 // -------------------- MOVEMENTS --------------------
@@ -79,7 +79,7 @@ export function getMovimenti(page = 1, pageSize = 10, year = null, month = null,
     if (year) params.year = year;
     if (month) params.month = month;
 
-    return apiRequest('/api/movimenti/', 'GET', null, params).then(res => {
+    return apiRequest('movimenti/', 'GET', null, params).then(res => {
         if (res.results) {
             res.results = res.results.map(decryptMovimentoResponse);
         } else if (Array.isArray(res)) {
@@ -89,55 +89,55 @@ export function getMovimenti(page = 1, pageSize = 10, year = null, month = null,
     });
 }
 export function getMovimento(id) {
-    return apiRequest(`/api/movimenti/${id}/`, 'GET').then(decryptMovimentoResponse);
+    return apiRequest(`movimenti/${id}/`, 'GET').then(decryptMovimentoResponse);
 }
 export function createMovimento(data) {
     const encryptedData = encryptMovimentoPayload(data);
-    return apiRequest('/api/movimenti/', 'POST', encryptedData).then(decryptMovimentoResponse);
+    return apiRequest('movimenti/', 'POST', encryptedData).then(decryptMovimentoResponse);
 }
 export function updateMovimento(id, data) {
     const encryptedData = encryptMovimentoPayload(data);
-    return apiRequest(`/api/movimenti/${id}/`, 'PATCH', encryptedData).then(decryptMovimentoResponse);
+    return apiRequest(`movimenti/${id}/`, 'PATCH', encryptedData).then(decryptMovimentoResponse);
 }
 export function deleteMovimento(id) {
-    return apiRequest(`/api/movimenti/${id}/`, 'DELETE');
+    return apiRequest(`movimenti/${id}/`, 'DELETE');
 }
 
 // -------------------- USER (Djoser) --------------------
 export function getCurrentUser() {
-    return apiRequest('/api/auth/users/me/', 'GET');
+    return apiRequest('auth/users/me/', 'GET');
 }
 export function updateCurrentUser(data) {
-    return apiRequest('/api/auth/users/me/', 'PATCH', data);
+    return apiRequest('auth/users/me/', 'PATCH', data);
 }
 
 // -------------------- AUTHENTICATION & SETTINGS --------------------
 export function login(username, password) {
-    return apiRequest('/api/auth/jwt/create/', 'POST', { username, password });
+    return apiRequest('auth/jwt/create/', 'POST', { username, password });
 }
 
 export function customRegister(data) {
-    return apiRequest('/api/auth/register/', 'POST', data);
+    return apiRequest('auth/register/', 'POST', data);
 }
 
 export function getUserProfile() {
-    return apiRequest('/api/auth/profile/', 'GET');
+    return apiRequest('auth/profile/', 'GET');
 }
 
 export function getGlobalSettings() {
-    return apiRequest('/api/settings/', 'GET');
+    return apiRequest('settings/', 'GET');
 }
 
 export function updateRegistrationGlobalSettings(allow_registration) {
-    return apiRequest('/api/settings/', 'PATCH', { allow_registration });
+    return apiRequest('settings/', 'PATCH', { allow_registration });
 }
 
 // -------------------- STATISTICS --------------------
 export function getMonthlyStats(year = '2025', month = null) {
     const params = { year };
     if (month) params.month = month;
-    return apiRequest('/api/stats/monthly/', 'GET', null, params);
+    return apiRequest('stats/monthly/', 'GET', null, params);
 }
 export function getMetaChoices() {
-    return apiRequest('/api/meta/choices/', 'GET');
+    return apiRequest('meta/choices/', 'GET');
 }

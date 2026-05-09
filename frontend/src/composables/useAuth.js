@@ -39,7 +39,7 @@ export function useAuth() {
 
   const login = async (username, password, shouldRedirect = true) => {
     try {
-      const res = await axiosInstance.post('api/auth/jwt/create/', {
+      const res = await axiosInstance.post('auth/jwt/create/', {
         username,
         password,
       })
@@ -51,7 +51,7 @@ export function useAuth() {
 
       // Fetch or generate E2EE Master Key
       try {
-        const profileRes = await axiosInstance.get('api/auth/profile/')
+        const profileRes = await axiosInstance.get('auth/profile/')
         const profile = profileRes.data
         let encryptedMasterKey = profile.encrypted_master_key
 
@@ -66,7 +66,7 @@ export function useAuth() {
           const recoveryKek = deriveKeyEncryptionKey(recoveryKey, username)
           const recoveryEncryptedKey = encryptKey(newMasterKey, recoveryKek)
 
-          await axiosInstance.patch('api/auth/profile/', {
+          await axiosInstance.patch('auth/profile/', {
             encrypted_master_key: encryptedMasterKey,
             recovery_encrypted_master_key: recoveryEncryptedKey
           })
@@ -147,7 +147,7 @@ export function useAuth() {
       const recoveryEncryptedKey = encryptKey(newMasterKey, recoveryKek)
 
       // 2. Register user with keys
-      await axiosInstance.post('api/auth/register/', {
+      await axiosInstance.post('auth/register/', {
         username,
         email,
         password,
