@@ -133,7 +133,7 @@ export function updateRegistrationGlobalSettings(data) {
 }
 
 // -------------------- STATISTICS --------------------
-export function getMonthlyStats(year = '2025', month = null) {
+export function getMonthlyStats(year = new Date().getFullYear().toString(), month = null) {
     const params = { year };
     if (month) params.month = month;
     return apiRequest('stats/monthly/', 'GET', null, params);

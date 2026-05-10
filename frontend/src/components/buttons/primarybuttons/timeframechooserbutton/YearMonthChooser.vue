@@ -26,7 +26,7 @@ function isFutureTimeFrame(timeFrame, source) {
         if (year > currentYear.value) {
             return true;
         }
-        if (year === currentYear.value && month > currentMonth) {
+        if (year === currentYear.value && month > currentMonth.value) {
             return true;
         }
     }

@@ -16,6 +16,7 @@ from django.db import transaction
 from rest_framework.permissions import AllowAny, IsAdminUser
 from django.db.models.functions import TruncMonth
 from django.db.models import Sum
+import datetime
 
 
 
@@ -225,7 +226,8 @@ class MonthlyStatsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        year = request.query_params.get('year', '2025')
+        now = datetime.datetime.now()
+        year = request.query_params.get('year', str(now.year))
         month = request.query_params.get('month')
 
         base_filter = {"user": request.user}
@@ -258,28 +260,20 @@ class MonthlyStatsView(APIView):
         income_result = {m: 0 for m in months_it}
         for item in income_stats:
             month_idx = item['month'].month - 1
-            income_result[months_it[month_idx]] = float(item['total'])
+            income_result[months_it[month_idx]] += float(item['total'])
 
         spending_result = {m: 0 for m in months_it}
         for item in spending_stats:
             month_idx = item['month'].month - 1
-            spending_result[months_it[month_idx]] = float(item['total'])
+            spending_result[months_it[month_idx]] += float(item['total'])
 
-        # Calculate requested month stats or current month
-        import datetime
-        now = datetime.datetime.now()
-        
+        # Calculate requested month stats or total for the period
         if month:
             # If a specific month is requested, return its stats
             current_month_income = income_result.get(months_it[int(month) - 1], 0)
             current_month_spending = spending_result.get(months_it[int(month) - 1], 0)
-        elif year == str(now.year):
-            # If current year is requested, return current month stats
-            current_month_income = income_result.get(months_it[now.month - 1], 0)
-            current_month_spending = spending_result.get(months_it[now.month - 1], 0)
         else:
-            # Otherwise return 0 or total for the year? 
-            # Let's return the sum of the selected year for the top cards if no month is selected
+            # If no month is selected, return the sum of the entire period (selected year or Totale)
             current_month_income = sum(income_result.values())
             current_month_spending = sum(spending_result.values())
 
