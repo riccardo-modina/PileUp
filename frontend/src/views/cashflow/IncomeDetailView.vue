@@ -23,7 +23,7 @@ const parseDataPeriod = (period) => {
   return { year: period, month: null };
 };
 
-async function fetchIncomes(reset = false) {
+async function fetchIncomes(reset = false, loadAll = false) {
   if (reset) {
     page.value = 1;
     incomes.value = [];
@@ -35,7 +35,8 @@ async function fetchIncomes(reset = false) {
     const filters = { tipo: 'entrata' };
     if (selectedCategoryId.value) filters.categoria = selectedCategoryId.value;
     
-    const res = await getMovimenti(page.value, 20, year, month, filters);
+    const pageSize = loadAll ? 'all' : 20;
+    const res = await getMovimenti(page.value, pageSize, year, month, filters);
     const data = res.results || res;
     
     const mapped = data
@@ -48,14 +49,18 @@ async function fetchIncomes(reset = false) {
         categoryColor: m.categoria ? m.categoria.color : '#ccc'
       }));
     
-    incomes.value = [...incomes.value, ...mapped];
-    
-    // Check if there are more pages
-    if (res.next) {
-      page.value++;
-      hasMore.value = true;
-    } else {
+    if (loadAll) {
+      incomes.value = mapped;
       hasMore.value = false;
+    } else {
+      incomes.value = [...incomes.value, ...mapped];
+      // Check if there are more pages
+      if (res.next) {
+        page.value++;
+        hasMore.value = true;
+      } else {
+        hasMore.value = false;
+      }
     }
   } catch (err) {
     console.error("Error fetching incomes:", err);
@@ -111,6 +116,7 @@ onMounted(() => {
   :listen="{
     'delete-movement': handleDelete,
     'load-more': () => fetchIncomes(),
+    'load-all': () => fetchIncomes(true, true),
     'filter-category': (val) => selectedCategoryId = val
   }"
   />

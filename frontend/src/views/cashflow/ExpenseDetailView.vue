@@ -23,7 +23,7 @@ const parseDataPeriod = (period) => {
   return { year: period, month: null };
 };
 
-async function fetchExpenses(reset = false) {
+async function fetchExpenses(reset = false, loadAll = false) {
   if (reset) {
     page.value = 1;
     expenses.value = [];
@@ -35,7 +35,12 @@ async function fetchExpenses(reset = false) {
     const filters = { tipo: 'uscita' };
     if (selectedCategoryId.value) filters.categoria = selectedCategoryId.value;
     
-    const res = await getMovimenti(page.value, 20, year, month, filters);
+    // If loadAll is true, we use page_size='all'
+    const pageSize = loadAll ? 'all' : 20;
+    const res = await getMovimenti(page.value, pageSize, year, month, filters);
+    
+    // When pageSize is 'all', res is likely the array itself or res.results is undefined depending on API
+    // But based on apiCalls.js, it handles res.results or res as array.
     const data = res.results || res;
     
     const mapped = data
@@ -48,14 +53,18 @@ async function fetchExpenses(reset = false) {
         categoryColor: m.categoria ? m.categoria.color : '#ccc'
       }));
     
-    expenses.value = [...expenses.value, ...mapped];
-    
-    // Check if there are more pages
-    if (res.next) {
-      page.value++;
-      hasMore.value = true;
-    } else {
+    if (loadAll) {
+      expenses.value = mapped;
       hasMore.value = false;
+    } else {
+      expenses.value = [...expenses.value, ...mapped];
+      // Check if there are more pages
+      if (res.next) {
+        page.value++;
+        hasMore.value = true;
+      } else {
+        hasMore.value = false;
+      }
     }
   } catch (err) {
     console.error("Error fetching expenses:", err);
@@ -111,6 +120,7 @@ onMounted(() => {
   :listen="{
     'delete-movement': handleDelete,
     'load-more': () => fetchExpenses(),
+    'load-all': () => fetchExpenses(true, true),
     'filter-category': (val) => selectedCategoryId = val
   }"
   />

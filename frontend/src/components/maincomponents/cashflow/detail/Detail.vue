@@ -97,16 +97,31 @@ function formatAmount(v) {
                 <div class = "flex flex-col bg-white rounded-[10px] min-h-40 p-4 gap-4 shadow-sm">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <h1 class="text-2xl font-semibold">{{ desc }}</h1>
-                            <div class="w-full md:w-64">
-                                <SelectDropdown 
-                                    :items="categories" 
-                                    :model-value="selectedCategory"
-                                    placeholder="Filtra per categoria"
-                                    item-label="nome"
-                                    :show-color="true"
-                                    :filter-system-items="false"
-                                    @update:model-value="(val) => $emit('filter-category', val)"
-                                />
+                            <div class="flex flex-col sm:flex-row gap-3 items-center w-full md:w-auto">
+                                <!-- Load All Button at the top -->
+                                <BaseButton 
+                                    v-if="hasMore" 
+                                    as="button" 
+                                    class="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/10 hover:bg-primary-hover transition-all text-sm" 
+                                    @click="$emit('load-all')"
+                                >
+                                    Carica Tutto
+                                </BaseButton>
+                                <div v-else-if="hasMovements" class="hidden sm:block text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100 font-medium">
+                                    ✓ Dati completi
+                                </div>
+
+                                <div class="w-full md:w-64">
+                                    <SelectDropdown 
+                                        :items="categories" 
+                                        :model-value="selectedCategory"
+                                        placeholder="Filtra per categoria"
+                                        item-label="nome"
+                                        :show-color="true"
+                                        :filter-system-items="false"
+                                        @update:model-value="(val) => $emit('filter-category', val)"
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -134,10 +149,11 @@ function formatAmount(v) {
                             />
                         </div>
 
-                        <div class="mt-2 text-center">
-                            <BaseButton v-if="hasMore" as="button" class="w-full px-4 py-2 bg-primary-light text-white rounded" @click="onLoadMore">Mostra altri movimenti</BaseButton>
-                            <div v-else-if="hasMovements" class="text-gray-500 py-2 italic text-sm border-t border-gray-100 mt-4">
-                                Non ci sono altri movimenti da caricare
+                        <div class="mt-4 text-center">
+                            <BaseButton v-if="hasMore" as="button" class="w-full px-4 py-3 bg-primary-light/10 text-primary-light border border-primary-light/20 hover:bg-primary-light/20 transition-all rounded-xl font-bold" @click="onLoadMore">Mostra altri movimenti</BaseButton>
+                            <div v-else-if="hasMovements" class="w-full text-gray-400 py-4 italic text-xs border-t border-gray-50 mt-4 flex items-center justify-center gap-2">
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                Hai caricato tutti i movimenti di questo periodo
                             </div>
                         </div>
 
