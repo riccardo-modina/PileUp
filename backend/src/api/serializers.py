@@ -36,12 +36,37 @@ class ContoEditSerializer(serializers.ModelSerializer):
         model = Conto
         fields = "__all__"
 
+    def validate(self, data):
+        user = self.context['request'].user
+        nome = data.get('nome', getattr(self.instance, 'nome', None))
+        
+        qs = Conto.objects.filter(user=user, nome=nome)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        
+        if qs.exists():
+            raise serializers.ValidationError({"nome": "Un conto con questo nome esiste già."})
+        return data
+
 class CategoriaEditSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = Categoria
         fields = "__all__"
+
+    def validate(self, data):
+        user = self.context['request'].user
+        nome = data.get('nome', getattr(self.instance, 'nome', None))
+        tipo = data.get('tipo', getattr(self.instance, 'tipo', None))
+        
+        qs = Categoria.objects.filter(user=user, nome=nome, tipo=tipo)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        
+        if qs.exists():
+            raise serializers.ValidationError({"nome": "Una categoria con questo nome esiste già per questo tipo."})
+        return data
 
 class MovimentoEditSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')

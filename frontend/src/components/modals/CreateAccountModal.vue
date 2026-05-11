@@ -66,8 +66,40 @@ async function save() {
     resetForm()
     emit('close')
   } catch (err) {
-    error.value = 'Errore durante il salvataggio'
-    console.error(err)
+    console.error('Error saving account:', err)
+    let displayMsg = 'Errore durante il salvataggio. Riprova più tardi.'
+    
+    if (err.response) {
+      const data = err.response.data
+      console.log('API Error Data:', data)
+      
+      if (data && typeof data === 'object') {
+        const allMessages = Object.entries(data).flatMap(([field, msgs]) => {
+          if (Array.isArray(msgs)) return msgs
+          return [msgs]
+        })
+        
+        const combinedText = allMessages.join(' ').toLowerCase()
+        if (
+          combinedText.includes('unique') || 
+          combinedText.includes('esiste') || 
+          combinedText.includes('already exists') ||
+          combinedText.includes('set unico')
+        ) {
+          displayMsg = 'Esiste già un conto con questo nome'
+        } else if (allMessages.length > 0) {
+          displayMsg = String(allMessages[0])
+        }
+      } else if (typeof data === 'string' && data.length > 0) {
+        displayMsg = data
+      }
+    } else if (err.request) {
+      displayMsg = 'Nessuna risposta dal server. Controlla la tua connessione.'
+    } else if (err.message) {
+      displayMsg = `Errore: ${err.message}`
+    }
+    
+    error.value = displayMsg
   } finally {
     loading.value = false
   }
