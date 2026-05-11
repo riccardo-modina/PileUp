@@ -107,7 +107,18 @@ const dynamicSeries = computed(() => {
 const option = computed(() => ({
   title: { text: props.title },
   tooltip: { trigger: 'axis' },
-  legend: { data: Object.keys(categoryMap.value) },
+  legend: { 
+    type: 'scroll',
+    bottom: 0,
+    data: Object.keys(categoryMap.value) 
+  },
+  grid: {
+    top: 60,
+    bottom: 60,
+    left: '3%',
+    right: '4%',
+    containLabel: true
+  },
   xAxis: { type: 'category', data: months.value },
   yAxis: [{ type: 'value', name: 'Euro' }],
   series: dynamicSeries.value

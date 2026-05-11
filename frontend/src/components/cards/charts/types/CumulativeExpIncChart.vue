@@ -71,7 +71,16 @@ const option = computed(() => ({
     trigger: 'axis'
   },
   legend: {
+    type: 'scroll',
+    bottom: 0,
     data: ['Entrate cumulative', 'Uscite cumulative']
+  },
+  grid: {
+    top: 60,
+    bottom: 60,
+    left: '3%',
+    right: '4%',
+    containLabel: true
   },
   xAxis: {
     type: 'category',
