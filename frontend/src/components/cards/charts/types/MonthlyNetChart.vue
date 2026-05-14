@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { fillTimelineGaps } from '@/helpers/charts/gapFiller.js'
 
 const props = defineProps({
   income: {
@@ -13,6 +14,14 @@ const props = defineProps({
   title: {
     type: String,
     default: 'CashFlow Mensile'
+  },
+  year: {
+    type: [String, Number],
+    default: null
+  },
+  month: {
+    type: Number,
+    default: null
   }
 })
 
@@ -24,25 +33,48 @@ const onClick = (params) => {
 
 // derive months from income and spending (unique, preserving order)
 const months = computed(() => {
-  const inc = (props.income || []).map(i => i.month)
-  const exp = (props.spending || []).map(s => s.month)
-  return [...new Set([...inc, ...exp])]
+  // If we have explicit year, we can generate a full timeline
+  if (props.year && props.year !== 'Totale') {
+    if (props.month) {
+      // Daily view: all days of the month
+      const labels = []
+      const numDays = new Date(Number(props.year), props.month, 0).getDate()
+      for (let d = 1; d <= numDays; d++) {
+        labels.push(`${String(d).padStart(2, '0')}/${String(props.month).padStart(2, '0')}`)
+      }
+      return labels
+    } else {
+      // Yearly view: all 12 months
+      const labels = []
+      const shortYear = String(props.year).slice(-2)
+      for (let m = 1; m <= 12; m++) {
+        labels.push(`${String(m).padStart(2, '0')}/${shortYear}`)
+      }
+      return labels
+    }
+  }
+
+  const incLabels = (props.income || []).map(i => i.month)
+  const expLabels = (props.spending || []).map(s => s.month)
+  const allLabels = [...new Set([...incLabels, ...expLabels])]
+  
+  // Sort and fill gaps based on all present labels
+  // We use a dummy amount: 0 for the helper
+  const dummyData = allLabels.map(l => ({ month: l, amount: 0 }))
+  const filledData = fillTimelineGaps(dummyData)
+  return filledData.map(d => d.month)
 })
 
 // align series to months (if a month is missing in income/spending, use 0)
-const incomeSeries = computed(() =>
-  months.value.map(m => {
-    const item = (props.income || []).find(i => i.month === m)
-    return Number(item?.amount || 0)
-  })
-)
+const incomeSeries = computed(() => {
+  const map = new Map(props.income.map(i => [i.month, i.amount]))
+  return months.value.map(m => Number(map.get(m) || 0))
+})
 
-const spendingSeries = computed(() =>
-  months.value.map(m => {
-    const item = (props.spending || []).find(s => s.month === m)
-    return Number(item?.amount || 0)
-  })
-)
+const spendingSeries = computed(() => {
+  const map = new Map(props.spending.map(s => [s.month, s.amount]))
+  return months.value.map(m => Number(map.get(m) || 0))
+})
 
 // net cash flow
 const netSeries = computed(() =>

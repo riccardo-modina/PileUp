@@ -9,6 +9,7 @@ import BaseButton from '@/components/buttons/BaseButton.vue';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFinancialsStore } from '@/stores/financials';
+import { formatAmount } from '@/helpers/dateUtils';
 
 const props = defineProps({
     desc: {
@@ -34,6 +35,14 @@ const props = defineProps({
     unclassifiedCount: {
         type: Number,
         default: 0
+    },
+    year: {
+        type: [String, Number],
+        default: null
+    },
+    month: {
+        type: Number,
+        default: null
     }
 })
 
@@ -75,10 +84,6 @@ function onLoadMore() {
     emit('load-more');
 }
 
-function formatAmount(v) {
-    if (typeof v === 'number') return v.toFixed(2);
-    return v;
-}
 
 
 </script>
@@ -87,8 +92,8 @@ function formatAmount(v) {
     <div class="flex flex-col h-full gap-4">
         <section>
             <ChartSection
-                :leftChart="{ component: CumulativeLinear, props: { serie: serie, categories: categories} }"
-                :rightChart="{ component: StackedArea, props: { serie: serie, categories: categories  } }"
+                :leftChart="{ component: CumulativeLinear, props: { serie: serie, categories: categories, year: year, month: month } }"
+                :rightChart="{ component: StackedArea, props: { serie: serie, categories: categories, year: year, month: month } }"
                 height="h-full md:h-auto lg:h-[400px] 2xl:h-[500px]"
             />
         </section>

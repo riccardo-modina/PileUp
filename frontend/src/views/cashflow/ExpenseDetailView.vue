@@ -5,6 +5,7 @@ import MainComponent from '@/components/maincomponents/MainComponent.vue';
 import { getMovimenti, deleteMovimento } from '@/apicalls/apiCalls';
 import { useFinancialsStore } from '@/stores/financials';
 import { useSettingsStore } from '@/stores/settings';
+import { parseDataPeriod } from '@/helpers/dateUtils';
 
 const financials = useFinancialsStore();
 const settings = useSettingsStore();
@@ -14,15 +15,6 @@ const loading = ref(false);
 const hasMore = ref(true);
 const selectedCategoryId = ref('');
 
-const parseDataPeriod = (period) => {
-  if (!period || period === 'Totale') return { year: 'Totale', month: null };
-  const pStr = String(period);
-  if (pStr.includes('/')) {
-    const [month, year] = pStr.split('/');
-    return { year, month: parseInt(month) };
-  }
-  return { year: pStr, month: null };
-};
 
 async function fetchExpenses(reset = false, loadAll = false) {
   if (reset) {
@@ -112,7 +104,9 @@ onMounted(() => {
     categories: financials.cashFlowCategories.filter(c => c.tipo === 'uscita'),
     hasMore: hasMore,
     selectedCategory: selectedCategoryId,
-    unclassifiedCount: unclassifiedCount
+    unclassifiedCount: unclassifiedCount,
+    year: parseDataPeriod(settings.dataPeriod).year,
+    month: parseDataPeriod(settings.dataPeriod).month
   }"
   :showTopSection=true
   topSectionTitle="Dettagli Spese"

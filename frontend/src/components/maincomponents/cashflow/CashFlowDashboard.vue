@@ -6,6 +6,7 @@ import MonthlyNetChart from '../../cards/charts/types/MonthlyNetChart.vue'
 import CumulativeExpInc from '../../cards/charts/types/CumulativeExpIncChart.vue'
 import ChartDetailModal from '../../modals/ChartDetailModal.vue';
 import { useSettingsStore } from '../../../stores/settings';
+import { parseDataPeriod } from '../../../helpers/dateUtils';
 
 const settings = useSettingsStore();
 
@@ -13,15 +14,6 @@ const showDetailModal = ref(false);
 const detailYear = ref('');
 const detailMonth = ref(null);
 
-const parseDataPeriod = (period) => {
-  const p = String(period || '');
-  if (!p || p === 'Totale') return { year: 'Totale', month: null };
-  if (p.includes('/')) {
-    const [month, year] = p.split('/');
-    return { year, month: parseInt(month) };
-  }
-  return { year: p, month: null };
-};
 
 const chartTitle = computed(() => {
   const { year, month } = parseDataPeriod(settings.dataPeriod);
@@ -71,7 +63,9 @@ const props = defineProps({
           props: { 
             income: props.financeData.income, 
             spending: props.financeData.spending,
-            title: chartTitle
+            title: chartTitle,
+            year: parseDataPeriod(settings.dataPeriod).year,
+            month: parseDataPeriod(settings.dataPeriod).month
           },
           on: { click: handleChartClick }
         }"
@@ -80,7 +74,9 @@ const props = defineProps({
           props: { 
             income: props.financeData.income, 
             spending: props.financeData.spending,
-            title: cumulativeTitle
+            title: cumulativeTitle,
+            year: parseDataPeriod(settings.dataPeriod).year,
+            month: parseDataPeriod(settings.dataPeriod).month
           },
           on: { click: handleChartClick }
         }"

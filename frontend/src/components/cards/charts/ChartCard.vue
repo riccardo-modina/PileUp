@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+import { fillTimelineGaps } from '@/helpers/charts/gapFiller.js'
 
 const props = defineProps({
   chart: Object,
@@ -10,6 +12,13 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   }
+})
+
+const processedProps = computed(() => {
+  const p = { ...props.chartProps }
+  if (p.income) p.income = fillTimelineGaps(p.income)
+  if (p.spending) p.spending = fillTimelineGaps(p.spending)
+  return p
 })
 </script>
 
@@ -23,7 +32,7 @@ const props = defineProps({
     <component 
       :is="chart" 
       class="flex w-full h-full p-6"  
-      v-bind="chartProps" 
+      v-bind="processedProps" 
       @click.stop="props.chartEvents.click?.()"
     />
   </div>

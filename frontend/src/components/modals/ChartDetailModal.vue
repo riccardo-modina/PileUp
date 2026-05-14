@@ -93,6 +93,8 @@ onUnmounted(() => {
                    <MonthlyNetChart 
                     :income="financeData.income" 
                     :spending="financeData.spending"
+                    :year="props.year"
+                    :month="props.month"
                     title="CashFlow Storico (Dettaglio Mensile)"
                    />
                 </section>
@@ -100,6 +102,8 @@ onUnmounted(() => {
                   <CumulativeExpIncChart 
                     :income="financeData.income" 
                     :spending="financeData.spending"
+                    :year="props.year"
+                    :month="props.month"
                     title="Cumulativo Storico"
                   />
                 </section>

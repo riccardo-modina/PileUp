@@ -5,6 +5,7 @@ import MainComponent from '../../components/maincomponents/MainComponent.vue';
 import { getMonthlyStats } from '../../apicalls/apiCalls';
 import { useFinancialsStore } from '../../stores/financials';
 import { useSettingsStore } from '../../stores/settings';
+import { parseDataPeriod } from '../../helpers/dateUtils';
 
 const financials = useFinancialsStore();
 const settings = useSettingsStore();
@@ -17,15 +18,6 @@ const financeData = ref({
 });
 const loading = ref(true);
 
-const parseDataPeriod = (period) => {
-  const p = String(period || '');
-  if (!p || p === 'Totale') return { year: 'Totale', month: null };
-  if (p.includes('/')) {
-    const [month, year] = p.split('/');
-    return { year, month: parseInt(month) };
-  }
-  return { year: p, month: null };
-};
 
 const fetchData = async () => {
   loading.value = true;

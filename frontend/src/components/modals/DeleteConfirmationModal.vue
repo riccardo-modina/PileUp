@@ -1,5 +1,6 @@
 <script setup>
 import BaseButton from '@/components/buttons/BaseButton.vue';
+import { formatAmount } from '@/helpers/dateUtils';
 
 const props = defineProps({
     title: {
@@ -27,10 +28,6 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'confirm'])
 
-function formatAmount(v) {
-    if (typeof v === 'number') return v.toFixed(2);
-    return v;
-}
 </script>
 
 <template>

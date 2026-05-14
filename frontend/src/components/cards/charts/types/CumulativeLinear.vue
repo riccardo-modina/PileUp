@@ -15,10 +15,18 @@ const props = defineProps({
   categories: {
     type: [Array, Object],
     default: () => ({})
+  },
+  year: {
+    type: [String, Number],
+    default: null
+  },
+  month: {
+    type: Number,
+    default: null
   }
 })
 
-const parsed = computed(() => mapSerie(props.serie))
+const parsed = computed(() => mapSerie(props.serie, props.year, props.month))
 
 const months = computed(() => parsed.value.months)
 const categoryMap = computed(() => parsed.value.categoryMap)
