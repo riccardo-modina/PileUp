@@ -29,13 +29,12 @@ const netSign = computed(() => {
           icon="pi-money-bill"
           :sign="netSign"
           iconColor="text-nett"
-          class="relative h-full items-center justify-center p-6 rounded-2xl shadow-sm border border-menuborder/50 snake-border snake-nett"
+          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50 snake-border snake-nett"
           iconBackground="bg-nett/10"
           iconContainerClass="hide-icon-custom"
         />
       </div>
-      <RouterLink 
-        to="/cashflow/income"
+      <div 
         class="group">
         <NumberCard 
           title="Entrate" 
@@ -43,13 +42,23 @@ const netSign = computed(() => {
           color="bg-card-background"
           icon="pi-sign-in"
           iconColor="text-success"
-          class="relative h-full items-center justify-center p-6 rounded-2xl shadow-sm border border-menuborder/50 group-hover:shadow-md group-hover:-translate-y-1 snake-border snake-success"
+          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50 snake-border snake-success"
           iconBackground="bg-success/10"
           iconContainerClass="hide-icon-custom"
-        />
-      </RouterLink>
-      <RouterLink 
-        to="/cashflow/expenses"
+        >
+          <template #action>
+            <RouterLink 
+              to="/cashflow/income"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl bg-success/10 text-success hover:bg-success hover:text-white transition-all duration-300 shadow-sm hover:shadow-md group/btn"
+            >
+              <i class="pi pi-sign-in text-base" />
+              <span class="text-[11px] font-bold uppercase tracking-wider">Dettagli</span>
+              <i class="pi pi-chevron-right text-[9px] opacity-70 group-hover/btn:translate-x-0.5 transition-transform" />
+            </RouterLink>
+          </template>
+        </NumberCard>
+      </div>
+      <div 
         class="group">
         <NumberCard 
           title="Uscite" 
@@ -57,11 +66,22 @@ const netSign = computed(() => {
           color="bg-card-background"
           icon="pi-sign-out"
           iconColor="text-negative"
-          class="relative h-full items-center justify-center p-6 rounded-2xl shadow-sm border border-menuborder/50 group-hover:shadow-md group-hover:-translate-y-1 snake-border snake-negative"
+          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50 snake-border snake-negative"
           iconBackground="bg-negative/10"
           iconContainerClass="hide-icon-custom"
-        />
-      </RouterLink>
+        >
+          <template #action>
+            <RouterLink 
+              to="/cashflow/expenses"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl bg-negative/10 text-negative hover:bg-negative hover:text-white transition-all duration-300 shadow-sm hover:shadow-md group/btn"
+            >
+              <i class="pi pi-sign-out text-base" />
+              <span class="text-[11px] font-bold uppercase tracking-wider">Dettagli</span>
+              <i class="pi pi-chevron-right text-[9px] opacity-70 group-hover/btn:translate-x-0.5 transition-transform" />
+            </RouterLink>
+          </template>
+        </NumberCard>
+      </div>
     </div>
 </template>
 

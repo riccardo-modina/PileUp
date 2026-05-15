@@ -24,6 +24,7 @@ const menuOptions = ref([
     voices: [
       { name: 'Confronto', route: '/notfound', icon: 'pi-chart-scatter', iconSolid: 'pi-chart-line' },
       { name: 'Conti', route: '/notfound', icon: 'pi-building-columns', iconSolid: 'pi-credit-card' },
+      { name: 'Categorie', route: '/cashflow/categories', icon: 'pi-tags', iconSolid: 'pi-tags' },
     ]
   },
   { name: 'Investimenti', route: '/notfound', icon: 'pi-chart-line', iconSolid: 'pi-chart-bar' },

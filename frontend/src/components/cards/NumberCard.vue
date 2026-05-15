@@ -63,42 +63,48 @@ const formattedCurrency = computed(() => {
   <div 
     :class="[
       color, 
-      'group relative flex flex-col justify-between p-2 rounded-2xl shadow-sm border border-gray-100 transition-all duration-300 overflow-hidden'
+      'group relative flex flex-col justify-between p-6 rounded-2xl shadow-sm border border-gray-100 transition-all duration-300 overflow-hidden min-h-[140px]'
     ]"
   >
-    <div class="flex items-center z-10">
-      <div class="flex flex-col gap-1">
-        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">
-          {{ title }}
-        </h3>
-        
-        <div class="mt-2 flex items-center gap-1">
-          <span v-if="sign" class="text-xl font-medium text-gray-400">{{ sign }}</span>
-          <div class="flex items-baseline gap-1"> 
-            <span class="text-3xl 2xl:text-4xl font-bold text-gray-900">
-            {{ formattedCurrency.number }}
-            </span>
-
-            <span class="text-xl font-medium text-gray-400">
-            {{ formattedCurrency.symbol }}
-            </span>
-          
-          </div>
-        </div>
+    <!-- Header: Title and Action/Icon -->
+    <div class="flex justify-between items-start z-10">
+      <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">
+        {{ title }}
+      </h3>
+      
+      <div v-if="$slots.action" class="z-20 -mt-1 -mr-1">
+        <slot name="action"></slot>
       </div>
-
       <div 
-        v-if="icon"
+        v-else-if="icon"
         :class="[
-          'flex items-center justify-center w-12 h-12 rounded-xl shadow-inner transition-colors ml-5', 
+          'flex items-center justify-center w-11 h-11 rounded-xl shadow-inner transition-colors', 
           iconBackground, 
           iconColor,
           iconContainerClass
         ]"
       >
-        <i :class="['pi', icon, 'text-xl']" />
+        <i :class="['pi', icon, 'text-lg']" />
       </div>
     </div>
 
+    <!-- Body: Value -->
+    <div class="mt-auto flex items-center gap-1 z-10">
+      <span v-if="sign" class="text-xl font-medium text-gray-400">{{ sign }}</span>
+      <div class="flex items-baseline gap-1"> 
+        <span class="text-3xl 2xl:text-4xl font-bold text-gray-900 tracking-tight">
+          {{ formattedCurrency.number }}
+        </span>
+
+        <span class="text-xl font-medium text-gray-400">
+          {{ formattedCurrency.symbol }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Optional Footer -->
+    <div v-if="$slots.footer" class="mt-4 pt-2 border-t border-menuborder/10 z-10">
+      <slot name="footer"></slot>
+    </div>
   </div>
 </template>
