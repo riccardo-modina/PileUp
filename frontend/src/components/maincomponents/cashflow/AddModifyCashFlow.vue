@@ -438,9 +438,17 @@ function onCategorySelect(cat) {
   // cat is the full item object
   selectedCategoryName.value = cat.nome || ''
   form.value.category = cat.id || cat.nome
+  
+  // if title is empty, derive it from the selected category
+  if (!form.value.title || form.value.title.trim() === '') {
+    form.value.title = cat.nome || ''
+  }
 }
 
 function onCategoryClear() {
+  if (form.value.title === selectedCategoryName.value) {
+    form.value.title = ''
+  }
   selectedCategoryName.value = ''
   form.value.category = ''
 }
@@ -595,7 +603,7 @@ watch(() => form.value.category, (val) => {
     return
   }
   const found = (props.categorie || []).find(c => String(c.id) === String(val))
-  if (found) selectedCategoryName.value = found.name || ''
+  if (found) selectedCategoryName.value = found.nome || ''
 })
 
 
