@@ -268,3 +268,8 @@ create_user.py
 
 # Docker
 docker-compose.override.yaml
+
+# Antigravity
+.antigravitycli/
+.agents/
+
