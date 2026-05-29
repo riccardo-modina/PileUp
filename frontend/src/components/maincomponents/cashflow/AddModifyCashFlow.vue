@@ -5,9 +5,9 @@ import { useRoute } from 'vue-router'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useFinancialsStore } from '@/stores/financials'
 import ConfirmModal from '../../modals/ConfirmModal.vue'
-import DatePicker from 'primevue/datepicker';
 import SelectDropdown from '../../formcomponents/SelectDropdown.vue'
 import InputError from '../../formcomponents/InputError.vue'
+import DateSelector from '../../formcomponents/DateSelector.vue'
 
 const props = defineProps({
   categorie: { type: Array, default: () => [] },
@@ -49,7 +49,6 @@ const isSubmitting = ref(false)
 const originalFormState = ref('')
 const financials = useFinancialsStore()
 
-const datepickerRef = ref(null)  // ref del DatePicker
 const showFutureWarning = ref(false) // new: briefly show UI warning when a future date is attempted
 
 // money object to format currency input
@@ -296,13 +295,6 @@ function applyPrefill(raw) {
 
   // 6. ID for update
   if (raw.id) form.value.id = raw.id
-}
-
-
-
-
-function openDatePicker() {
-  datepickerRef.value?.$el?.querySelector('input')?.focus();
 }
 
 
@@ -565,11 +557,9 @@ const humanReadableDate = computed(() => {
 
 
 
-// Add a normalized "today" (midnight) for comparisons and DatePicker max binding
+// Add a normalized "today" (midnight) for comparisons
 const today = new Date()
 today.setHours(0,0,0,0)
-
-
 
 // Watch and clamp form.date if user picks or types a future date
 watch(() => form.value.date, (newDate) => {
@@ -945,52 +935,20 @@ function handleCategorySelect(cat) {
 
                               <!-- 5. Data -->
                               <div class="flex flex-col gap-3">
-                                <button @click="() => { openDatePicker(); activeStep = 2; }" type="button" class="w-full text-left cursor-pointer focus:outline-none group">
-                                  <div class="flex items-center justify-between w-full">
-                                    <div class="flex items-center gap-3">
-                                      <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
-                                        <i class="pi pi-calendar text-lg" />
-                                      </div>
-                                      <div class="flex flex-col">
-                                        <span class="text-sm font-semibold text-text">Data</span>
-                                        <span class="text-base text-gray-600 font-medium mt-0.5">{{ humanReadableDate || 'Seleziona data' }}</span>
-                                      </div>
-                                    </div>
+                                <div class="flex items-center gap-3">
+                                  <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="pi pi-calendar text-lg" />
                                   </div>
-                                  
-                                  <div class="relative h-0 overflow-hidden opacity-0 pointer-events-none">
-                                    <DatePicker
-                                        ref="datepickerRef"
-                                        v-model="form.date"
-                                        :maxDate="today"
-                                        append-to="body"
-                                        dateFormat="dd/mm/yy"
-                                        input-class="focus:outline-none"
-                                        :pt="{
-                                            panel: 'flex-1 bg-white shadow-md border border-gray-200 rounded-xl p-3 mt-4',
-                                            header: 'flex justify-between items-center text-text mb-2',
-                                            title: 'text-md flex items-center gap-1',
-                                            prevbutton: 'text-gray-500 hover:text-primary hover:bg-gray-100 rounded p-1 transition',
-                                            nextbutton: 'text-gray-500 hover:text-primary hover:bg-gray-100 rounded p-1 transition',
-                                            month: 'flex-1 px-2 py-1 hover:bg-primary hover:text-white rounded cursor-pointer transition m-4',
-                                            monthSelected: 'bg-primary text-white font-bold rounded',
-                                            year: 'flex-1 px-2 py-1 hover:bg-primary hover:text-white rounded cursor-pointer transition m-4',
-                                            yearSelected: 'bg-primary text-white font-bold rounded',
-                                            day: ({ context }) => [
-                                                'w-10.5 h-9 flex items-center justify-center text-sm rounded cursor-pointer transition',
-                                                
-                                                { 
-                                                    'hover:bg-primary-light hover:text-white': !context.selected && !context.disabled && !context.dayOtherMonth,
-                                                    'text-gray-500 cursor-not-allowed': context.dayOtherMonth,
-                                                    'border border-primary text-primary font-semibold bg-primary/20': context.dayToday && !context.selected,
-                                                    'bg-primary-light text-white font-bold rounded-full hover:bg-primary': context.selected,
-                                                    'text-gray-300 cursor-not-allowed opacity-50': context.disabled && !context.dayOtherMonth
-                                                }
-                                            ],
-                                        }"
-                                        />
+                                  <div class="flex flex-col">
+                                    <span class="text-sm font-semibold text-text">Data</span>
+                                    <span class="text-xs text-gray-400 font-normal">Seleziona giorno, mese e anno</span>
                                   </div>
-                                </button>
+                                </div>
+
+                                <DateSelector
+                                  v-model="form.date"
+                                  @focus="activeStep = 2"
+                                />
                                 
                                 <InputError 
                                   :message="showFutureWarning ? 'Non è possibile selezionare una data futura — impostata la data di oggi.' : ''"
