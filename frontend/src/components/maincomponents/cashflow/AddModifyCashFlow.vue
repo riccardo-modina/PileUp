@@ -688,18 +688,78 @@ function handleCategorySelect(cat) {
                       
                       <!-- SINGLE UNIFIED CARD WITH TIMELINE STEPPER -->
                       <div class="bg-white rounded-3xl border border-gray-100 shadow-md p-4 sm:p-6 md:p-8 relative">
-                        
-                        <!-- Stepper flex container (no absolute timeline on card parent) -->
-                        <div class="flex flex-col gap-10 relative">
+                                                <!-- Stepper flex container (no absolute timeline on card parent) -->
+                         <div class="flex flex-col gap-6 sm:gap-10 relative">
 
-                          <!-- STEP 1: Movimento -->
+                           <!-- Horizontal Stepper for Mobile (visible only on mobile) -->
+                           <div class="sticky top-0 bg-white flex sm:hidden items-center justify-between px-6 py-4 border-b border-gray-100 z-40 -mx-4 -mt-4 rounded-t-3xl shadow-xs">
+                             <!-- Step 1 Badge -->
+                             <div 
+                               class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 flex-shrink-0"
+                               :class="[
+                                 activeStep === 1 
+                                   ? 'bg-primary text-white border-primary shadow-md scale-110' 
+                                   : isCard1Valid 
+                                     ? 'bg-green-500 text-white border-green-500' 
+                                     : 'bg-white text-gray-400 border-gray-200'
+                               ]"
+                             >
+                               <i v-if="isCard1Valid && activeStep !== 1" class="pi pi-check text-[10px]" />
+                               <span v-else>1</span>
+                             </div>
+
+                             <!-- Line 1-2 -->
+                             <div class="h-0.5 flex-1 mx-3 bg-gray-100 rounded-full">
+                               <div 
+                                 class="h-full bg-primary transition-all duration-500 rounded-full" 
+                                 :style="{ width: isCard1Valid ? '100%' : '0%' }"
+                               ></div>
+                             </div>
+
+                             <!-- Step 2 Badge -->
+                             <div 
+                               class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 flex-shrink-0"
+                               :class="[
+                                 activeStep === 2 
+                                   ? 'bg-primary text-white border-primary shadow-md scale-110' 
+                                   : isCard2Valid 
+                                     ? 'bg-green-500 text-white border-green-500' 
+                                     : 'bg-white text-gray-400 border-gray-200'
+                               ]"
+                             >
+                               <i v-if="isCard2Valid && activeStep !== 2" class="pi pi-check text-[10px]" />
+                               <span v-else>2</span>
+                             </div>
+
+                             <!-- Line 2-3 -->
+                             <div class="h-0.5 flex-1 mx-3 bg-gray-100 rounded-full">
+                               <div 
+                                 class="h-full bg-primary transition-all duration-500 rounded-full" 
+                                 :style="{ width: isCard2Valid ? '100%' : '0%' }"
+                               ></div>
+                             </div>
+
+                             <!-- Step 3 Badge -->
+                             <div 
+                               class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 flex-shrink-0"
+                               :class="[
+                                 activeStep === 3 
+                                   ? 'bg-primary text-white border-primary shadow-md scale-110' 
+                                   : 'bg-white text-gray-400 border-gray-200'
+                               ]"
+                             >
+                               <span>3</span>
+                             </div>
+                           </div>
+
+                           <!-- STEP 1: Movimento -->
                           <div 
                             class="flex gap-3 sm:gap-6 relative transition-all duration-300"
                             :class="[activeStep === 1 ? 'z-30' : 'z-10']"
                           >
                             
                             <!-- Left Column: Badge and Timeline Line -->
-                            <div class="flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
+                            <div class="hidden sm:flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
                               <!-- Badge -->
                               <div 
                                 class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 border-2 z-20"
@@ -729,7 +789,6 @@ function handleCategorySelect(cat) {
                               :class="[activeStep === 1 ? 'opacity-100 scale-[1.005]' : 'opacity-60 hover:opacity-85']"
                               @click="activeStep = 1"
                             >
-                              <h3 class="text-base font-bold text-text h-8 flex items-center">Natura movimento</h3>
                               
                               <!-- 1. Tipo Movimento -->
                               <div class="flex flex-col gap-3">
@@ -870,7 +929,7 @@ function handleCategorySelect(cat) {
                           >
                             
                             <!-- Left Column: Badge and Timeline Line -->
-                            <div class="flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
+                            <div class="hidden sm:flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
                               <!-- Badge -->
                               <div 
                                 class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 border-2 z-20"
@@ -1001,7 +1060,7 @@ function handleCategorySelect(cat) {
                           >
                             
                             <!-- Left Column: Badge Only (No Line segment 3) -->
-                            <div class="flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
+                            <div class="hidden sm:flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
                               <!-- Badge -->
                               <div 
                                 class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 border-2 z-20"
