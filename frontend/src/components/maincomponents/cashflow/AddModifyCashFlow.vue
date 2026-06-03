@@ -693,7 +693,10 @@ function handleCategorySelect(cat) {
                         <div class="flex flex-col gap-10 relative">
 
                           <!-- STEP 1: Movimento -->
-                          <div class="flex gap-3 sm:gap-6 relative">
+                          <div 
+                            class="flex gap-3 sm:gap-6 relative transition-all duration-300"
+                            :class="[activeStep === 1 ? 'z-30' : 'z-10']"
+                          >
                             
                             <!-- Left Column: Badge and Timeline Line -->
                             <div class="flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
@@ -861,7 +864,10 @@ function handleCategorySelect(cat) {
                           </div>
 
                           <!-- STEP 2: Dettagli -->
-                          <div class="flex gap-3 sm:gap-6 relative">
+                          <div 
+                            class="flex gap-3 sm:gap-6 relative transition-all duration-300"
+                            :class="[activeStep === 2 ? 'z-30' : 'z-10']"
+                          >
                             
                             <!-- Left Column: Badge and Timeline Line -->
                             <div class="flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
@@ -989,7 +995,10 @@ function handleCategorySelect(cat) {
                           </div>
 
                           <!-- STEP 3: Note -->
-                          <div class="flex gap-3 sm:gap-6 relative">
+                          <div 
+                            class="flex gap-3 sm:gap-6 relative transition-all duration-300"
+                            :class="[activeStep === 3 ? 'z-30' : 'z-10']"
+                          >
                             
                             <!-- Left Column: Badge Only (No Line segment 3) -->
                             <div class="flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
