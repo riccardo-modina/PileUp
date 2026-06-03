@@ -1,6 +1,6 @@
 <script setup>
 import AddButton from '@/components/buttons/primarybuttons/AddButton.vue';
-import TimeFrameButton from '@/components/buttons/primarybuttons/timeframechooserbutton/TimeFrameButton.vue';
+import TimeFrameSelector from '@/components/formcomponents/timeframe/TimeFrameSelector.vue';
 import { useSettingsStore } from '../../stores/settings'
 
 const settings = useSettingsStore();
@@ -45,7 +45,7 @@ function updateTimeframe(newTimeframe, source) {
                         v-if="showTimeFrameButton" 
                         class="flex space-x-2"
                         >
-                        <TimeFrameButton 
+                        <TimeFrameSelector 
                             @timeFrameUpdate="(timeFrame, source) => updateTimeframe(timeFrame, source)"
                             @buttonToggled = "(isOpen) => timeFrameButtonToggled(isOpen)"
                             :dataPeriod="settings.dataPeriod.toString()"

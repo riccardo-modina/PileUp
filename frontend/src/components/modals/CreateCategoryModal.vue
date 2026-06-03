@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import BaseButton from '@/components/buttons/BaseButton.vue'
-import SelectDropdown from '@/components/formcomponents/SelectDropdown.vue'
+import SelectDropdown from '@/components/formcomponents/addform/SelectDropdown.vue'
 import { createCategoria } from '@/apicalls/apiCalls'
 import { useFinancialsStore } from '@/stores/financials'
 

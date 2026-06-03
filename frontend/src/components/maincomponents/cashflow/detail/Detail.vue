@@ -4,7 +4,7 @@ import CumulativeLinear from '@/components/cards/charts/types/CumulativeLinear.v
 import StackedArea from '@/components/cards/charts/types/StackedArea.vue';
 import MovementList from '@/components/lists/MovementList.vue';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal.vue';
-import SelectDropdown from '@/components/formcomponents/SelectDropdown.vue';
+import SelectDropdown from '@/components/formcomponents/addform/SelectDropdown.vue';
 import BaseButton from '@/components/buttons/BaseButton.vue';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';

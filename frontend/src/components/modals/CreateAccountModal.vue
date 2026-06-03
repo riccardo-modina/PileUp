@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import BaseButton from '@/components/buttons/BaseButton.vue'
-import SelectDropdown from '@/components/formcomponents/SelectDropdown.vue'
+import SelectDropdown from '@/components/formcomponents/addform/SelectDropdown.vue'
 import { createConto } from '@/apicalls/apiCalls'
 
 const props = defineProps({
