@@ -12,7 +12,7 @@ defineExpose({
   <BaseButton
     ref="baseBtnRef"
     class="bg-primary
-           hover:bg-primary-hover text-white transition-all
+           md:hover:bg-primary-hover text-white transition-all
            rounded-md group py-[6px] px-3 items-center justify-center"
   >
     <slot />
