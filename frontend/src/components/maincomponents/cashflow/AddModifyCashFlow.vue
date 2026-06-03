@@ -627,10 +627,14 @@ watch(
 const activeStep = ref(1)
 
 const isCard1Valid = computed(() => {
-  return !!form.value.movementType && !!form.value.category && Number(form.value.amount) > 0
+  return !!form.value.movementType && !!form.value.category
 })
 
 const isCard2Valid = computed(() => {
+  return Number(form.value.amount) > 0
+})
+
+const isCard3Valid = computed(() => {
   return !!form.value.account && !!form.value.date
 })
 
@@ -642,7 +646,7 @@ function handleStep1Completion() {
   if (isCard1Valid.value) {
     activeStep.value = 2
     setTimeout(() => {
-      titleInputRef.value?.focus()
+      amountInputRef.value?.focus()
     }, 50)
   }
 }
@@ -651,6 +655,14 @@ function handleStep2Completion() {
   if (isCard2Valid.value) {
     activeStep.value = 3
     setTimeout(() => {
+      titleInputRef.value?.focus()
+    }, 50)
+  }
+}
+
+function handleStep3Completion() {
+  if (isCard3Valid.value) {
+    setTimeout(() => {
       notesInputRef.value?.focus()
     }, 50)
   }
@@ -658,10 +670,12 @@ function handleStep2Completion() {
 
 function handleCategorySelect(cat) {
   onCategorySelect(cat)
-  activeStep.value = 1
-  setTimeout(() => {
-    amountInputRef.value?.focus()
-  }, 50)
+  if (isCard1Valid.value) {
+    activeStep.value = 2
+    setTimeout(() => {
+      amountInputRef.value?.focus()
+    }, 50)
+  }
 }
 </script>
 
@@ -697,14 +711,15 @@ function handleCategorySelect(cat) {
                              <div 
                                class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 flex-shrink-0"
                                :class="[
-                                 activeStep === 1 
-                                   ? 'bg-primary text-white border-primary shadow-md scale-110' 
-                                   : isCard1Valid 
-                                     ? 'bg-green-500 text-white border-green-500' 
-                                     : 'bg-white text-gray-400 border-gray-200'
+                                 isCard1Valid 
+                                   ? 'bg-green-500 text-white border-green-500 shadow-sm' 
+                                   : activeStep === 1 
+                                     ? 'bg-primary text-white border-primary shadow-md scale-110' 
+                                     : 'bg-white text-gray-400 border-gray-200',
+                                 activeStep === 1 && isCard1Valid ? 'scale-110' : ''
                                ]"
                              >
-                               <i v-if="isCard1Valid && activeStep !== 1" class="pi pi-check text-[10px]" />
+                               <i v-if="isCard1Valid" class="pi pi-check text-[10px]" />
                                <span v-else>1</span>
                              </div>
 
@@ -720,14 +735,15 @@ function handleCategorySelect(cat) {
                              <div 
                                class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 flex-shrink-0"
                                :class="[
-                                 activeStep === 2 
-                                   ? 'bg-primary text-white border-primary shadow-md scale-110' 
-                                   : isCard2Valid 
-                                     ? 'bg-green-500 text-white border-green-500' 
-                                     : 'bg-white text-gray-400 border-gray-200'
+                                 isCard2Valid 
+                                   ? 'bg-green-500 text-white border-green-500 shadow-sm' 
+                                   : activeStep === 2 
+                                     ? 'bg-primary text-white border-primary shadow-md scale-110' 
+                                     : 'bg-white text-gray-400 border-gray-200',
+                                 activeStep === 2 && isCard2Valid ? 'scale-110' : ''
                                ]"
                              >
-                               <i v-if="isCard2Valid && activeStep !== 2" class="pi pi-check text-[10px]" />
+                               <i v-if="isCard2Valid" class="pi pi-check text-[10px]" />
                                <span v-else>2</span>
                              </div>
 
@@ -743,12 +759,16 @@ function handleCategorySelect(cat) {
                              <div 
                                class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 flex-shrink-0"
                                :class="[
-                                 activeStep === 3 
-                                   ? 'bg-primary text-white border-primary shadow-md scale-110' 
-                                   : 'bg-white text-gray-400 border-gray-200'
+                                 isCard3Valid 
+                                   ? 'bg-green-500 text-white border-green-500 shadow-sm' 
+                                   : activeStep === 3 
+                                     ? 'bg-primary text-white border-primary shadow-md scale-110' 
+                                     : 'bg-white text-gray-400 border-gray-200',
+                                 activeStep === 3 && isCard3Valid ? 'scale-110' : ''
                                ]"
                              >
-                               <span>3</span>
+                               <i v-if="isCard3Valid" class="pi pi-check text-[10px]" />
+                               <span v-else>3</span>
                              </div>
                            </div>
 
@@ -764,14 +784,14 @@ function handleCategorySelect(cat) {
                               <div 
                                 class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 border-2 z-20"
                                 :class="[
-                                  activeStep === 1 
-                                    ? 'bg-primary text-white border-primary shadow-md' 
-                                    : isCard1Valid 
-                                      ? 'bg-green-500 text-white border-green-500 shadow-sm' 
+                                  isCard1Valid 
+                                    ? 'bg-green-500 text-white border-green-500 shadow-sm' 
+                                    : activeStep === 1 
+                                      ? 'bg-primary text-white border-primary shadow-md' 
                                       : 'bg-white text-gray-400 border-gray-200'
                                 ]"
                               >
-                                <i v-if="isCard1Valid && activeStep !== 1" class="pi pi-check text-xs" />
+                                <i v-if="isCard1Valid" class="pi pi-check text-xs" />
                                 <span v-else>1</span>
                               </div>
                               <!-- Line Segment 1 (Connecting to Step 2) -->
@@ -785,19 +805,20 @@ function handleCategorySelect(cat) {
 
                             <!-- Right Column: Content -->
                             <div 
-                              class="flex-1 flex flex-col gap-5 transition-all duration-300"
-                              :class="[activeStep === 1 ? 'opacity-100 scale-[1.005]' : 'opacity-60 hover:opacity-85']"
+                              class="flex-1 flex flex-col gap-5 transition-all duration-300 p-4 sm:p-5 rounded-2xl border"
+                              :class="[
+                                activeStep === 1 
+                                  ? 'bg-primary/5 border-primary/10 opacity-100 scale-[1.005]' 
+                                  : 'bg-transparent border-transparent opacity-60 hover:opacity-85'
+                              ]"
                               @click="activeStep = 1"
                             >
+                              <h3 class="text-base font-bold text-text h-8 flex items-center">
+                                <span class="sm:hidden mr-1">1.</span>Tipo movimento
+                              </h3>
                               
                               <!-- 1. Tipo Movimento -->
                               <div class="flex flex-col gap-3">
-                                <div class="flex items-center gap-3">
-                                  <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                    <i class="pi pi-sync text-sm sm:text-lg" />
-                                  </div>
-                                  <span class="text-sm font-semibold text-text">Tipo Movimento</span>
-                                </div>
                                 
                                 <!-- Mobile: Buttons -->
                                 <div class="flex gap-1.5 md:hidden mt-1">
@@ -874,92 +895,129 @@ function handleCategorySelect(cat) {
                                 />
                                 <InputError :message="validationError === 'Seleziona una categoria' ? 'Seleziona una categoria' : ''" />
                               </div>
-
-                              <!-- Divisore -->
-                              <div class="h-px bg-gray-100 w-full"></div>
-
-                              <!-- 3. Importo -->
-                              <div class="flex flex-col gap-2">
-                                <div class="flex items-center gap-3">
-                                  <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                    <i class="pi pi-wallet text-sm sm:text-lg" />
-                                  </div>
-                                  <span class="text-sm font-semibold text-text">Importo</span>
-                                </div>
-                                
-                                <div class="flex items-center gap-3 px-3 py-2.5 sm:px-4 sm:py-3.5 border border-gray-200 rounded-xl bg-gray-50/50 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-light focus-within:border-primary-light transition-all mt-1">
-                                  <span class="text-xl sm:text-2xl font-bold text-gray-400 select-none">{{ props.currency }}</span>
-                                  <input
-                                    ref="amountInputRef"
-                                    type="text"
-                                    :value="displayValue"
-                                    @input="onAmountInput"
-                                    @focus="() => { onFocus(); activeStep = 1; }"
-                                    @blur="() => { onBlur(); handleStep1Completion(); }"
-                                    @keyup.enter="handleStep1Completion"
-                                    inputmode="decimal"
-                                    placeholder="0.00"
-                                    autocomplete="off"
-                                    data-1p-ignore="true"
-                                    data-lpignore="true"
-                                    :class="[
-                                      'w-full text-2xl sm:text-3xl font-bold bg-transparent border-none outline-none focus:ring-0 focus:outline-none p-0 text-text transition-all',
-                                      { 'text-red-600': form.amount > 10000000 || showZeroError },
-                                      { 'animate-shake': shakeAmount }
-                                    ]"
-                                  />
-                                </div>
-                                
-                                <div class="flex flex-col mt-1 border-t border-gray-50 pt-2 gap-1">
-                                  <InputError :message="showNumericError ? 'Sono consentiti solo numeri e un separatore decimale' : ''" type="warning" />
-                                  <InputError :message="showDecimalError ? 'Massimo 4 cifre decimali consentite' : ''" type="warning" />
-                                  <InputError :message="showZeroError ? 'L\'importo deve essere maggiore di zero' : ''" />
-                                  <InputError :message="showLimitError ? 'Limite massimo di 10M superato!' : ''" />
-                                  <span class="text-[11px] text-gray-400 font-normal">Max: 10.000.000 {{ props.currency }}</span>
-                                </div>
-                              </div>
                             </div>
-
                           </div>
 
-                          <!-- STEP 2: Dettagli -->
+                           <!-- STEP 2: Importo -->
+                           <div 
+                             class="flex gap-3 sm:gap-6 relative transition-all duration-300"
+                             :class="[activeStep === 2 ? 'z-30' : 'z-10']"
+                           >
+                             
+                             <!-- Left Column: Badge and Timeline Line -->
+                             <div class="hidden sm:flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
+                               <!-- Badge -->
+                               <div 
+                                 class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 border-2 z-20"
+                                 :class="[
+                                   isCard2Valid 
+                                     ? 'bg-green-500 text-white border-green-500 shadow-sm' 
+                                     : activeStep === 2 
+                                       ? 'bg-primary text-white border-primary shadow-md' 
+                                       : 'bg-white text-gray-400 border-gray-200'
+                                 ]"
+                               >
+                                 <i v-if="isCard2Valid" class="pi pi-check text-xs" />
+                                 <span v-else>2</span>
+                               </div>
+                               <!-- Line Segment 2 (Connecting to Step 3) -->
+                               <div class="w-0.5 bg-gray-100 absolute left-1/2 -translate-x-1/2 top-6 sm:top-8 bottom-[-40px] z-0">
+                                 <div 
+                                   class="w-full bg-primary transition-all duration-500 rounded-full" 
+                                   :style="{ height: isCard2Valid ? '100%' : '0%' }"
+                                 ></div>
+                               </div>
+                             </div>
+
+                             <!-- Right Column: Content -->
+                             <div 
+                               class="flex-1 flex flex-col gap-5 transition-all duration-300 p-4 sm:p-5 rounded-2xl border"
+                               :class="[
+                                 activeStep === 2 
+                                   ? 'bg-primary/5 border-primary/10 opacity-100 scale-[1.005]' 
+                                   : 'bg-transparent border-transparent opacity-60 hover:opacity-85'
+                               ]"
+                               @click="activeStep = 2"
+                             >
+                               <h3 class="text-base font-bold text-text h-8 flex items-center">
+                                 <span class="sm:hidden mr-1">2.</span>Importo
+                               </h3>
+                               <!-- 3. Importo -->
+                               <div class="flex flex-col gap-2">
+                                 
+                                 <div class="flex items-center gap-3 px-3 py-2.5 sm:px-4 sm:py-3.5 border border-gray-200 rounded-xl bg-gray-50/50 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-light focus-within:border-primary-light transition-all mt-1">
+                                   <span class="text-xl sm:text-2xl font-bold text-gray-400 select-none">{{ props.currency }}</span>
+                                   <input
+                                     ref="amountInputRef"
+                                     type="text"
+                                     :value="displayValue"
+                                     @input="onAmountInput"
+                                     @focus="() => { onFocus(); activeStep = 2; }"
+                                     @blur="() => { onBlur(); handleStep2Completion(); }"
+                                     @keyup.enter="handleStep2Completion"
+                                     inputmode="decimal"
+                                     placeholder="0.00"
+                                     autocomplete="off"
+                                     data-1p-ignore="true"
+                                     data-lpignore="true"
+                                     :class="[
+                                       'w-full text-2xl sm:text-3xl font-bold bg-transparent border-none outline-none focus:ring-0 focus:outline-none p-0 text-text transition-all',
+                                       { 'text-red-600': form.amount > 10000000 || showZeroError },
+                                       { 'animate-shake': shakeAmount }
+                                     ]"
+                                   />
+                                 </div>
+                                 
+                                 <div class="flex flex-col mt-1 border-t border-gray-50 pt-2 gap-1">
+                                   <InputError :message="showNumericError ? 'Sono consentiti solo numeri e un separatore decimale' : ''" type="warning" />
+                                   <InputError :message="showDecimalError ? 'Massimo 4 cifre decimali consentite' : ''" type="warning" />
+                                   <InputError :message="showZeroError ? 'L\'importo deve essere maggiore di zero' : ''" />
+                                   <InputError :message="showLimitError ? 'Limite massimo di 10M superato!' : ''" />
+                                   <span class="text-[11px] text-gray-400 font-normal">Max: 10.000.000 {{ props.currency }}</span>
+                                 </div>
+                               </div>
+                             </div>
+
+                           </div>
+
+                          <!-- STEP 3: Dettagli -->
                           <div 
                             class="flex gap-3 sm:gap-6 relative transition-all duration-300"
-                            :class="[activeStep === 2 ? 'z-30' : 'z-10']"
+                            :class="[activeStep === 3 ? 'z-30' : 'z-10']"
                           >
                             
-                            <!-- Left Column: Badge and Timeline Line -->
+                            <!-- Left Column: Badge and Timeline Line (No line since it's the last step) -->
                             <div class="hidden sm:flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
                               <!-- Badge -->
                               <div 
                                 class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 border-2 z-20"
                                 :class="[
-                                  activeStep === 2 
-                                    ? 'bg-primary text-white border-primary shadow-md' 
-                                    : isCard2Valid 
-                                      ? 'bg-green-500 text-white border-green-500 shadow-sm' 
+                                  isCard3Valid 
+                                    ? 'bg-green-500 text-white border-green-500 shadow-sm' 
+                                    : activeStep === 3 
+                                      ? 'bg-primary text-white border-primary shadow-md' 
                                       : 'bg-white text-gray-400 border-gray-200'
                                 ]"
                               >
-                                <i v-if="isCard2Valid && activeStep !== 2" class="pi pi-check text-xs" />
-                                <span v-else>2</span>
+                                <i v-if="isCard3Valid" class="pi pi-check text-xs" />
+                                <span v-else>3</span>
                               </div>
-                              <!-- Line Segment 2 (Connecting to Step 3) -->
-                              <div class="w-0.5 bg-gray-100 absolute left-1/2 -translate-x-1/2 top-6 sm:top-8 bottom-[-40px] z-0">
-                                <div 
-                                  class="w-full bg-primary transition-all duration-500 rounded-full" 
-                                  :style="{ height: isCard2Valid ? '100%' : '0%' }"
-                                ></div>
-                              </div>
+
                             </div>
 
                             <!-- Right Column: Content -->
                             <div 
-                              class="flex-1 flex flex-col gap-5 transition-all duration-300"
-                              :class="[activeStep === 2 ? 'opacity-100 scale-[1.005]' : 'opacity-60 hover:opacity-85']"
-                              @click="activeStep = 2"
+                              class="flex-1 flex flex-col gap-5 transition-all duration-300 p-4 sm:p-5 rounded-2xl border"
+                              :class="[
+                                activeStep === 3 
+                                  ? 'bg-primary/5 border-primary/10 opacity-100 scale-[1.005]' 
+                                  : 'bg-transparent border-transparent opacity-60 hover:opacity-85'
+                              ]"
+                              @click="activeStep = 3"
                             >
-                              <h3 class="text-base font-bold text-text h-8 flex items-center">Dettagli movimento</h3>
+                              <h3 class="text-base font-bold text-text h-8 flex items-center">
+                                <span class="sm:hidden mr-1">3.</span>Dettagli movimento
+                              </h3>
                               
                               <!-- 4. Descrizione (Titolo) -->
                               <div class="flex flex-col gap-3">
@@ -983,7 +1041,7 @@ function handleCategorySelect(cat) {
                                       v-model="form.title"
                                       maxlength="50"
                                       type="text"
-                                      @focus="activeStep = 2"
+                                      @focus="activeStep = 3"
                                       @keydown="(e) => { if (form.title.length >= 50 && e.key.length === 1) triggerShake('title') }"
                                       :placeholder="titlePlaceholder"
                                       :class="[
@@ -1012,7 +1070,7 @@ function handleCategorySelect(cat) {
 
                                 <DateSelector
                                   v-model="form.date"
-                                  @focus="activeStep = 2"
+                                  @focus="activeStep = 3"
                                 />
                                 
                                 <InputError 
@@ -1033,14 +1091,14 @@ function handleCategorySelect(cat) {
                                   </div>
                                   <span class="text-sm font-semibold text-text">Conto</span>
                                 </div>
-                                <div class="mt-1" @focusin="activeStep = 2">
+                                <div class="mt-1" @focusin="activeStep = 3">
                                   <SelectDropdown
                                     :items="props.conti"
                                     v-model="form.account"
                                     itemLabel="nome"
                                     placeholder="Seleziona conto"
                                     :showColor="true"
-                                    @select="(acc) => { onAccountSelect(acc); handleStep2Completion(); }"
+                                    @select="(acc) => { onAccountSelect(acc); handleStep3Completion(); }"
                                     @clear="onAccountClear"
                                     :required="true"
                                     :allowCreateAccount="true"
@@ -1049,39 +1107,11 @@ function handleCategorySelect(cat) {
                                 </div>
                                 <InputError :message="validationError === 'Seleziona un conto' ? 'Seleziona un conto' : ''" />
                               </div>
-                            </div>
 
-                          </div>
+                              <!-- Divisore -->
+                              <div class="h-px bg-gray-100 w-full"></div>
 
-                          <!-- STEP 3: Note -->
-                          <div 
-                            class="flex gap-3 sm:gap-6 relative transition-all duration-300"
-                            :class="[activeStep === 3 ? 'z-30' : 'z-10']"
-                          >
-                            
-                            <!-- Left Column: Badge Only (No Line segment 3) -->
-                            <div class="hidden sm:flex flex-col items-center relative w-6 sm:w-8 flex-shrink-0 z-10">
-                              <!-- Badge -->
-                              <div 
-                                class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 border-2 z-20"
-                                :class="[
-                                  activeStep === 3 
-                                    ? 'bg-primary text-white border-primary shadow-md' 
-                                    : 'bg-white text-gray-400 border-gray-200'
-                                ]"
-                              >
-                                <span>3</span>
-                              </div>
-                            </div>
-
-                            <!-- Right Column: Content -->
-                            <div 
-                              class="flex-1 flex flex-col gap-5 transition-all duration-300"
-                              :class="[activeStep === 3 ? 'opacity-100 scale-[1.005]' : 'opacity-60 hover:opacity-85']"
-                              @click="activeStep = 3"
-                            >
-                              <h3 class="text-base font-bold text-text h-8 flex items-center">Informazioni aggiuntive</h3>
-                              
+                              <!-- 7. Note -->
                               <div class="flex flex-col gap-3">
                                   <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
@@ -1117,6 +1147,8 @@ function handleCategorySelect(cat) {
                             </div>
 
                           </div>
+
+
 
                         </div>
 
