@@ -7,7 +7,7 @@ import { useFinancialsStore } from '@/stores/financials'
 import ConfirmModal from '../../modals/ConfirmModal.vue'
 import SelectDropdown from '../../formcomponents/addform/SelectDropdown.vue'
 import InputError from '../../formcomponents/addform/InputError.vue'
-import DateSelector from '../../formcomponents/addform/DateSelector.vue'
+import DateSelector from '../../formcomponents/dateselector/DateSelector.vue'
 
 const props = defineProps({
   categorie: { type: Array, default: () => [] },
