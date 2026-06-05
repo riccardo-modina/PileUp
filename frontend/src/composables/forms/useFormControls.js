@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 
-export function useFormControls(formRef, originalFormStateRef) {
+export function useFormControls(formRef, originalFormStateRef, isSubmittingRef = ref(false)) {
   const showConfirmModal = ref(false)
   let pendingNavigationNext = null
 
@@ -12,7 +12,7 @@ export function useFormControls(formRef, originalFormStateRef) {
 
   // Vue Router guard to intercept navigation if dirty
   onBeforeRouteLeave((to, from, next) => {
-    if (isDirty.value) {
+    if (isDirty.value && !isSubmittingRef.value) {
       showConfirmModal.value = true
       pendingNavigationNext = next
     } else {
