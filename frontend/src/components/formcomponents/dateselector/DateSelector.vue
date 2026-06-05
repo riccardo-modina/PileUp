@@ -128,7 +128,7 @@ function resetToToday() {
       <!-- Reusable Date Picker Modal -->
       <Teleport to="body">
         <transition name="fade">
-          <div v-if="showModal" class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/35 backdrop-blur-md">
+          <div v-if="showModal" @click.self="showModal = false" class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/35 backdrop-blur-md">
             <!-- Modal Card (iOS style with blur and automatic dark/light theme support) -->
             <div class="wheel-picker-modal w-[320px] rounded-[30px] p-5 shadow-2xl flex flex-col border backdrop-blur-md">
               
