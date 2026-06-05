@@ -1,13 +1,15 @@
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, watch, nextTick } from 'vue'
 
-import { onBeforeRouteLeave } from 'vue-router'
-import { useFinancialsStore } from '@/stores/financials'
 import ConfirmModal from '../../modals/ConfirmModal.vue'
 import SelectDropdown from '../../formcomponents/addform/SelectDropdown.vue'
 import InputError from '../../formcomponents/addform/InputError.vue'
 import DateSelector from '../../formcomponents/dateselector/DateSelector.vue'
+
+// Import form composables
+import { useFormControls } from '@/composables/forms/useFormControls'
+import { useCurrencyInput } from '@/composables/forms/useCurrencyInput'
+import { useCashflowFormControls } from '@/composables/forms/useCashflowFormControls'
 
 const props = defineProps({
   categorie: { type: Array, default: () => [] },
@@ -18,630 +20,116 @@ const props = defineProps({
   prefillMovement: { type: Object, default: null }
 })
 
+const emit = defineEmits(['submit', 'newCategoryCreated', 'newAccountCreated'])
 
+// Presentation UI Shaking Effects refs
+const amountInputRef = ref(null)
+const shakeAmount = ref(false)
 
-const form = ref({
-  date: new Date(),
-  amount: '',
-  category: '', //id will be the value
-  account: '', //id will be the value
-  description: '',
-  title: '',
-  movementType: '' // 'income', 'expense', 'transfer'
-})
-
-const movementTypes = computed(() => financials.movementTypes)
-
-const filteredCategories = computed(() => {
-  if (!form.value.movementType) return []
-  return (props.categorie || []).filter(c => c.tipo === form.value.movementType)
-})
-
-const titlePlaceholder = computed(() => {
-  if (selectedCategoryName.value) {
-    return `${selectedCategoryName.value} (da categoria)`
-  }
-  return 'es. Acquisto Libri (opzionale)'
-})
-
-const validationError = ref('')
-const isSubmitting = ref(false)
-const originalFormState = ref('')
-const financials = useFinancialsStore()
-
-const showFutureWarning = ref(false) // new: briefly show UI warning when a future date is attempted
-
-// money object to format currency input
-const displayValue = ref('')
-
-const formatter = computed(() => {
-  try {
-    return new Intl.NumberFormat(props.currencyFormat, {
-      style: 'currency',
-      currency: props.currencySymbol,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  } catch (e) {
-    // fallback
-    return new Intl.NumberFormat('it-IT', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  }
-})
-
-// derive decimal/group separators and currency symbol from formatToParts
-const formatParts = computed(() => {
-  try {
-    return formatter.value.formatToParts(1234567.89)
-  } catch (e) {
-    return []
-  }
-})
-const decimalSep = computed(() => formatParts.value.find(p => p.type === 'decimal')?.value || '.')
-const groupSep = computed(() => formatParts.value.find(p => p.type === 'group')?.value || ',')
-const currencySymbolStr = computed(() => formatParts.value.find(p => p.type === 'currency')?.value || props.currencySymbol)
-
-const selectedCategoryName = ref('') // synced for hidden required input
-const selectedAccountName = ref('')  // synced for hidden required input
-
-// Custom Modal Navigation Logic
-const showConfirmModal = ref(false)
-let pendingNavigationNext = null
-
-const isDirty = computed(() => {
-  if (isSubmitting.value) return false
-  return JSON.stringify(form.value) !== originalFormState.value
-})
-
-onBeforeRouteLeave((to, from, next) => {
-  if (isDirty.value) {
-    showConfirmModal.value = true
-    pendingNavigationNext = next
-  } else {
-    next()
-  }
-})
-
-function handleConfirmNavigation() {
-  showConfirmModal.value = false
-  if (pendingNavigationNext) pendingNavigationNext()
+const triggerShakeAmount = () => {
+  shakeAmount.value = true
+  setTimeout(() => (shakeAmount.value = false), 300)
 }
 
-function handleCancelNavigation() {
-  showConfirmModal.value = false
-  if (pendingNavigationNext) pendingNavigationNext(false)
-}
-
-
-const resetForm = () => {
-  form.value = {
-    date: new Date(),
-    amount: '',
-    category: '', 
-    account: '', 
-    description: '',
-    title: '',
-    movementType: ''
-  }
-
-  displayValue.value = ''
-}
-
-
-// Determine if we are adding a new movement or modifying an existing one, check based on prefillMovement prop
-const isNewMovement = computed(() => props.prefillMovement === null || props.prefillMovement.id === undefined);
-
-
-// prefill from prop (preferred) or route query if provided
-const route = useRoute()
-
-function initPrefill() {
-  const historyState = window.history.state;
-  const storedMovement = financials.editingMovement;
-  
-  console.log("AddModifyCashFlow - Prop prefillMovement:", props.prefillMovement);
-  console.log("AddModifyCashFlow - Store/Storage editingMovement:", storedMovement);
-  
-  if (route.query.new === '1') {
-    financials.editingMovement = null;
-    resetForm()
-    return
-  }
-
-  const target = props.prefillMovement || storedMovement || historyState?.movement;
-  if (target) {
-    console.log("AddModifyCashFlow - Target found, applying prefill:", target);
-    applyPrefill(target)
-  } else {
-    const payload = route.query?.data
-    if (payload) {
-      try {
-        const raw = JSON.parse(decodeURIComponent(String(payload)))
-        applyPrefill(raw)
-      } catch (e) {
-        console.warn('Invalid prefill data for AddModifyCashFlow', e)
-      }
-    }
-  }
-}
-
-onMounted(() => {
-  initPrefill()
+// 1. Currency Formatting Composable
+const formAmount = ref('')
+const {
+  displayValue,
+  showNumericError,
+  showDecimalError,
+  showLimitError,
+  showZeroError,
+  onFocus,
+  onBlur,
+  onAmountInput,
+  setDisplayValue,
+  clearDisplayValue
+} = useCurrencyInput({
+  amountRef: formAmount,
+  currencyFormat: props.currencyFormat,
+  currencySymbol: props.currencySymbol,
+  onInvalidInput: triggerShakeAmount
 })
 
-// Watch for prop changes to re-apply prefill (handles async loading)
-watch(() => props.prefillMovement, (newVal) => {
-  if (newVal) applyPrefill(newVal)
-}, { immediate: true })
+// 2. Cashflow Form Controls Composable
+const {
+  form,
+  activeStep,
+  validationError,
+  isSubmitting,
+  originalFormState,
+  showFutureWarning,
+  selectedCategoryName,
+  selectedAccountName,
+  movementTypes,
+  filteredCategories,
+  titlePlaceholder,
+  isNewMovement,
+  isCard1Valid,
+  isCard2Valid,
+  isCard3Valid,
+  setMovementType,
+  onCategorySelect,
+  onCategoryClear,
+  onAccountSelect,
+  onAccountClear,
+  submitForm: originalSubmitForm,
+  humanReadableDate,
+  formattedDate
+} = useCashflowFormControls(props, emit, {
+  setAmountDisplayValue: setDisplayValue,
+  clearAmountDisplayValue: clearDisplayValue
+})
 
-// Watch for categories/accounts loading to re-apply prefill if necessary
-watch([() => props.categorie, () => props.conti], () => {
-  if (props.prefillMovement || route.query.data) {
-    initPrefill()
+// Sync the local raw amount with the composable's form.amount
+watch(formAmount, (newVal) => {
+  form.value.amount = newVal
+})
+watch(() => form.value.amount, (newVal) => {
+  if (newVal === '') {
+    formAmount.value = ''
+    clearDisplayValue()
+  } else if (formAmount.value !== newVal) {
+    formAmount.value = newVal
+    setDisplayValue(newVal)
   }
-}, { deep: true })
+})
 
-// Capture original state for dirty check, but only after prefill settles
-watch(form, () => {
-  if (!originalFormState.value && !isSubmitting.value) {
-     setTimeout(() => {
-       if (!originalFormState.value) originalFormState.value = JSON.stringify(form.value)
-     }, 800)
-  }
-}, { once: true })
+// 3. Routing Guard Composable
+const {
+  showConfirmModal,
+  handleConfirmNavigation,
+  handleCancelNavigation
+} = useFormControls(form, originalFormState)
 
-function applyPrefill(raw) {
-  if (!raw) return
+// Input UI Element DOM references
+const titleInputRef = ref(null)
+const notesInputRef = ref(null)
 
-  // 1. Date
-  if (raw.data || raw.date) {
-    const dateVal = raw.data || raw.date
-    // Handle both YYYY-MM-DD (ISO) and DD/MM/YYYY (Italian)
-    if (typeof dateVal === 'string' && dateVal.includes('/')) {
-      const parts = dateVal.split('/')
-      form.value.date = new Date(parts[2], parts[1] - 1, parts[0])
-    } else {
-      form.value.date = new Date(dateVal)
-    }
-  }
-
-  // 2. Amount
-  if (raw.importo !== undefined || raw.amount !== undefined) {
-    const amt = raw.importo !== undefined ? raw.importo : raw.amount
-    form.value.amount = Number(amt) || 0
-    displayValue.value = formatter.value.format(form.value.amount)
-  }
-
-  // 3. Title & Description
-  if (raw.titolo || raw.title) form.value.title = raw.titolo || raw.title
-  if (raw.descrizione || raw.description) form.value.description = raw.descrizione || raw.description
-  
-  // 4. Category
-  // We check both the nested object and the flattened property
-  const catObj = raw.categoria || {};
-  const catName = raw.category || catObj.nome || '';
-  const catId = catObj.id || (typeof raw.category === 'number' ? raw.category : null);
-  
-  const isSystemName = (n) => n && String(n).toLowerCase().includes('riassociare');
-  const isSystem = catObj.is_system || isSystemName(catName);
-
-  if (catId || catName) {
-    const found = (props.categorie || []).find(c => 
-      (catId && String(c.id) === String(catId)) || 
-      (catName && String(c.nome).toLowerCase() === String(catName).toLowerCase())
-    );
-
-    if (found) {
-      if (!found.is_system && !isSystemName(found.nome)) {
-        form.value.category = found.id;
-        selectedCategoryName.value = found.nome;
-      } else {
-        // System category detected: reset to empty to force user classification
-        form.value.category = '';
-        selectedCategoryName.value = '';
-      }
-      form.value.movementType = found.tipo;
-    } else {
-      // Fallback if categories not yet loaded or not found in list
-      if (!isSystem) {
-        form.value.category = catId || catName;
-        selectedCategoryName.value = catName || catId;
-      } else {
-        form.value.category = '';
-        selectedCategoryName.value = '';
-      }
-    }
-  }
-
-  // Set movementType explicitly if available in raw
-  if (raw.tipo) {
-    form.value.movementType = raw.tipo;
-  }
-
-  // 5. Account
-  const accObj = raw.conto || {};
-  const accName = raw.account || accObj.nome || '';
-  const accId = accObj.id || (typeof raw.account === 'number' ? raw.account : null);
-  const isAccSystem = accObj.is_system || isSystemName(accName);
-
-  if (accId || accName) {
-    const found = (props.conti || []).find(c => 
-      (accId && String(c.id) === String(accId)) || 
-      (accName && String(c.nome).toLowerCase() === String(accName).toLowerCase())
-    );
-
-    if (found) {
-      if (!found.is_system && !isSystemName(found.nome)) {
-        form.value.account = found.id;
-        selectedAccountName.value = found.nome;
-      } else {
-        form.value.account = '';
-        selectedAccountName.value = '';
-      }
-    } else {
-      if (!isAccSystem) {
-        form.value.account = accId || accName;
-        selectedAccountName.value = accName || accId;
-      } else {
-        form.value.account = '';
-        selectedAccountName.value = '';
-      }
-    }
-  }
-
-  // 6. ID for update
-  if (raw.id) form.value.id = raw.id
-}
-
-
-
-
-// helper to escape regex special chars
-const _escapeRegex = (s = '') => s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
-
-// on focus: normalize the displayed string to a plain numeric string
-const onFocus = () => {
-  if (displayValue.value !== '') {
-    let v = String(displayValue.value)
-  
-    // remove currency symbol occurrences
-    const sym = currencySymbolStr.value
-    if (sym) {
-      v = v.replace(new RegExp(_escapeRegex(sym), 'g'), '')
-    }
-
-    // remove spaces and NBSP
-    v = v.replace(/\s+/g, '')
-
-    // remove group separators (only if different from decimal separator)
-    if (groupSep.value && groupSep.value !== decimalSep.value) {
-      v = v.split(groupSep.value).join('')
-    } else {
-      // common fallback: remove dots used as thousands sep
-      v = v.replace(/\./g, '')
-    }
-
-    // replace locale decimal separator with '.' for JS parseFloat
-    if (decimalSep.value && decimalSep.value !== '.') {
-      v = v.split(decimalSep.value).join('.')
-    }
-
-    // Normalize numeric display: if number is integer show "12" not "12.00"
-    const parsed = parseFloat(v)
-    if (!isNaN(parsed)) {
-      if (Number.isInteger(parsed)) {
-        displayValue.value = String(Math.trunc(parsed))
-      } else {
-        // keep minimal decimal representation (remove trailing zeros)
-        // toLocaleString can reintroduce locale separators; keep plain JS string
-        let s = String(parsed)
-        // ensure dot as decimal separator in edit mode
-        if (s.indexOf('.') > -1) {
-          // trim trailing zeros
-          s = s.replace(/(\.\d*?[1-9])0+$/,'$1')
-          // if becomes "12." remove dot
-          s = s.replace(/\.0+$/,'')
-        }
-        displayValue.value = s
-      }
-    } else {
-      displayValue.value = v
-    }
-  }
-}
-
-const showNumericError = ref(false)
-const showDecimalError = ref(false)
-const showLimitError = ref(false)
-const showZeroError = ref(false)
 const shakeTitle = ref(false)
 const shakeDescription = ref(false)
-const shakeAmount = ref(false)
 
 function triggerShake(type) {
   if (type === 'title') shakeTitle.value = true
   if (type === 'description') shakeDescription.value = true
-  if (type === 'amount') shakeAmount.value = true
   
   setTimeout(() => {
     if (type === 'title') shakeTitle.value = false
     if (type === 'description') shakeDescription.value = false
-    if (type === 'amount') shakeAmount.value = false
   }, 300)
 }
 
-function onAmountInput(e) {
-  const original = e.target.value
-  let normalized = original.replace(',', '.')
-  
-  // Detect invalid characters (anything not 0-9 or dot)
-  const hasInvalidChars = /[^0-9.]/.test(normalized)
-  // Detect multiple dots
-  const dotsCount = (normalized.match(/\./g) || []).length
-  const hasMultipleDots = dotsCount > 1
-
-  // Detect too many decimal places (limit to 4)
-  const decimalPart = normalized.split('.')[1]
-  const hasTooManyDecimals = decimalPart && decimalPart.length > 4
-
-  // Detect amount too large (limit to 10M)
-  const parsed = parseFloat(normalized)
-  const isTooLarge = !isNaN(parsed) && parsed > 10000000
-
-  if (hasInvalidChars || hasMultipleDots || hasTooManyDecimals || isTooLarge) {
-    showNumericError.value = hasInvalidChars || hasMultipleDots
-    showDecimalError.value = hasTooManyDecimals
-    showLimitError.value = isTooLarge
-    triggerShake('amount')
-    // Revert the input field value to the last valid state
-    e.target.value = displayValue.value
-  } else {
-    showNumericError.value = false
-    showDecimalError.value = false
-    showLimitError.value = false
-    displayValue.value = normalized
-
-    if (!isNaN(parsed)) {
-      showZeroError.value = (parsed <= 0)
-      form.value.amount = parsed
-    } else {
-      form.value.amount = ''
-      showZeroError.value = false
-    }
-  }
-}
-
-const onBlur = () => {
-  const num = parseFloat(String(displayValue.value).replace(/\s+/g, ''))
-  if (!isNaN(num)) {
-    form.value.amount = num
-    displayValue.value = formatter.value.format(num)
-  } else {
-    displayValue.value = ''
-    form.value.amount = ''
-  }
-}
-
-
-
-
-
-
-
-// handlers for SelectDropdown events
-function onCategorySelect(cat) {
-  // cat is the full item object
-  selectedCategoryName.value = cat.nome || ''
-  form.value.category = cat.id || cat.nome
-}
-
-function onCategoryClear() {
-  selectedCategoryName.value = ''
-  form.value.category = ''
-}
-
-function onAccountSelect(acc) {
-  selectedAccountName.value = acc.nome || ''
-  form.value.account = acc.id || acc.nome
-}
-
-function onAccountClear() {
-  selectedAccountName.value = ''
-  form.value.account = ''
-}
-
-
-
-
-
-// Emit event on submission
-const emit = defineEmits(['submit', 'newCategoryCreated', 'newAccountCreated'])
-
+// Wrapper around submission to trigger amount shake if validation fails on amount
 function submitForm() {
-  validationError.value = ''
-
-  if (!form.value.movementType) {
-    validationError.value = 'Seleziona prima il tipo di movimento'
-    return
-  }
-
-  // 1. Trim strings
-  form.value.title = form.value.title.trim()
-  form.value.description = form.value.description.trim()
-
-  if (!form.value.amount && form.value.amount !== 0) {
-    validationError.value = 'Inserisci un importo valido'
-    triggerShake('amount')
-    return
-  }
-  // 3. Zero/Negative amount check
-  if (form.value.amount <= 0) {
-    showZeroError.value = true
-    triggerShake('amount')
-    return
-  }
-  showZeroError.value = false
-  if (form.value.amount > 10000000) {
-    validationError.value = 'L\'importo massimo consentito è 10.000.000'
-    triggerShake('amount')
-    return
-  }
-  if (!form.value.category) {
-    validationError.value = 'Seleziona una categoria'
-    return
-  }
-
-  if (!form.value.title) {
-    form.value.title = selectedCategoryName.value || 'Nuovo Movimento'
-  }
-  if (!form.value.account) {
-    validationError.value = 'Seleziona un conto'
-    return
-  }
-
-  if (form.value.date) {
-    const sel = new Date(form.value.date)
-    sel.setHours(0,0,0,0)
-    if (sel > today) {
-      form.value.date = new Date(today)
-      showFutureWarning.value = true
-      setTimeout(() => (showFutureWarning.value = false), 3000)
-      return
+  originalSubmitForm()
+  if (validationError.value) {
+    if (validationError.value.includes('importo') || validationError.value.includes('valido')) {
+      triggerShakeAmount()
     }
-  }
-
-  // 2. Disable submit during loading
-  isSubmitting.value = true
-
-  emit('submit', { 
-    ...form.value, 
-    type: isNewMovement.value ? 'add' : 'edit',
-  })
-  
-  // Note: we don't reset isSubmitting here because the parent usually navigates away
-  // If there's an error, the parent would need to handle it or we'd need a prop.
-  // For now, we'll keep it simple.
-}
-
-
-
-
-
-
-
-const formattedDate = computed(() => {
-  if (!form.value.date) return ''
-  const d = new Date(form.value.date)
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
-})
-
-const humanReadableDate = computed(() => {
-  if (!form.value.date) return ''
-  try {
-    return new Date(form.value.date).toLocaleDateString('it-IT', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-  } catch (e) {
-    return String(form.value.date)
-  }
-})
-
-
-
-// Add a normalized "today" (midnight) for comparisons
-const today = new Date()
-today.setHours(0,0,0,0)
-
-// Watch and clamp form.date if user picks or types a future date
-watch(() => form.value.date, (newDate) => {
-  if (!newDate) return
-  const d = new Date(newDate)
-  d.setHours(0,0,0,0)
-  if (d > today) {
-    // clamp to today and show a brief warning
-    form.value.date = new Date(today)
-    showFutureWarning.value = true
-    setTimeout(() => (showFutureWarning.value = false), 3000)
-  }
-})
-
-// Reset category if it doesn't match the selected type
-watch(() => form.value.movementType, (newType) => {
-  if (!newType) {
-    form.value.category = ''
-    selectedCategoryName.value = ''
-    return
-  }
-  
-  // If we have a category, check if its type matches
-  if (form.value.category) {
-    const cat = (props.categorie || []).find(c => String(c.id) === String(form.value.category))
-    if (cat && cat.tipo !== newType) {
-      form.value.category = ''
-      selectedCategoryName.value = ''
-    }
-  }
-})
-
-function setMovementType(type) {
-  form.value.movementType = type
-  if (validationError.value.includes('tipo')) {
-    validationError.value = ''
   }
 }
 
-// keep selectedCategoryName in sync if parent sets form.category directly
-watch(() => form.value.category, (val) => {
-  if (!val) {
-    selectedCategoryName.value = ''
-    return
-  }
-  const found = (props.categorie || []).find(c => String(c.id) === String(val))
-  if (found) selectedCategoryName.value = found.nome || ''
-})
-
-
-//reset form when route changes with new=1 query param
-watch(
-  () => route.fullPath,
-  (newVal, oldVal) => {
-    const wasNew = oldVal.includes("?new=1")
-    const isNew = newVal.includes("?new=1")
-
-    if (!wasNew && isNew) {
-      resetForm()
-    }
-  }
-)
-
-// Stepper layout states and handlers
-const activeStep = ref(1)
-
-const isCard1Valid = computed(() => {
-  return !!form.value.movementType && !!form.value.category
-})
-
-const isCard2Valid = computed(() => {
-  return Number(form.value.amount) > 0
-})
-
-const isCard3Valid = computed(() => {
-  return !!form.value.account && !!form.value.date
-})
-
-const amountInputRef = ref(null)
-const titleInputRef = ref(null)
-const notesInputRef = ref(null)
-
+// Stepper Step completion transition handlers (with focus management)
 function handleStep1Completion() {
   if (isCard1Valid.value) {
     activeStep.value = 2
