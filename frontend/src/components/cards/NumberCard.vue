@@ -28,6 +28,18 @@ const props = defineProps({
     default: ""
   },
   sign: String,
+  flat: {
+    type: Boolean,
+    default: false
+  },
+  valueSizeClass: {
+    type: String,
+    default: "text-3xl 2xl:text-4xl"
+  },
+  centered: {
+    type: Boolean,
+    default: false
+  }
 })
 
 //computed is faster than the template
@@ -63,11 +75,13 @@ const formattedCurrency = computed(() => {
   <div 
     :class="[
       color, 
-      'group relative flex flex-col justify-between p-6 rounded-2xl shadow-sm border border-gray-100 transition-all duration-300 overflow-hidden min-h-[140px]'
+      props.flat ? '' : 'shadow-sm border border-gray-100',
+      props.centered ? 'items-center justify-center text-center' : 'justify-between',
+      'group relative flex flex-col p-4 sm:p-5 rounded-2xl transition-all duration-300 overflow-hidden min-h-[110px] sm:min-h-[120px]'
     ]"
   >
     <!-- Header: Title and Action/Icon -->
-    <div class="flex justify-between items-start z-10">
+    <div :class="[props.centered ? 'flex flex-col items-center gap-2 w-full' : 'flex justify-between items-start w-full', 'z-10']">
       <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">
         {{ title }}
       </h3>
@@ -89,10 +103,10 @@ const formattedCurrency = computed(() => {
     </div>
 
     <!-- Body: Value -->
-    <div class="mt-auto flex items-center gap-1 z-10">
+    <div :class="[props.centered ? 'justify-center w-full mt-2 sm:mt-3' : 'mt-auto', 'flex items-center gap-1 z-10']">
       <span v-if="sign" class="text-xl font-medium text-gray-400">{{ sign }}</span>
       <div class="flex items-baseline gap-1"> 
-        <span class="text-3xl 2xl:text-4xl font-bold text-gray-900 tracking-tight">
+        <span :class="[valueSizeClass, 'font-bold text-gray-900 tracking-tight']">
           {{ formattedCurrency.number }}
         </span>
 
