@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { mapSerie } from '@/helpers/mappers/expenseIncomeMapper.js'
+import { useCategoryChartData } from '@/composables/charts/useCategoryChartData.js'
 import { formatAmount } from '@/helpers/dateUtils'
 
 const props = defineProps({
@@ -10,9 +10,8 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: 'Cumulative Linear Chart'
+    default: 'Category Trend (Absolute)'
   },
-  // allow array or object and normalize later
   categories: {
     type: [Array, Object],
     default: () => ({})
@@ -27,44 +26,12 @@ const props = defineProps({
   }
 })
 
-const parsed = computed(() => mapSerie(props.serie, props.year, props.month))
-
-const months = computed(() => parsed.value.months)
-const categoryMap = computed(() => parsed.value.categoryMap)
-
-// build a robust lookup from props.categories (supports array or object)
-const categoryLookup = computed(() => {
-  const map = {}
-  const src = props.categories || {}
-
-  if (Array.isArray(src)) {
-    src.forEach(c => {
-      if (!c) return
-      // prefer explicit keys if present
-      if (c.nome) map[c.nome] = c
-      if (c.name) map[c.name] = map[c.name] || c
-      if (c.label) map[c.label] = map[c.label] || c
-      if (c.id !== undefined) map[String(c.id)] = map[String(c.id)] || c
-    })
-  } else if (typeof src === 'object') {
-    Object.keys(src).forEach(k => {
-      const v = src[k]
-      if (typeof v === 'string') {
-        // object form: { categoryName: '#hex' }
-        map[k] = { color: v }
-      } else if (v) {
-        map[k] = v
-      }
-    })
-  }
-
-  // add lowercase keys to support case-insensitive matching
-  Object.keys(map).forEach(k => {
-    map[String(k).toLowerCase()] = map[k]
-  })
-
-  return map
-})
+const { months, categoryMap, categoryLookup } = useCategoryChartData(
+  () => props.serie,
+  () => props.categories,
+  () => props.year,
+  () => props.month
+)
 
 /**
  * individual series per category with ECharts stacking
@@ -116,7 +83,14 @@ const dynamicSeries = computed(() => {
  * Echart option
  */
 const option = computed(() => ({
-  title: { text: props.title },
+  title: { 
+    text: props.title,
+    left: 'center',
+    textStyle: {
+      fontSize: 18,
+      fontWeight: 'bold'
+    }
+  },
   tooltip: { 
     trigger: 'axis',
     valueFormatter: (value) => '€ ' + formatAmount(value)

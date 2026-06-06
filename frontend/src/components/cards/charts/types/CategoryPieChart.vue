@@ -55,11 +55,10 @@ const pieData = computed(() => {
 const option = computed(() => ({
   title: {
     text: props.title,
-    left: 'left',
+    left: 'center',
     textStyle: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      fontFamily: 'inherit'
+      fontSize: 18,
+      fontWeight: 'bold'
     }
   },
   tooltip: {

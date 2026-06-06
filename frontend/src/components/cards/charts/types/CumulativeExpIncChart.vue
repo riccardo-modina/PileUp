@@ -14,7 +14,7 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: 'Cumulativo Entrate e Uscite'
+    default: 'Cumulative Income and Expenses'
   },
   year: {
     type: [String, Number],

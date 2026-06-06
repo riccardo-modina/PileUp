@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { mapSerie } from '@/helpers/mappers/expenseIncomeMapper.js'
+import { useCategoryChartData } from '@/composables/charts/useCategoryChartData.js'
 
 const props = defineProps({
   serie: {
@@ -9,10 +9,10 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: 'Stacked Area Percentuale'
+    default: 'Category Trend (Percentage)'
   },
   categories: {
-    type: Object,
+    type: [Array, Object],
     default: () => ({})
   },
   year: {
@@ -25,11 +25,12 @@ const props = defineProps({
   }
 })
 
-const parsed = computed(() => mapSerie(props.serie, props.year, props.month))
-
-const months = computed(() => parsed.value.months)
-const categoryMap = computed(() => parsed.value.categoryMap)
-
+const { months, categoryMap, categoryLookup } = useCategoryChartData(
+  () => props.serie,
+  () => props.categories,
+  () => props.year,
+  () => props.month
+)
 
 /**
  * sum of values to get percentages
@@ -61,17 +62,12 @@ const dynamicSeries = computed(() => {
 
     // resolve color from props.categories (support array or object)
     let color = undefined
-    if (props.categories) {
-      // array of category objects (e.g. { id, nome, color })
-      if (Array.isArray(props.categories)) {
-        const found = props.categories.find(c => c.nome === cat || c.name === cat || c.label === cat)
-        if (found && found.color) color = found.color
-      } else if (typeof props.categories === 'object') {
-        // object mapping name -> { color } or name -> color
-        if (props.categories[cat]) {
-          if (typeof props.categories[cat] === 'string') color = props.categories[cat]
-          else if (props.categories[cat].color) color = props.categories[cat].color
-        }
+    if (categoryLookup.value) {
+      const key = cat == null ? '' : String(cat)
+      const found = categoryLookup.value[key] || categoryLookup.value[key.toLowerCase()]
+      if (found) {
+        if (typeof found === 'string') color = found
+        else if (found.color) color = found.color
       }
     }
     
@@ -103,7 +99,14 @@ const dynamicSeries = computed(() => {
  * Opzione finale ECharts
  */
 const option = computed(() => ({
-  title: { text: props.title },
+  title: { 
+    text: props.title,
+    left: 'center',
+    textStyle: {
+      fontSize: 18,
+      fontWeight: 'bold'
+    }
+  },
   tooltip: {
     trigger: 'axis',
     valueFormatter: v => v.toFixed(2) + '%'

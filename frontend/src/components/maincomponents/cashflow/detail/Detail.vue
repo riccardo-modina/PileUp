@@ -1,6 +1,7 @@
 <script setup>
 import ChartSection from '@/components/cards/charts/ChartSection.vue';
-import CumulativeLinear from '@/components/cards/charts/types/CumulativeLinear.vue';
+import CategoryPieChart from '@/components/cards/charts/types/CategoryPieChart.vue';
+import StackedAreaAbsolute from '@/components/cards/charts/types/StackedAreaAbsolute.vue';
 import StackedArea from '@/components/cards/charts/types/StackedArea.vue';
 import MovementList from '@/components/lists/MovementList.vue';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal.vue';
@@ -60,6 +61,16 @@ const selectedMovement = ref(null);
 
 const hasMovements = computed(() => Array.isArray(props.serie) && props.serie.length > 0);
 
+const isIncome = computed(() => {
+    if (props.serie && props.serie.length > 0) {
+        return props.serie[0].tipo === 'entrata';
+    }
+    if (props.categories && props.categories.length > 0) {
+        return props.categories[0].tipo === 'entrata';
+    }
+    return false;
+});
+
 function openDeleteModal(mv) {
     selectedMovement.value = mv;
     showDeleteModal.value = true;
@@ -94,8 +105,11 @@ function onLoadMore() {
     <div class="flex flex-col gap-4">
         <section>
             <ChartSection
-                :leftChart="{ component: CumulativeLinear, props: { serie: serie, categories: categories, year: year, month: month } }"
-                :rightChart="{ component: StackedArea, props: { serie: serie, categories: categories, year: year, month: month } }"
+                :charts="[
+                    { component: CategoryPieChart, props: { serie: serie, title: isIncome ? 'Ripartizione Entrate' : 'Ripartizione Spese', year: year, month: month } },
+                    { component: StackedAreaAbsolute, props: { serie: serie, categories: categories, title: isIncome ? 'Andamento Entrate' : 'Andamento Spese', year: year, month: month } },
+                    { component: StackedArea, props: { serie: serie, categories: categories, title: isIncome ? 'Andamento Entrate Percentuale' : 'Andamento Spese Percentuale', year: year, month: month } }
+                ]"
                 height="h-full md:h-auto lg:h-[400px] 2xl:h-[500px]"
             />
         </section>
