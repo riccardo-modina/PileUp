@@ -1,7 +1,9 @@
 /* ./src/assets/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
 @theme {
+  --font-sans: 'Montserrat', system-ui, sans-serif;
   --color-primary: #6366f1;
   /* Indigo 500 */
   --color-primary-light: #818cf8;

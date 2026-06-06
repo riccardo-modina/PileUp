@@ -17,16 +17,20 @@ const detailMonth = ref(null);
 
 const chartTitle = computed(() => {
   const { year, month } = parseDataPeriod(settings.dataPeriod);
-  if (month) return 'CashFlow Giornaliero';
-  if (year === 'Totale') return 'CashFlow Annuale';
-  return 'CashFlow Mensile';
+  let base = '';
+  if (month) base = 'CashFlow Giornaliero';
+  else if (year === 'Totale') base = 'CashFlow Annuale';
+  else base = 'CashFlow Mensile';
+  return base.toUpperCase();
 });
 
 const cumulativeTitle = computed(() => {
   const { year, month } = parseDataPeriod(settings.dataPeriod);
-  if (month) return 'Cumulativo Giornaliero';
-  if (year === 'Totale') return 'Cumulativo Annuale';
-  return 'Cumulativo Mensile';
+  let base = '';
+  if (month) base = 'Cumulativo Giornaliero';
+  else if (year === 'Totale') base = 'Cumulativo Annuale';
+  else base = 'Cumulativo Mensile';
+  return base.toUpperCase();
 });
 
 const handleChartClick = () => {

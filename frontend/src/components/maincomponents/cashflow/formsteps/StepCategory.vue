@@ -95,8 +95,8 @@ function handleCategorySelect(cat) {
       ]"
       @click="emit('update-active-step', 1)"
     >
-      <h3 class="text-base font-bold text-text h-8 flex items-center">
-        <span class="sm:hidden mr-1">1.</span>Tipo movimento
+      <h3 class="text-sm font-bold text-text h-8 flex items-center uppercase tracking-widest">
+        <span class="sm:hidden mr-1">1. </span>Tipo movimento
       </h3>
       
       <!-- 1. Tipo Movimento -->
@@ -152,7 +152,7 @@ function handleCategorySelect(cat) {
           <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <i class="pi pi-tag text-sm sm:text-lg" />
           </div>
-          <span class="text-sm font-semibold text-text">Categoria</span>
+          <span class="text-xs font-bold text-text uppercase tracking-wider">Categoria</span>
         </div>
         <div class="relative group mt-1" @focusin="emit('update-active-step', 1)">
           <SelectDropdown

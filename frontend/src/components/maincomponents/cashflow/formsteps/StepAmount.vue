@@ -105,14 +105,14 @@ defineExpose({
       ]"
       @click="emit('update-active-step', 2)"
     >
-      <h3 class="text-base font-bold text-text h-8 flex items-center">
-        <span class="sm:hidden mr-1">2.</span>Importo
+      <h3 class="text-sm font-bold text-text h-8 flex items-center uppercase tracking-widest">
+        <span class="sm:hidden mr-1">2. </span>Importo
       </h3>
       <!-- 3. Importo -->
       <div class="flex flex-col gap-2">
         
-        <div class="flex items-center gap-3 px-3 py-2.5 sm:px-4 sm:py-3.5 border border-gray-200 rounded-xl bg-gray-50/50 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-light focus-within:border-primary-light transition-all mt-1">
-          <span class="text-xl sm:text-2xl font-bold text-gray-400 select-none">{{ props.currency }}</span>
+        <div class="flex items-center gap-4 px-4 py-3 sm:px-5 sm:py-4.5 border border-gray-200 rounded-xl bg-gray-50/50 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-light focus-within:border-primary-light transition-all mt-1">
+          <span class="text-base sm:text-lg font-bold text-gray-400 select-none tracking-wider">{{ props.currency }}</span>
           <input
             ref="amountInput"
             type="text"
@@ -127,7 +127,7 @@ defineExpose({
             data-1p-ignore="true"
             data-lpignore="true"
             :class="[
-              'w-full text-2xl sm:text-3xl font-bold bg-transparent border-none outline-none focus:ring-0 focus:outline-none p-0 text-text transition-all',
+              'w-full text-lg sm:text-xl font-bold bg-transparent border-none outline-none focus:ring-0 focus:outline-none p-0 text-text transition-all tracking-wider',
               { 'text-red-600': props.form.amount > 10000000 || props.showZeroError },
               { 'animate-shake': props.shakeAmount }
             ]"

@@ -173,10 +173,10 @@ function handleCategorySelect(cat) {
             <div class="flex flex-col gap-4 mt-6 mb-10 md:mb-6 max-w-xl w-full">
                     <div class="flex flex-col gap-1 pb-2 px-1">
                         <div class="flex items-center gap-2">
-                            <i class="pi pi-plus-circle text-primary text-xl" />
-                            <h2 class="text-xl font-bold text-text">{{ isNewMovement ? 'Aggiungi Movimento' : 'Modifica Movimento' }}</h2>
+                            <i class="pi pi-plus-circle text-primary text-lg" />
+                            <h2 class="text-lg font-bold text-text uppercase tracking-widest">{{ isNewMovement ? 'Aggiungi Movimento' : 'Modifica Movimento' }}</h2>
                         </div>
-                        <p class="text-xs text-gray-500">Registra una nuova entrata o spesa</p>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-wider">Registra una nuova entrata o spesa</p>
                     </div>
 
                     <!-- wrap fields in a native form to enable browser required validation -->
@@ -339,11 +339,11 @@ function handleCategorySelect(cat) {
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                               </svg>
-                              Salvataggio...
+                              <span class="uppercase tracking-widest text-sm font-bold">Salvataggio...</span>
                             </template>
                             <template v-else>
                               <i class="pi pi-check-circle text-lg" />
-                              {{ isNewMovement ? 'Aggiungi Movimento' : 'Salva Movimento' }}
+                              <span class="uppercase tracking-widest text-sm font-bold">{{ isNewMovement ? 'Aggiungi Movimento' : 'Salva Movimento' }}</span>
                             </template>
                           </button>
                         </div>

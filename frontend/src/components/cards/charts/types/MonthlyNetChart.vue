@@ -79,6 +79,9 @@ const netSeries = computed(() =>
 )
 
 const option = computed(() => ({
+  textStyle: {
+    fontFamily: 'Montserrat, sans-serif'
+  },
   title: {
     text: props.title,
     padding: [

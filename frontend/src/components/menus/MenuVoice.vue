@@ -54,7 +54,7 @@ const isActive = computed(() => {
         class="pi pi-chevron-right block absolute -right-6 top-1 text-[10px] text-gray-400 group-hover:text-primary transition-transform" 
       ></i>
     </div>
-    <div :class="[isActive ? 'text-sm text-text font-semibold' : 'text-sm text-gray-600', 'group-hover:text-text group-hover:font-semibold transition-all']">
+    <div :class="[isActive ? 'text-[10px] md:text-xs text-text font-semibold' : 'text-[10px] md:text-xs text-gray-600', 'group-hover:text-text group-hover:font-semibold transition-all uppercase tracking-wider']">
       {{ props.menuVoice }}
     </div>
   </BaseButton>
@@ -75,7 +75,7 @@ const isActive = computed(() => {
         ]"
       ></i>
     </div>
-    <div :class="['text-[10px] text-center whitespace-nowrap', 
+    <div :class="['text-[8px] text-center whitespace-nowrap uppercase tracking-wide', 
       isActive ? 'text-text font-semibold' : 'text-gray-600'
     ]">
       {{ props.menuVoice }}

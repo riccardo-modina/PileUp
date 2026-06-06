@@ -18,17 +18,28 @@ export function useCurrencyInput({
   const formatter = computed(() => {
     try {
       return new Intl.NumberFormat(currencyFormat, {
-        style: 'currency',
-        currency: currencySymbol,
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })
     } catch (e) {
       return new Intl.NumberFormat('it-IT', {
-        style: 'currency',
-        currency: 'EUR',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
+      })
+    }
+  })
+
+  // Dedicated formatter for extracting currency symbols safely
+  const currencyFormatter = computed(() => {
+    try {
+      return new Intl.NumberFormat(currencyFormat, {
+        style: 'currency',
+        currency: currencySymbol,
+      })
+    } catch (e) {
+      return new Intl.NumberFormat('it-IT', {
+        style: 'currency',
+        currency: 'EUR',
       })
     }
   })
@@ -44,7 +55,15 @@ export function useCurrencyInput({
 
   const decimalSep = computed(() => formatParts.value.find(p => p.type === 'decimal')?.value || '.')
   const groupSep = computed(() => formatParts.value.find(p => p.type === 'group')?.value || ',')
-  const currencySymbolStr = computed(() => formatParts.value.find(p => p.type === 'currency')?.value || currencySymbol)
+  
+  const currencySymbolStr = computed(() => {
+    try {
+      const parts = currencyFormatter.value.formatToParts(1234567.89)
+      return parts.find(p => p.type === 'currency')?.value || currencySymbol
+    } catch (e) {
+      return currencySymbol
+    }
+  })
 
   const _escapeRegex = (s = '') => s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
 

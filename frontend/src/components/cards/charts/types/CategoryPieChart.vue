@@ -53,6 +53,9 @@ const pieData = computed(() => {
 })
 
 const option = computed(() => ({
+  textStyle: {
+    fontFamily: 'Montserrat, sans-serif'
+  },
   title: {
     text: props.title,
     left: 'center',

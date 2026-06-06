@@ -99,6 +99,9 @@ const dynamicSeries = computed(() => {
  * Opzione finale ECharts
  */
 const option = computed(() => ({
+  textStyle: {
+    fontFamily: 'Montserrat, sans-serif'
+  },
   title: { 
     text: props.title,
     left: 'center',

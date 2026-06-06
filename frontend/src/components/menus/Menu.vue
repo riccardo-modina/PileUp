@@ -286,10 +286,10 @@ onMounted(() => {
              class="absolute inset-0 w-full transition-transform duration-300"
              :class="isSubMenuVisible ? 'translate-x-0' : 'translate-x-full'"
            >
-              <button @click="closeSubMenu" class="flex items-center text-gray-500 mb-6 cursor-pointer">
-                 <i class="pi pi-chevron-left mr-1 ml-5" /> Indietro
-              </button>
-               <h3 class="text-lg font-bold text-gray-800 mb-6 text-center">{{ activeSubMenu?.name }}</h3>
+               <button @click="closeSubMenu" class="flex items-center text-gray-500 mb-6 cursor-pointer">
+                  <i class="pi pi-chevron-left mr-1 ml-5 text-sm" /> <span class="uppercase tracking-wider text-[11px] font-bold">Indietro</span>
+               </button>
+                <h3 class="text-sm font-bold text-gray-800 mb-6 text-center uppercase tracking-widest">{{ activeSubMenu?.name }}</h3>
                
                <ul class="flex flex-col space-y-6 items-center">
                   <li v-for="subItem in activeSubMenu?.voices" :key="subItem.name" class="w-full">

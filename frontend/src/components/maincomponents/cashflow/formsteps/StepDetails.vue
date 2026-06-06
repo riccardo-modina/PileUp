@@ -104,8 +104,8 @@ defineExpose({
       ]"
       @click="emit('update-active-step', 3)"
     >
-      <h3 class="text-base font-bold text-text h-8 flex items-center">
-        <span class="sm:hidden mr-1">3.</span>Dettagli movimento
+      <h3 class="text-sm font-bold text-text h-8 flex items-center uppercase tracking-widest">
+        <span class="sm:hidden mr-1">3. </span>Dettagli movimento
       </h3>
       
       <!-- 4. Descrizione (Titolo) -->
@@ -116,7 +116,7 @@ defineExpose({
               <i class="pi pi-pencil text-sm sm:text-lg" />
             </div>
             <div class="flex flex-col">
-              <span class="text-sm font-semibold text-text">Descrizione</span>
+              <span class="text-xs font-bold text-text uppercase tracking-wider">Descrizione</span>
               <span class="text-[11px] text-gray-400 font-normal">Se vuoto, rimarrà il nome della categoria</span>
             </div>
           </div>
@@ -152,7 +152,7 @@ defineExpose({
             <i class="pi pi-calendar text-sm sm:text-lg" />
           </div>
           <div class="flex flex-col">
-            <span class="text-sm font-semibold text-text">Data</span>
+            <span class="text-xs font-bold text-text uppercase tracking-wider">Data</span>
             <span class="text-xs text-gray-400 font-normal">Seleziona giorno, mese e anno</span>
           </div>
         </div>
@@ -178,7 +178,7 @@ defineExpose({
           <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <i class="pi pi-credit-card text-sm sm:text-lg" />
           </div>
-          <span class="text-sm font-semibold text-text">Conto</span>
+          <span class="text-xs font-bold text-text uppercase tracking-wider">Conto</span>
         </div>
         <div class="mt-1" @focusin="emit('update-active-step', 3)">
           <SelectDropdown
@@ -208,7 +208,7 @@ defineExpose({
                 <i class="pi pi-file text-sm sm:text-lg" />
               </div>
             <div class="flex items-baseline gap-1.5">
-              <span class="text-sm font-semibold text-text">Note</span>
+              <span class="text-xs font-bold text-text uppercase tracking-wider">Note</span>
               <span class="text-xs text-gray-400 font-normal">(opzionale)</span>
             </div>
           </div>

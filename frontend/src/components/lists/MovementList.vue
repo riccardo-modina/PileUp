@@ -61,7 +61,7 @@ const itemSize = computed(() => windowWidth.value < 768 ? 105 : 120);
                         
                         <!-- Title & Category -->
                         <div class="flex flex-col items-start justify-center overflow-hidden gap-1">
-                            <div class="text-sm font-bold text-gray-800 truncate w-full">
+                            <div class="text-sm text-gray-800 truncate w-full">
                                 {{ mv.title }}
                             </div>
                             <div class="flex items-center gap-3 opacity-60">
@@ -78,7 +78,7 @@ const itemSize = computed(() => windowWidth.value < 768 ? 105 : 120);
                         <!-- Amount -->
                         <div 
                             class="text-base whitespace-nowrap text-left"
-                            :class="(mv.amount < 0 || mv.tipo === 'uscita') ? 'text-red-600 font-normal' : 'text-green-600 font-black'"
+                            :class="(mv.amount < 0 || mv.tipo === 'uscita') ? 'text-red-600' : 'text-green-600'"
                         >
                             {{ (mv.amount < 0 || mv.tipo === 'uscita') ? '-' : '+' }} € {{ formatAmount(mv.amount) }}
                         </div>
@@ -125,7 +125,7 @@ const itemSize = computed(() => windowWidth.value < 768 ? 105 : 120);
                         <div class="flex items-center justify-between w-full">
                             <div 
                                 class="text-sm whitespace-nowrap text-left"
-                                :class="(mv.amount < 0 || mv.tipo === 'uscita') ? 'text-red-600 font-normal' : 'text-green-600 font-black'"
+                                :class="(mv.amount < 0 || mv.tipo === 'uscita') ? 'text-red-600' : 'text-green-600'"
                             >
                                 {{ (mv.amount < 0 || mv.tipo === 'uscita') ? '-' : '+' }} € {{ formatAmount(mv.amount) }}
                             </div>

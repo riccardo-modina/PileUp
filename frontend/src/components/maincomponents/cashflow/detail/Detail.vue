@@ -106,9 +106,9 @@ function onLoadMore() {
         <section>
             <ChartSection
                 :charts="[
-                    { component: CategoryPieChart, props: { serie: serie, title: isIncome ? 'Ripartizione Entrate' : 'Ripartizione Spese', year: year, month: month } },
-                    { component: StackedAreaAbsolute, props: { serie: serie, categories: categories, title: isIncome ? 'Andamento Entrate' : 'Andamento Spese', year: year, month: month } },
-                    { component: StackedArea, props: { serie: serie, categories: categories, title: isIncome ? 'Andamento Entrate Percentuale' : 'Andamento Spese Percentuale', year: year, month: month } }
+                    { component: CategoryPieChart, props: { serie: serie, title: (isIncome ? 'Ripartizione Entrate' : 'Ripartizione Spese').toUpperCase(), year: year, month: month } },
+                    { component: StackedAreaAbsolute, props: { serie: serie, categories: categories, title: (isIncome ? 'Andamento Entrate' : 'Andamento Spese').toUpperCase(), year: year, month: month } },
+                    { component: StackedArea, props: { serie: serie, categories: categories, title: (isIncome ? 'Andamento Entrate Percentuale' : 'Andamento Spese Percentuale').toUpperCase(), year: year, month: month } }
                 ]"
                 height="h-full md:h-auto lg:h-[400px] 2xl:h-[500px]"
             />
@@ -117,7 +117,7 @@ function onLoadMore() {
         <section class="flex-1 bg-background md:pb-10">
                 <div class = "flex flex-col bg-white rounded-[10px] min-h-40 p-4 gap-4 shadow-sm">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <h1 class="text-2xl font-semibold">{{ desc }}</h1>
+                            <h1 class="text-lg font-bold text-gray-800 uppercase tracking-widest">{{ desc }}</h1>
                             <div class="flex flex-col sm:flex-row gap-3 items-center w-full md:w-auto">
                                 <!-- Background loading indicator -->
                                 <div v-if="loadingBackground" class="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-full border border-blue-100 text-xs font-medium animate-pulse">
