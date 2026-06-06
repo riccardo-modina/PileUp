@@ -45,8 +45,8 @@ const saveSettings = async () => {
 
 <template>
     <div class="max-w-2xl mx-auto py-6">
-        <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-            <h1 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-900 border-b pb-6 border-gray-100">
+        <div class="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm">
+            <h1 class="text-base sm:text-lg font-bold mb-6 sm:mb-8 text-gray-900 border-b pb-6 border-gray-100 uppercase tracking-widest">
                 Impostazioni Sistema
             </h1>
             
@@ -54,16 +54,16 @@ const saveSettings = async () => {
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
             
-            <div v-else-if="errorMsg && !saving" class="p-4 bg-red-50 text-red-600 rounded-xl mb-6 font-medium">
+            <div v-else-if="errorMsg && !saving" class="p-4 bg-red-50 text-red-600 rounded-xl mb-6 font-medium text-xs">
                 {{ errorMsg }}
             </div>
             
             <div v-else class="space-y-6">
                 <!-- Registration Toggle -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-gray-50 border border-gray-100 rounded-2xl gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-gray-50/50 border border-gray-100 rounded-2xl gap-4">
                     <div class="flex-1">
-                        <h3 class="text-lg font-bold text-gray-900">Registrazioni Pubbliche</h3>
-                        <p class="text-sm text-gray-500">Permetti a nuovi utenti di creare un account autonomamente.</p>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900">Registrazioni Pubbliche</h3>
+                        <p class="text-[11px] text-gray-400 font-medium mt-1 leading-relaxed">Permetti a nuovi utenti di creare un account autonomamente.</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" v-model="allowRegistration" class="sr-only peer" :disabled="saving">
@@ -72,18 +72,18 @@ const saveSettings = async () => {
                 </div>
 
                 <!-- Invite Code -->
-                <div class="p-5 bg-gray-50 border border-gray-100 rounded-2xl space-y-4">
+                <div class="p-5 bg-gray-50/50 border border-gray-100 rounded-2xl space-y-4">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900">Codice d'Invito</h3>
-                        <p class="text-sm text-gray-500">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900">Codice d'Invito</h3>
+                        <p class="text-[11px] text-gray-400 font-medium mt-1 leading-relaxed">
                             Parola segreta richiesta durante la registrazione (lascia vuoto per disabilitare il codice).
                         </p>
                     </div>
                     <input
                         type="text"
                         v-model="inviteCode"
-                        placeholder="Es: segreto_2024"
-                        class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        placeholder="Es: segreto_2026"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-light/50 focus:border-primary-light transition-all"
                     />
                 </div>
 
@@ -91,7 +91,7 @@ const saveSettings = async () => {
                 <div class="pt-6 flex flex-col sm:flex-row justify-end gap-3 border-t border-gray-100">
                     <router-link to="/settings" class="w-full sm:w-auto order-2 sm:order-1">
                         <button
-                            class="w-full px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all duration-200"
+                            class="w-full px-6 py-3 bg-gray-100 text-gray-700 text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-gray-200 transition-all duration-200 cursor-pointer"
                         >
                             Annulla
                         </button>
@@ -99,14 +99,14 @@ const saveSettings = async () => {
                     <button 
                         @click="saveSettings" 
                         :disabled="saving"
-                        class="w-full sm:w-auto order-1 sm:order-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all duration-200 disabled:opacity-50"
+                        class="w-full sm:w-auto order-1 sm:order-2 px-8 py-3 bg-primary text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-primary-hover shadow-md shadow-primary/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
                     >
                         {{ saving ? 'Salvataggio...' : 'Salva Impostazioni' }}
                     </button>
                 </div>
 
                 <!-- Messages -->
-                <div v-if="successMsg" class="mt-4 p-4 bg-green-50 text-green-700 border border-green-100 rounded-xl font-medium animate-fade-in">
+                <div v-if="successMsg" class="mt-4 p-4 bg-green-50 text-green-700 border border-green-100 rounded-xl font-medium text-xs animate-fade-in">
                     {{ successMsg }}
                 </div>
             </div>
