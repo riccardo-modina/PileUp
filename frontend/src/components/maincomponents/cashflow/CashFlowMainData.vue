@@ -29,7 +29,7 @@ const netSign = computed(() => {
           icon="pi-money-bill"
           :sign="netSign"
           iconColor="text-nett"
-          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50 snake-border snake-nett"
+          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50"
           iconBackground="bg-nett/10"
           iconContainerClass="hide-icon-custom"
         />
@@ -42,7 +42,7 @@ const netSign = computed(() => {
           color="bg-card-background"
           icon="pi-sign-in"
           iconColor="text-success"
-          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50 snake-border snake-success"
+          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50"
           iconBackground="bg-success/10"
           iconContainerClass="hide-icon-custom"
         >
@@ -66,7 +66,7 @@ const netSign = computed(() => {
           color="bg-card-background"
           icon="pi-sign-out"
           iconColor="text-negative"
-          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50 snake-border snake-negative"
+          class="relative h-full rounded-2xl shadow-sm border border-menuborder/50"
           iconBackground="bg-negative/10"
           iconContainerClass="hide-icon-custom"
         >
@@ -92,100 +92,6 @@ const netSign = computed(() => {
   }
 }
 
-/* ============================= */
-/* Snake Border – One Lap + Fill */
-/* ============================= */
 
-.snake-border {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Animated border layer */
-.snake-border::before {
-  content: "";
-  position: absolute;
-  inset: -2px; /* border thickness */
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0;
-  transform: rotate(0deg);
-
-  /* Initial "snake" */
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    var(--snake-color) 70deg,
-    transparent 140deg
-  );
-}
-
-/* Mask center */
-.snake-border::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  background: inherit;
-  border-radius: inherit;
-  z-index: 1;
-}
-
-/* Hover trigger */
-.group:hover .snake-border::before {
-  opacity: 1;
-  animation: snake-spin-fill 1s ease-out forwards;
-}
-
-/* ============================= */
-/* Animation                     */
-/* ============================= */
-
-@keyframes snake-spin-fill {
-  0% {
-    transform: rotate(0deg);
-    background: conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      var(--snake-color) 70deg,
-      transparent 140deg
-    );
-  }
-
-  85% {
-    transform: rotate(-360deg); /* counter-clockwise */
-    background: conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      var(--snake-color) 70deg,
-      transparent 140deg
-    );
-  }
-
-  100% {
-    transform: rotate(-360deg);
-    background: conic-gradient(
-      from 0deg,
-      var(--snake-color) 0deg,
-      var(--snake-color) 360deg
-    );
-  }
-}
-
-/* ============================= */
-/* Color Variants                */
-/* ============================= */
-
-.group:hover .snake-nett::before {
-  --snake-color: var(--color-nett);
-}
-
-.group:hover .snake-success::before {
-  --snake-color: var(--color-success);
-}
-
-.group:hover .snake-negative::before {
-  --snake-color: var(--color-negative);
-}
 
 </style>
