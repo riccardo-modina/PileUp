@@ -65,6 +65,7 @@ const option = computed(() => ({
     }
   },
   tooltip: {
+    show: window.innerWidth >= 768,
     trigger: 'item',
     formatter: (params) => {
       return `${params.marker} <b>${params.name}</b>: € ${formatAmount(params.value)} (${params.percent}%)`
