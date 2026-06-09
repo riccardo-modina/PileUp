@@ -16,8 +16,7 @@ const netSign = computed(() => {
 });
 
 const netColorClass = computed(() => {
-  if (net.value > 0) return 'text-nett/90';
-  if (net.value < 0) return 'text-negative/80';
+  if (net.value < 0) return 'text-negative';
   return 'text-gray-800';
 });
 
@@ -36,16 +35,19 @@ const formattedExpense = computed(() => formatCurrency(props.expense));
 
 <template>
   <div class="bg-white/80 backdrop-blur-xl rounded-[32px] border border-white/50 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center w-full relative overflow-hidden transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
-    <!-- Decorative background element for Netto -->
-    <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-gray-50 to-transparent pointer-events-none"></div>
-
-    <!-- Netto (Prominent, Top Center) -->
-    <div class="flex flex-col items-center z-10 w-full mb-5 mt-1 md:mb-8 md:mt-2">
-      <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
-        Bilancio Netto
-      </h3>
-      <div class="flex items-baseline gap-1 group">
-        <span :class="['text-4xl md:text-5xl lg:text-6xl font-black tracking-tight transition-colors duration-300', netColorClass]">
+    <!-- Netto Totale Centrato -->
+    <div class="relative z-10 flex flex-col items-center justify-center p-4 md:p-8 rounded-[32px] md:col-span-2 w-full transition-all duration-500 hover:scale-[1.01]">
+      <h2 class="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-[0.2em] mb-2 md:mb-4">
+        Netto
+      </h2>
+      
+      <div class="flex items-baseline justify-center w-full overflow-hidden">
+        <span 
+          :class="[
+            'text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-center tracking-tighter break-all leading-none transition-colors duration-500',
+            netColorClass
+          ]"
+        >
           {{ formattedNet }}
         </span>
       </div>
@@ -64,12 +66,12 @@ const formattedExpense = computed(() => formatCurrency(props.expense));
           <h3 class="text-[10px] md:text-sm font-bold uppercase tracking-widest">Entrate</h3>
         </div>
         
-        <span class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2.5 md:mb-5 transition-transform duration-300 group-hover:-translate-y-0.5">
+        <span class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-800 tracking-tight mb-2.5 md:mb-5 transition-transform duration-300 group-hover:-translate-y-0.5">
           {{ formattedIncome }}
         </span>
 
         <RouterLink 
-          to="/cashflow/income"
+          :to="{ path: '/cashflow/income', state: { periodTotal: formattedIncome } }"
           class="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-xl bg-success/10 text-success hover:bg-success hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
         >
           <span class="text-[9px] md:text-[11px] font-extrabold uppercase tracking-wider">Dettagli</span>
@@ -84,12 +86,12 @@ const formattedExpense = computed(() => formatCurrency(props.expense));
           <h3 class="text-[10px] md:text-sm font-bold uppercase tracking-widest">Uscite</h3>
         </div>
         
-        <span class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2.5 md:mb-5 transition-transform duration-300 group-hover:-translate-y-0.5">
+        <span class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-800 tracking-tight mb-2.5 md:mb-5 transition-transform duration-300 group-hover:-translate-y-0.5">
           {{ formattedExpense }}
         </span>
 
         <RouterLink 
-          to="/cashflow/expenses"
+          :to="{ path: '/cashflow/expenses', state: { periodTotal: formattedExpense } }"
           class="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-xl bg-negative/10 text-negative hover:bg-negative hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
         >
           <span class="text-[9px] md:text-[11px] font-extrabold uppercase tracking-wider">Dettagli</span>

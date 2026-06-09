@@ -47,6 +47,10 @@ const props = defineProps({
     loadingBackground: {
         type: Boolean,
         default: false
+    },
+    periodTotal: {
+        type: String,
+        default: null
     }
 })
 
@@ -103,6 +107,16 @@ function onLoadMore() {
 
 <template>
     <div class="flex flex-col gap-4">
+        <!-- Summary Total Card at the very top -->
+        <section v-if="periodTotal" class="bg-white/80 backdrop-blur-xl rounded-[32px] border border-white/50 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center justify-center relative overflow-hidden transition-all duration-500">
+            <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2 relative z-10">
+                Totale {{ isIncome ? 'Entrate' : 'Spese' }}
+            </h3>
+            <span class="text-3xl md:text-4xl font-semibold text-gray-800 tracking-tight relative z-10">
+                {{ periodTotal }}
+            </span>
+        </section>
+
         <section>
             <ChartSection
                 :charts="[

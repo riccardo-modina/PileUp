@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import Detail from '@/components/maincomponents/cashflow/detail/Detail.vue';
 import MainComponent from '@/components/maincomponents/MainComponent.vue';
-import { getMovimenti, deleteMovimento } from '@/apicalls/apiCalls';
+import { getMovimenti, deleteMovimento, getMonthlyStats } from '@/apicalls/apiCalls';
 import { useFinancialsStore } from '@/stores/financials';
 import { useSettingsStore } from '@/stores/settings';
 import { parseDataPeriod } from '@/helpers/dateUtils';
@@ -10,6 +10,19 @@ import { parseDataPeriod } from '@/helpers/dateUtils';
 const financials = useFinancialsStore();
 const settings = useSettingsStore();
 const expenses = ref([]);
+const periodTotalValue = ref(null);
+
+const periodTotal = computed(() => {
+  if (periodTotalValue.value !== null) {
+    return new Intl.NumberFormat("it-IT", { 
+      style: "currency", 
+      currency: "EUR",
+      maximumFractionDigits: 2 
+    }).format(periodTotalValue.value);
+  }
+  return history.state?.periodTotal || null;
+});
+
 const loading = ref(false);
 const loadingBackground = ref(false);
 const hasMore = ref(true);
@@ -104,7 +117,20 @@ const unclassifiedCount = computed(() => {
   ).length;
 });
 
-watch(() => settings.dataPeriod, () => fetchExpenses(true));
+async function fetchPeriodTotal() {
+  try {
+    const { year, month } = parseDataPeriod(settings.dataPeriod);
+    const stats = await getMonthlyStats(year, month);
+    periodTotalValue.value = stats.monthlyExpense;
+  } catch (err) {
+    console.error("Error fetching stats:", err);
+  }
+}
+
+watch(() => settings.dataPeriod, () => {
+  fetchPeriodTotal();
+  fetchExpenses(true);
+});
 watch(selectedCategoryId, () => fetchExpenses(true));
 
 async function handleDelete(mv) {
@@ -138,7 +164,8 @@ onMounted(() => {
     unclassifiedCount: unclassifiedCount,
     year: parseDataPeriod(settings.dataPeriod).year,
     month: parseDataPeriod(settings.dataPeriod).month,
-    loadingBackground: loadingBackground
+    loadingBackground: loadingBackground,
+    periodTotal: periodTotal
   }"
   :showTopSection=true
   topSectionTitle="Dettaglio Spese"
