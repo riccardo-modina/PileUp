@@ -80,3 +80,7 @@
   /* Uses a slightly darker grey for hover interaction */
   background: #909090;
 }
+/* Disable double-tap to zoom on mobile devices */
+html, body {
+  touch-action: manipulation;
+}
