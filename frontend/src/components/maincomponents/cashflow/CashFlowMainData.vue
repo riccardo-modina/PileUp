@@ -1,109 +1,105 @@
 <script setup>
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
-import NumberCard from '../../cards/NumberCard.vue';
 
 const props = defineProps({
   income: { type: Number, required: true },
   expense: { type: Number, required: true }
 })
 
-// Computed calculates the value immediatedly and updates when dependencies change, no undefined errors that comes with ref and onmounted
-const net = computed(() => {
-  return props.income - props.expense;
-});
+const net = computed(() => props.income - props.expense);
 
 const netSign = computed(() => {
-  return net.value > 0 ? "+" : "-"; 
+  if (net.value > 0) return "+";
+  if (net.value < 0) return "-";
+  return "";
 });
+
+const netColorClass = computed(() => {
+  if (net.value > 0) return 'text-nett/90';
+  if (net.value < 0) return 'text-negative/80';
+  return 'text-gray-800';
+});
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("it-IT", { 
+    style: "currency", 
+    currency: "EUR",
+    maximumFractionDigits: 2 
+  }).format(value);
+};
+
+const formattedNet = computed(() => formatCurrency(net.value));
+const formattedIncome = computed(() => formatCurrency(props.income));
+const formattedExpense = computed(() => formatCurrency(props.expense));
 </script>
 
 <template>
-  <div class="bg-white rounded-3xl border border-gray-100 p-4 sm:p-5 md:p-6 shadow-sm flex flex-col gap-4 sm:gap-5 w-full">
-    <!-- Netto (Prominent, Top) -->
-    <div class="bg-nett/[0.03] rounded-2xl border border-nett/10 overflow-hidden transition-all hover:bg-nett/[0.05]">
-      <NumberCard 
-        title="Netto" 
-        :value="net"
-        color="bg-transparent"
-        :sign="netSign"
-        iconColor="text-nett"
-        class="h-full"
-        :flat="true"
-        :centered="true"
-        valueSizeClass="text-2xl sm:text-3xl"
-      />
+  <div class="bg-white/80 backdrop-blur-xl rounded-[32px] border border-white/50 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center w-full relative overflow-hidden transition-all duration-500 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
+    <!-- Decorative background element for Netto -->
+    <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-gray-50 to-transparent pointer-events-none"></div>
+
+    <!-- Netto (Prominent, Top Center) -->
+    <div class="flex flex-col items-center z-10 w-full mb-5 mt-1 md:mb-8 md:mt-2">
+      <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
+        Bilancio Netto
+      </h3>
+      <div class="flex items-baseline gap-1 group">
+        <span :class="['text-4xl md:text-5xl lg:text-6xl font-black tracking-tight transition-colors duration-300', netColorClass]">
+          {{ formattedNet }}
+        </span>
+      </div>
     </div>
 
-    <!-- Divider (Subtle) -->
-    <div class="h-px bg-gray-100/80 w-full"></div>
+    <!-- Divider -->
+    <div class="w-full max-w-md h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-5 md:mb-10"></div>
 
-    <!-- Entrate & Uscite (Stacked on mobile, Side-by-side on PC) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 w-full">
-      <!-- Entrate -->
-      <div class="bg-success/[0.02] rounded-2xl border border-success/10 overflow-hidden transition-all hover:bg-success/[0.04]">
-        <NumberCard 
-          title="Entrate" 
-          :value="income" 
-          color="bg-transparent"
-          icon="pi-sign-in"
-          iconColor="text-success"
-          class="h-full"
-          iconBackground="bg-success/10"
-          iconContainerClass="hide-icon-custom"
-          :flat="true"
-          valueSizeClass="text-xl sm:text-2xl"
+    <!-- Entrate & Uscite (Side by side) -->
+    <div class="grid grid-cols-2 gap-2.5 md:gap-8 w-full max-w-3xl z-10">
+      
+      <!-- Entrate Column -->
+      <div class="flex flex-col items-center p-3 md:p-6 rounded-3xl transition-all duration-500 hover:bg-success/[0.03] group border border-transparent hover:border-success/10 w-full">
+        <div class="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-3 text-success/80">
+          <i class="pi pi-sign-in text-sm md:text-lg transition-transform duration-500 group-hover:rotate-3" />
+          <h3 class="text-[10px] md:text-sm font-bold uppercase tracking-widest">Entrate</h3>
+        </div>
+        
+        <span class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2.5 md:mb-5 transition-transform duration-300 group-hover:-translate-y-0.5">
+          {{ formattedIncome }}
+        </span>
+
+        <RouterLink 
+          to="/cashflow/income"
+          class="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-xl bg-success/10 text-success hover:bg-success hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
         >
-          <template #action>
-            <RouterLink 
-              to="/cashflow/income"
-              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-success/10 text-success hover:bg-success hover:text-white transition-all duration-300 shadow-sm hover:shadow-md group/btn"
-            >
-              <i class="pi pi-sign-in text-base" />
-              <span class="text-[11px] font-bold uppercase tracking-wider hidden sm:inline">Dettagli</span>
-              <i class="pi pi-chevron-right text-[9px] opacity-70 group-hover/btn:translate-x-0.5 transition-transform" />
-            </RouterLink>
-          </template>
-        </NumberCard>
+          <span class="text-[9px] md:text-[11px] font-extrabold uppercase tracking-wider">Dettagli</span>
+          <i class="pi pi-arrow-right text-[8px] md:text-[10px] opacity-70 transition-transform duration-300 group-hover:translate-x-1" />
+        </RouterLink>
       </div>
 
-      <!-- Uscite -->
-      <div class="bg-negative/[0.02] rounded-2xl border border-negative/10 overflow-hidden transition-all hover:bg-negative/[0.04]">
-        <NumberCard 
-          title="Uscite" 
-          :value="expense"  
-          color="bg-transparent"
-          icon="pi-sign-out"
-          iconColor="text-negative"
-          class="h-full"
-          iconBackground="bg-negative/10"
-          iconContainerClass="hide-icon-custom"
-          :flat="true"
-          valueSizeClass="text-xl sm:text-2xl"
+      <!-- Uscite Column -->
+      <div class="flex flex-col items-center p-3 md:p-6 rounded-3xl transition-all duration-500 hover:bg-negative/[0.03] group border border-transparent hover:border-negative/10 w-full">
+        <div class="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-3 text-negative/80">
+          <i class="pi pi-sign-out text-sm md:text-lg transition-transform duration-500 group-hover:-rotate-3" />
+          <h3 class="text-[10px] md:text-sm font-bold uppercase tracking-widest">Uscite</h3>
+        </div>
+        
+        <span class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2.5 md:mb-5 transition-transform duration-300 group-hover:-translate-y-0.5">
+          {{ formattedExpense }}
+        </span>
+
+        <RouterLink 
+          to="/cashflow/expenses"
+          class="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-xl bg-negative/10 text-negative hover:bg-negative hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
         >
-          <template #action>
-            <RouterLink 
-              to="/cashflow/expenses"
-              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-negative/10 text-negative hover:bg-negative hover:text-white transition-all duration-300 shadow-sm hover:shadow-md group/btn"
-            >
-              <i class="pi pi-sign-out text-base" />
-              <span class="text-[11px] font-bold uppercase tracking-wider hidden sm:inline">Dettagli</span>
-              <i class="pi pi-chevron-right text-[9px] opacity-70 group-hover/btn:translate-x-0.5 transition-transform" />
-            </RouterLink>
-          </template>
-        </NumberCard>
+          <span class="text-[9px] md:text-[11px] font-extrabold uppercase tracking-wider">Dettagli</span>
+          <i class="pi pi-arrow-right text-[8px] md:text-[10px] opacity-70 transition-transform duration-300 group-hover:translate-x-1" />
+        </RouterLink>
       </div>
+
     </div>
   </div>
 </template>
 
 <style scoped>
-@media (min-width: 769px) and (max-width: 920px) {
-  :deep(.hide-icon-custom) {
-    display: none !important;
-  }
-}
-
-
-
 </style>
