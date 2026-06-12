@@ -1,14 +1,12 @@
 # 🐷 PiggyPath - Personal Finance Tracker
 
-**PiggyPath** is a modern, sleek, and premium personal finance application designed to help you track your path to savings with ease. Built with a powerful Python backend and a fast Vue 3 frontend, it is now a fully functional **Progressive Web App (PWA)**.
-
-![PiggyPath Logo](/Users/riccardomodina/.gemini/antigravity/brain/2389fc29-6bce-4aac-aea2-32da46de7b15/piggypath_logo_new_1778433238705.png)
+**PiggyPath** is a personal finance application designed to help you track your path to savings with ease. It is now a fully functional **Progressive Web App (PWA)**.
 
 ## Features
 
 -   **Installable (PWA)**: Install PiggyPath on your iOS, Android, or Desktop device for a native-like experience.
 -   **Offline Support**: Access your financial data even when you're offline.
--   **Beautiful Design**: A premium, minimalist interface built for clarity and speed.
+-   **Simple Design**: A premium, minimalist interface built for clarity and speed.
 -   **Self-Hosted**: Full control over your data with an easy Docker-based setup.
 
 ## Installation (Self-Hosted)
