@@ -273,3 +273,6 @@ docker-compose.override.yaml
 .antigravitycli/
 .agents/
 
+# Docs
+docs/
+
