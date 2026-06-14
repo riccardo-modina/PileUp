@@ -35,10 +35,16 @@ const cumulativeTitle = computed(() => {
 
 const handleChartClick = () => {
   const { year, month } = parseDataPeriod(settings.dataPeriod);
+  if (year !== 'Totale') return;
   detailYear.value = year;
   detailMonth.value = month;
   showDetailModal.value = true;
 };
+
+const chartEvents = computed(() => {
+  const { year } = parseDataPeriod(settings.dataPeriod);
+  return year === 'Totale' ? { click: handleChartClick } : {};
+});
 
 const props = defineProps({
   financeData: {
@@ -71,7 +77,7 @@ const props = defineProps({
             year: parseDataPeriod(settings.dataPeriod).year,
             month: parseDataPeriod(settings.dataPeriod).month
           },
-          on: { click: handleChartClick }
+          on: chartEvents
         }"
         :rightChart="{ 
           component: CumulativeExpInc, 
@@ -82,7 +88,7 @@ const props = defineProps({
             year: parseDataPeriod(settings.dataPeriod).year,
             month: parseDataPeriod(settings.dataPeriod).month
           },
-          on: { click: handleChartClick }
+          on: chartEvents
         }"
         height="h-full"
         />
