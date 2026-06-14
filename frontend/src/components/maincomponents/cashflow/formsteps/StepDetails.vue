@@ -134,7 +134,7 @@ defineExpose({
               @keydown="(e) => { if (props.form.title.length >= 50 && e.key.length === 1) emit('trigger-shake', 'title') }"
               :placeholder="props.titlePlaceholder"
               :class="[
-                'w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-light transition-all text-sm bg-gray-50/50 hover:bg-gray-50 focus:bg-white',
+                'w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-light transition-all text-base sm:text-sm bg-gray-50/50 hover:bg-gray-50 focus:bg-white',
                 { 'animate-shake border-red-400': props.shakeTitle }
               ]"
           />
@@ -226,7 +226,7 @@ defineExpose({
               @keydown="(e) => { if (props.form.description.length >= 200 && e.key.length === 1) emit('trigger-shake', 'description') }"
               placeholder="Aggiungi note (opzionale)..."
               :class="[
-                  'w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-light transition-all text-sm bg-gray-50/50 hover:bg-gray-50 focus:bg-white',
+                  'w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-light transition-all text-base sm:text-sm bg-gray-50/50 hover:bg-gray-50 focus:bg-white',
                   { 'animate-shake border-red-400': props.shakeDescription }
               ]"
           ></textarea>
