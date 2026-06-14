@@ -162,7 +162,7 @@ onMounted(() => {
                 @click="() => handleSidebarVoiceClick(item)"
               />
             </li>
-            <div class="flex-1 flex flex-col justify-end mb-4 space-y-2">
+            <div class="flex-1 flex flex-col justify-end pb-6 space-y-2">
               <MenuVoice
                 menuVoice="Settings"
                 route="/settings"
@@ -176,6 +176,13 @@ onMounted(() => {
                 iconSolid="pi-sign-out"
                 @click="handleLogout"
               />
+              
+              <div class="pt-6 pb-2">
+                <p class="text-[10px] text-gray-400/60 font-medium uppercase tracking-widest leading-tight">
+                  FinanceApp<br>
+                  <span class="text-[9px] lowercase tracking-normal">by Riccardo Modina</span>
+                </p>
+              </div>
             </div>
           </ul>
 
@@ -268,7 +275,7 @@ onMounted(() => {
                     @click="() => handleSidebarVoiceClick(item)"
                   />
                 </li>
-                <div class="flex-1 flex flex-col justify-end w-full space-y-2 mb-4">
+                <div class="flex-1 flex flex-col justify-end w-full space-y-2 pb-6">
                     <MenuVoice
                           menuVoice="Settings"
                           route="/settings"
@@ -276,6 +283,12 @@ onMounted(() => {
                           iconSolid="pi-cog"
                            @click="closeSubMenu"
                         />
+                    <div class="pt-6 pb-2 text-center">
+                      <p class="text-[10px] text-gray-400/60 font-medium uppercase tracking-widest leading-tight">
+                        FinanceApp<br>
+                        <span class="text-[9px] lowercase tracking-normal">by Riccardo Modina</span>
+                      </p>
+                    </div>
                 </div>
               </ul>
            </div>

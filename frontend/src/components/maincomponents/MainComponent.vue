@@ -1,5 +1,5 @@
 <script setup>
-import Footer from '../../components/Footer.vue';
+
 import Menu from '../../components/menus/Menu.vue';
 import TopSection from './TopSection.vue';
 import { useSettingsStore } from '../../stores/settings';
@@ -114,9 +114,7 @@ function close() {
           
         </div>
          
-           
-        <Footer class="hidden md:block py-4 px-8 text-sm text-text-light"/>
-        
+        <!-- Footer removed from here and moved to the Menu sidebar -->
       </div>
 </div>
 </template>
