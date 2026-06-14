@@ -148,22 +148,22 @@ function close() {
 
 <template>
   <Teleport to="body">
-    <div v-if="isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="close"></div>
-      <div class="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-md z-10 transform transition-all">
-        <h3 class="text-lg font-semibold mb-4 text-gray-900">{{ category ? 'Modifica Categoria' : 'Nuova Categoria' }}</h3>
+    <div v-if="isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-all duration-300">
+      <div class="absolute inset-0 bg-background/80 backdrop-blur-xl transition-opacity" @click="close"></div>
+      <div class="relative bg-card-background rounded-3xl shadow-2xl p-8 w-full max-w-md z-10 border border-menuborder hover:border-primary/20 transition-all duration-300 animate-fade-in-up">
+        <h3 class="text-xl font-bold mb-6 text-text uppercase tracking-widest font-sans animate-tracking-in">{{ category ? 'Modifica Categoria' : 'Nuova Categoria' }}</h3>
 
-        <form @submit.prevent="save" class="space-y-4">
+        <form @submit.prevent="save" class="space-y-5 animate-fade-in-delayed">
 
           <!-- Name -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-            <input v-model="form.name" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-light" placeholder="Es. Viaggi" />
+          <div class="space-y-1.5">
+            <label class="block text-text font-semibold text-xs uppercase tracking-wider mb-1 font-sans">Nome</label>
+            <input v-model="form.name" type="text" class="w-full px-4 py-3 rounded-xl border border-neutral/30 bg-primary-clear text-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-sans" placeholder="Es. Viaggi" />
           </div>
 
           <!-- Type -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+          <div class="space-y-1.5">
+            <label class="block text-text font-semibold text-xs uppercase tracking-wider mb-1 font-sans">Tipo</label>
             <SelectDropdown
               v-model="form.type"
               :items="movementTypes"
@@ -176,8 +176,8 @@ function close() {
           </div>
 
           <!-- Color -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Colore</label>
+          <div class="space-y-1.5">
+            <label class="block text-text font-semibold text-xs uppercase tracking-wider mb-1 font-sans">Colore</label>
             <div class="flex items-center">
                 <VSwatches
                 v-model="form.color"
@@ -188,14 +188,19 @@ function close() {
           </div>
 
           <!-- Error -->
-          <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
+          <transition name="fade">
+            <div v-if="error" class="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3.5 text-xs font-semibold flex items-center gap-2.5 animate-shake">
+                <i class="pi pi-exclamation-circle text-base"></i>
+                <span class="font-sans">{{ error }}</span>
+            </div>
+          </transition>
 
           <!-- Buttons -->
-          <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
-            <button type="button" class="w-full sm:w-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors cursor-pointer" @click="close">
+          <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-8">
+            <button type="button" class="w-full sm:w-auto px-5 py-2.5 bg-neutral/30 hover:bg-neutral/50 text-text rounded-xl transition-colors font-bold cursor-pointer font-sans" @click="close">
               Annulla
             </button>
-            <button type="submit" :disabled="loading" class="w-full sm:w-auto px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-md transition-colors cursor-pointer">
+            <button type="submit" :disabled="loading" class="w-full sm:w-auto px-5 py-2.5 bg-primary hover:bg-primary-hover active:scale-[0.98] shadow-md shadow-primary/10 text-white rounded-xl transition-all font-bold cursor-pointer font-sans">
               {{ loading ? 'Salvataggio...' : 'Salva' }}
             </button>
           </div>
@@ -205,3 +210,68 @@ function close() {
     </div>
   </Teleport>
 </template>
+
+<style scoped>
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes tracking-in-expand {
+  0% {
+    letter-spacing: -0.05em;
+    filter: blur(6px);
+    opacity: 0;
+  }
+  100% {
+    letter-spacing: 0.1em;
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+.animate-tracking-in {
+  animation: tracking-in-expand 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in-delayed {
+  opacity: 0;
+  animation: fade-in 0.8s ease forwards;
+  animation-delay: 0.25s;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

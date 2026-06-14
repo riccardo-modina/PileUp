@@ -32,31 +32,31 @@ const emit = defineEmits(['close', 'confirm'])
 
 <template>
     <Teleport to="body">
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('close')"></div>
-        <div class="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-md z-10 transform transition-all">
-            <h3 class="text-lg font-semibold mb-2 text-gray-900">{{ title }}</h3>
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-all duration-300">
+        <div class="absolute inset-0 bg-background/80 backdrop-blur-xl transition-opacity" @click="$emit('close')"></div>
+        <div class="relative bg-card-background rounded-3xl shadow-2xl p-8 w-full max-w-md z-10 border border-menuborder hover:border-primary/20 transition-all duration-300 animate-fade-in-up">
+            <h3 class="text-xl font-bold mb-4 text-text font-sans animate-tracking-in tracking-widest uppercase">{{ title }}</h3>
             
-            <div class="text-sm text-gray-600 mb-6 leading-relaxed">
+            <div class="text-sm text-text-light mb-8 leading-relaxed font-sans animate-fade-in-delayed">
                 <template v-if="message">
                     {{ message }}
                 </template>
                 <template v-else>
                     Sei sicuro di voler eliminare il movimento 
-                    <span class="font-medium text-gray-900">{{ itemTitle }}</span> 
+                    <span class="font-bold text-text">{{ itemTitle }}</span> 
                     del 
-                    <span class="font-medium text-gray-900">{{ date }}</span> 
+                    <span class="font-bold text-text">{{ date }}</span> 
                     di importo 
-                    <span class="font-medium text-gray-900">€ {{ formatAmount(amount) }}</span>?
+                    <span class="font-bold text-text">€ {{ formatAmount(amount) }}</span>?
                 </template>
             </div>
             
-            <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
-                <BaseButton as="button" class="w-full sm:w-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors" @click="$emit('close')">
+            <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 font-sans animate-fade-in-delayed-more">
+                <BaseButton as="button" class="w-full sm:w-auto px-5 py-2.5 bg-neutral/30 hover:bg-neutral/50 text-text rounded-xl transition-colors font-bold" @click="$emit('close')">
                     Annulla
                 </BaseButton>
-                <BaseButton as="button" class="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors" @click="$emit('confirm')">
-                    Elimina
+                <BaseButton as="button" class="w-full sm:w-auto px-5 py-2.5 bg-red-500 hover:bg-red-600 active:scale-[0.98] shadow-md shadow-red-500/20 text-white rounded-xl transition-all font-bold flex items-center justify-center gap-2" @click="$emit('confirm')">
+                    <i class="pi pi-trash text-sm"></i> Elimina
                 </BaseButton>
             </div>
         </div>

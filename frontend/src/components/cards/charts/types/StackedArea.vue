@@ -100,7 +100,7 @@ const dynamicSeries = computed(() => {
  */
 const option = computed(() => ({
   textStyle: {
-    fontFamily: 'Montserrat, sans-serif'
+    fontFamily: 'system-ui, -apple-system, sans-serif'
   },
   title: { 
     text: props.title,

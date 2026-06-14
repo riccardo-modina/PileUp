@@ -55,39 +55,40 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10">
+      <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10 transition-all duration-300">
         <!-- Backdrop -->
         <div 
-          class="absolute inset-0 bg-gray-900/80 backdrop-blur-md transition-opacity" 
+          class="absolute inset-0 bg-background/80 backdrop-blur-xl transition-opacity" 
           @click="emit('close')"
         ></div>
 
         <!-- Modal Card -->
         <Transition name="scale">
           <div 
-            class="relative w-full max-w-6xl h-[80vh] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden z-10 border border-gray-100 flex flex-col"
+            class="relative w-full max-w-6xl h-[80vh] bg-card-background rounded-3xl shadow-2xl overflow-hidden z-10 border border-menuborder hover:border-primary/20 flex flex-col transition-all duration-300 animate-fade-in-up"
             @click.stop
           >
             <!-- Header -->
-            <div class="flex justify-between items-center px-8 py-6 border-b border-gray-50">
+            <div class="flex justify-between items-center px-8 py-6 border-b border-menuborder bg-card-background/50 backdrop-blur-sm z-20">
               <div>
-                <h3 class="text-2xl font-black text-gray-800 tracking-tight">Dettaglio Storico</h3>
-                <p class="text-sm text-gray-500">Visualizzazione dettagliata mese per mese</p>
+                <h3 class="text-xl font-bold uppercase text-text tracking-widest font-sans animate-tracking-in">Dettaglio Storico</h3>
+                <p class="text-sm text-text-light font-sans mt-1 animate-fade-in-delayed">Visualizzazione dettagliata mese per mese</p>
               </div>
               <button 
                 @click="emit('close')"
-                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
+                class="p-2 text-text-light hover:text-text hover:bg-neutral/30 rounded-full transition-all animate-fade-in-delayed"
               >
                 <i class="pi pi-times text-2xl" />
               </button>
             </div>
 
             <!-- Content -->
-            <div class="flex-1 overflow-y-auto p-8">
-              <div v-if="loading" class="h-full flex items-center justify-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div class="flex-1 overflow-y-auto p-8 bg-background/50">
+              <div v-if="loading" class="h-full flex flex-col items-center justify-center font-sans text-text animate-fade-in">
+                <i class="pi pi-spin pi-spinner text-5xl text-primary mb-4"></i>
+                <p>Caricamento dati...</p>
               </div>
-              <div v-else class="space-y-12">
+              <div v-else class="space-y-12 animate-fade-in-delayed-more">
                 <section class="h-96">
                    <MonthlyNetChart 
                     :income="financeData.income" 

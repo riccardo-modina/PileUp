@@ -47,7 +47,7 @@ const emit = defineEmits(['edit', 'delete', 'create']);
     <div class="flex justify-center mt-4">
       <button 
           @click="$emit('create')" 
-          class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl shadow-lg hover:bg-primary-dark transition-all transform hover:scale-105 active:scale-95 font-semibold"
+          class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl shadow-lg hover:bg-primary-dark transition-all transform hover:cursor-pointer hover:scale-105 active:scale-95 font-semibold"
       >
           <i class="pi pi-plus" />
           Nuova Categoria
