@@ -24,9 +24,4 @@ resource "neon_project" "pileup_db" {
     autoscaling_limit_min_cu = 0.25
     suspend_timeout_seconds  = 0
   }
-  maintenance_window {
-    end_time   = "04:00"
-    start_time = "03:00"
-    weekdays   = [3]
-  }
 }
