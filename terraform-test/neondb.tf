@@ -9,7 +9,7 @@ resource "neon_project" "pileup_db" {
   compute_provisioner                 = "k8s-neonvm"
   enable_logical_replication          = null
   history_retention_seconds           = 86400
-  name                                = "financeAppDatabase"
+  name                                = "pileupDatabase"
   org_id                              = "org-noisy-bird-87662227"
   pg_version                          = 17
   region_id                           = "aws-eu-west-2"

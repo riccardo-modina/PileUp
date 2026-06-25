@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: ghcr.io/riccardo-modina/financeapp-frontend:latest
+    image: ghcr.io/riccardo-modina/pileup-frontend:latest
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://localhost:8080}
     #    ports:
@@ -8,10 +8,10 @@ services:
     depends_on:
       - backend
     networks:
-      - finance_internal
+      - pileup_internal
 
   backend:
-    image: ghcr.io/riccardo-modina/financeapp-backend:latest
+    image: ghcr.io/riccardo-modina/pileup-backend:latest
     env_file:
       - .env
     ports:
@@ -19,7 +19,7 @@ services:
     depends_on:
       - database
     networks:
-      - finance_internal
+      - pileup_internal
 
   database:
     image: postgres:17
@@ -28,11 +28,11 @@ services:
     volumes:
       - postgres_data_financeapp:/var/lib/postgresql/data
     networks:
-      - finance_internal
+      - pileup_internal
 
 volumes:
   postgres_data_financeapp:
 
 networks:
-  finance_internal:
+  pileup_internal:
     driver: bridge

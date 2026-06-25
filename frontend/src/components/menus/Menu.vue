@@ -179,7 +179,7 @@ onMounted(() => {
               
               <div class="pt-6 pb-2">
                 <p class="text-[10px] text-gray-400/60 font-medium uppercase tracking-widest leading-tight">
-                  FinanceApp<br>
+                  PileUp<br>
                   <span class="text-[9px] lowercase tracking-normal">by Riccardo Modina</span>
                 </p>
               </div>
@@ -285,7 +285,7 @@ onMounted(() => {
                         />
                     <div class="pt-6 pb-2 text-center">
                       <p class="text-[10px] text-gray-400/60 font-medium uppercase tracking-widest leading-tight">
-                        FinanceApp<br>
+                        PileUp<br>
                         <span class="text-[9px] lowercase tracking-normal">by Riccardo Modina</span>
                       </p>
                     </div>
