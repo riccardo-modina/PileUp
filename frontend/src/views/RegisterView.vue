@@ -13,6 +13,7 @@ const recoveryKey = ref(null);
 const isRegistrationAllowed = ref(true);
 const isInitialized = ref(false);
 const loadingSettings = ref(true);
+const isLoading = ref(false);
 const inviteCode = ref('');
 
 const { register, authError } = useAuth();
@@ -32,11 +33,15 @@ onMounted(async () => {
 const passwordFieldType = computed(() => showPassword.value ? 'text' : 'password');
 
 const handleRegister = async () => {
+  if (isLoading.value) return;
+  isLoading.value = true;
   try {
     await register(email.value, username.value, password.value, inviteCode.value);
     recoveryKey.value = sessionStorage.getItem('tempRecoveryKey');
   } catch (e) {
     // Handled in useAuth
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -158,11 +163,12 @@ const isFormValid = computed(() => {
 
             <button
               type="submit"
-              :disabled="!isFormValid"
-              :class="!isFormValid ? 'bg-primary-light/50 text-text/40 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover active:scale-[0.98] text-white cursor-pointer shadow-md shadow-primary/10'"
+              :disabled="!isFormValid || isLoading"
+              :class="(!isFormValid || isLoading) ? 'bg-primary-light/50 text-text/40 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover active:scale-[0.98] text-white cursor-pointer shadow-md shadow-primary/10'"
               class="w-full py-3.5 rounded-xl font-bold transition-all flex justify-center items-center gap-2 font-sans"
             >
-              <span>Registrati</span>
+              <i v-if="isLoading" class="pi pi-spin pi-spinner"></i>
+              <span v-else>Registrati</span>
             </button>
 
             <p class="text-center text-sm text-text mt-4 font-sans">
