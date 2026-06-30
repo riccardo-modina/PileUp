@@ -5,6 +5,8 @@ import axiosInstance from '../axios';
 import { deriveKeyEncryptionKey, decryptKey } from '../helpers/crypto';
 import ShowHideButton from './buttons/ShowHideButton.vue';
 
+const emit = defineEmits(['vault-unlocked']);
+
 const password = ref('');
 const showPassword = ref(false);
 const error = ref(null);
@@ -37,8 +39,8 @@ const handleUnlock = async () => {
 
         if (decryptedMasterKey) {
             sessionStorage.setItem('masterKey', decryptedMasterKey);
-            // Successfully unlocked, reload the page or go to the dashboard
-            router.go(0); // reload the current route
+            // Successfully unlocked, emit event to parent (App.vue)
+            emit('vault-unlocked');
         } else {
             error.value = "Password errata. Impossibile decifrare i dati.";
         }
