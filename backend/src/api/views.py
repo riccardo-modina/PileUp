@@ -230,6 +230,13 @@ class MonthlyStatsView(APIView):
         year = request.query_params.get('year', str(now.year))
         month = request.query_params.get('month')
         detail = request.query_params.get('detail') # 'month' for full history detail
+        months_param = request.query_params.get('months') # e.g. "4,5,6,7" for visible months only
+        selected_months = None
+        if months_param:
+            try:
+                selected_months = [int(m.strip()) for m in months_param.split(',') if m.strip()]
+            except ValueError:
+                selected_months = None
 
         base_filter = {"user": request.user}
         
@@ -248,6 +255,8 @@ class MonthlyStatsView(APIView):
             label_format = "%d/%m"
         else:
             base_filter["data__year"] = year
+            if selected_months:
+                base_filter["data__month__in"] = selected_months
             trunc_func = TruncMonth
             label_format = None # We'll use the fixed month list if it's a specific year
 
@@ -274,16 +283,20 @@ class MonthlyStatsView(APIView):
         months_it = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic']
         
         if year != 'Totale' and not month:
-            # Traditional 12-month view for a specific year
-            income_result = {m: 0 for m in months_it}
+            # Traditional 12-month view or only selected visible months
+            visible_names = [months_it[m - 1] for m in selected_months if 1 <= m <= 12] if selected_months else months_it
+            
+            income_result = {m: 0 for m in visible_names}
             for item in income_stats:
                 m_idx = item['period'].month - 1
-                income_result[months_it[m_idx]] += float(item['total'])
+                if months_it[m_idx] in income_result:
+                    income_result[months_it[m_idx]] += float(item['total'])
             
-            spending_result = {m: 0 for m in months_it}
+            spending_result = {m: 0 for m in visible_names}
             for item in spending_stats:
                 m_idx = item['period'].month - 1
-                spending_result[months_it[m_idx]] += float(item['total'])
+                if months_it[m_idx] in spending_result:
+                    spending_result[months_it[m_idx]] += float(item['total'])
 
             final_income = [{"month": m, "amount": val} for m, val in income_result.items()]
             final_spending = [{"month": m, "amount": val} for m, val in spending_result.items()]
