@@ -1,33 +1,8 @@
 import SwiftUI
+import UIKit
 
-/// Shared App Theme matching the frontend UI palette.
-struct AppTheme {
-    struct Colors {
-        static let primary = Color(hex: "#6366f1")
-        static let primaryLight = Color(hex: "#818cf8")
-        static let primaryHover = Color(hex: "#4f46e5")
-        
-        static let accent = Color(hex: "#8b5cf6")
-        static let accentClear = Color(hex: "#8b5cf6").opacity(0.1)
-        static let accentHover = Color(hex: "#7c3aed")
-        
-        static let text = Color(hex: "#1f2937")
-        static let textLight = Color(hex: "#6b7280")
-        
-        static let background = Color(hex: "#f9fafb")
-        static let cardBackground = Color(hex: "#ffffff")
-        
-        static let success = Color(hex: "#10b981")
-        static let negative = Color(hex: "#ef4444")
-        static let nett = Color(hex: "#3b82f6")
-        
-        static let neutral = Color(hex: "#9ca3af")
-        static let menuBorder = Color(hex: "#e5e7eb")
-    }
-}
-
-extension Color {
-    init(hex: String) {
+extension UIColor {
+    convenience init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)
@@ -43,11 +18,73 @@ extension Color {
             (a, r, g, b) = (255, 0, 0, 0)
         }
         self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
+            red: CGFloat(r) / 255.0,
+            green: CGFloat(g) / 255.0,
+            blue: CGFloat(b) / 255.0,
+            alpha: CGFloat(a) / 255.0
         )
+    }
+}
+
+extension Color {
+    init(hex: String) {
+        self.init(uiColor: UIColor(hex: hex))
+    }
+}
+
+/// Shared App Theme matching the official design palette.
+struct AppTheme {
+    struct Colors {
+        // Core Palette Tokens
+        static let willowGreen = Color(hex: "#8ce857")
+        static let moneyIn = Color(hex: "#34d399")
+        static let moneyOut = Color(hex: "#60a5fa")
+        
+        static let brightSnow = Color(hex: "#f8fafc")
+        static let prussianBlue = Color(hex: "#0f172a")
+        static let prussianBlueDark = Color(hex: "#1e2638")
+        static let aliceBlue = Color(hex: "#e2e8f0")
+        static let inkBlack = Color(hex: "#0b0f17")
+        static let platinum = Color(hex: "#f1f5f9")
+        static let negative = Color(hex: "#ef4444")
+        
+        // Dynamic adaptive colors (Light / Dark Mode)
+        static var dynamicBackground: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#0b0f17") : UIColor(hex: "#f8fafc")
+            })
+        }
+        
+        static var dynamicCardBackground: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#1e2638") : UIColor.white
+            })
+        }
+        
+        static var dynamicText: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#f1f5f9") : UIColor(hex: "#0f172a")
+            })
+        }
+        
+        static var dynamicSubtext: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#94a3b8") : UIColor(hex: "#64748b")
+            })
+        }
+        
+        static var dynamicBorder: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#243049") : UIColor(hex: "#e2e8f0")
+            })
+        }
+
+        // Palette-bound app aliases
+        static var primary: Color { prussianBlue }
+        static var background: Color { dynamicBackground }
+        static var cardBackground: Color { dynamicCardBackground }
+        static var text: Color { dynamicText }
+        static var textLight: Color { dynamicSubtext }
+        static var neutral: Color { dynamicSubtext }
     }
 }
