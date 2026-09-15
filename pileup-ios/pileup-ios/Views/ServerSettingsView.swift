@@ -7,8 +7,8 @@ struct ServerSettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Server Configuration"), footer: Text("Leave blank to use the cloud server (Production). Make sure to include http:// or https:// and end with /api/ if you use a custom server.")) {
-                    TextField("E.g. http://192.168.1.100:8080/api/", text: $customURL)
+                Section(header: Text("Configurazione Server"), footer: Text("Lascia vuoto per utilizzare il server cloud. Assicurati di includere http:// o https:// e terminare con /api/ se utilizzi un server locale/personalizzato.")) {
+                    TextField("Es. http://192.168.1.100:8080/api/", text: $customURL)
                         .keyboardType(.URL)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
@@ -19,17 +19,17 @@ struct ServerSettingsView: View {
                         customURL = ""
                         saveURL()
                     }) {
-                        Text("Restore Default")
+                        Text("Ripristina Predefinito")
                             .foregroundColor(.red)
                     }
                 }
             }
-            .navigationBarTitle("Settings", displayMode: .inline)
+            .navigationBarTitle("Impostazioni Server", displayMode: .inline)
             .navigationBarItems(
-                leading: Button("Cancel") {
+                leading: Button("Annulla") {
                     presentationMode.wrappedValue.dismiss()
                 },
-                trailing: Button("Save") {
+                trailing: Button("Salva") {
                     saveURL()
                 }
                 .fontWeight(.bold)

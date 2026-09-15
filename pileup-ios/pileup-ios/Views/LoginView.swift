@@ -28,7 +28,7 @@ struct LoginView: View {
                     .tracking(6) // increased space between letters
                     .foregroundColor(AppTheme.Colors.primary)
                 
-                Text("Login to your account")
+                Text("Accedi al tuo account")
                     .font(.montserrat(size: 14, weight: .semibold))
                     .textCase(.uppercase)
                     .tracking(2)
@@ -36,7 +36,7 @@ struct LoginView: View {
                 
                 // Form Fields
                 VStack(spacing: 16) {
-                    TextField("Username", text: $username)
+                    TextField("Nome utente", text: $username)
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
@@ -66,7 +66,7 @@ struct LoginView: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text("LOGIN")
+                            Text("ACCEDI")
                                 .font(.montserrat(size: 16, weight: .bold))
                                 .tracking(2)
                         }
