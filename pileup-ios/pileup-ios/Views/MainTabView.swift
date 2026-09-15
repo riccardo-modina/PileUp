@@ -94,8 +94,8 @@ struct MainTabView: View {
                 }
                 .zIndex(5)
                 
-                // Floating Bottom Bar with 4 items and central "+" button
-                CustomBottomBar(
+                // Floating Bottom Menu with 4 items and central "+" button
+                BottomMenu(
                     selectedTab: $selectedTab,
                     onAddTapped: {
                         showAddTransaction = true

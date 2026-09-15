@@ -11,7 +11,7 @@ enum AppTab: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .home: return "Home"
-        case .cashflow: return "CashFlow"
+        case .cashflow: return "Movimenti"
         case .investments: return "Investimenti"
         case .menu: return "Menu"
         }
@@ -36,9 +36,9 @@ enum AppTab: String, CaseIterable, Identifiable {
     }
 }
 
-/// Floating bottom navigation bar matching the frontend Menu.vue
+/// Floating bottom navigation bar matching the design system.
 /// Contains 4 tabs and an elevated center "+" button.
-struct CustomBottomBar: View {
+struct BottomMenu: View {
     @Binding var selectedTab: AppTab
     let onAddTapped: () -> Void
     let onMenuTapped: () -> Void
@@ -68,11 +68,11 @@ struct CustomBottomBar: View {
             .padding(.vertical, 14)
             .background(
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 4)
+                    .fill(AppTheme.Colors.dynamicCardBackground)
+                    .shadow(color: Color.black.opacity(0.06), radius: 14, x: 0, y: 4)
                     .overlay(
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .stroke(AppTheme.Colors.menuBorder.opacity(0.8), lineWidth: 1)
+                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
                     )
             )
             
@@ -86,16 +86,16 @@ struct CustomBottomBar: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [AppTheme.Colors.primary, AppTheme.Colors.primaryHover],
+                                colors: [AppTheme.Colors.prussianBlue, AppTheme.Colors.prussianBlueDark],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: 56, height: 56)
-                        .shadow(color: AppTheme.Colors.primary.opacity(0.4), radius: 8, x: 0, y: 5)
+                        .frame(width: 54, height: 54)
+                        .shadow(color: AppTheme.Colors.prussianBlue.opacity(0.35), radius: 8, x: 0, y: 4)
                     
                     Image(systemName: "plus")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
                 }
             }
@@ -106,6 +106,8 @@ struct CustomBottomBar: View {
     @ViewBuilder
     private func tabButton(for tab: AppTab) -> some View {
         let isSelected = selectedTab == tab
+        let activeColor = AppTheme.Colors.dynamicText
+        let inactiveColor = AppTheme.Colors.dynamicSubtext
         
         Button(action: {
             let generator = UIImpactFeedbackGenerator(style: .light)
@@ -119,16 +121,16 @@ struct CustomBottomBar: View {
             VStack(spacing: 4) {
                 Image(systemName: isSelected ? tab.selectedIcon : tab.icon)
                     .font(.system(size: 19))
-                    .foregroundColor(isSelected ? AppTheme.Colors.primary : AppTheme.Colors.neutral)
+                    .foregroundColor(isSelected ? activeColor : inactiveColor)
                     .frame(height: 22)
                 
                 Text(tab.title)
-                    .font(.montserrat(size: 9, weight: isSelected ? .semibold : .medium))
+                    .font(.montserrat(size: 8.5, weight: isSelected ? .semibold : .medium))
                     .textCase(.uppercase)
-                    .tracking(0.5)
+                    .tracking(0.2)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .foregroundColor(isSelected ? AppTheme.Colors.text : AppTheme.Colors.neutral)
+                    .minimumScaleFactor(0.55)
+                    .foregroundColor(isSelected ? activeColor : inactiveColor)
             }
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
@@ -137,11 +139,14 @@ struct CustomBottomBar: View {
     }
 }
 
-struct CustomBottomBar_Previews: PreviewProvider {
+/// Backwards compatibility alias
+typealias CustomBottomBar = BottomMenu
+
+struct BottomMenu_Previews: PreviewProvider {
     static var previews: some View {
         ZStack {
             Color.gray.opacity(0.2).ignoresSafeArea()
-            CustomBottomBar(
+            BottomMenu(
                 selectedTab: .constant(.home),
                 onAddTapped: {},
                 onMenuTapped: {}
