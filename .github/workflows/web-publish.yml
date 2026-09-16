@@ -41,4 +41,4 @@ jobs:
             ghcr.io/${{ env.REPO_OWNER }}/pileup-web:latest
             ghcr.io/${{ env.REPO_OWNER }}/pileup-web:${{ github.ref_name }}
             ghcr.io/${{ env.REPO_OWNER }}/pileup-web:${{ steps.meta.outputs.clean_version }}
-            ghcr.io/${{ env.REPO_OWNER }}/pileup-frontend:latest
+
