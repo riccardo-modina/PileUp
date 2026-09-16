@@ -8,6 +8,10 @@ struct CashFlowBreakdownList: View {
     var onIncomeTap: (() -> Void)? = nil
     var onExpenseTap: (() -> Void)? = nil
     
+    private var netAmount: Double {
+        income - expense
+    }
+    
     private func formattedCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -16,8 +20,39 @@ struct CashFlowBreakdownList: View {
         return formatter.string(from: NSNumber(value: value)) ?? "€ 0,00"
     }
     
+    private func formattedNetCurrency(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "EUR"
+        formatter.maximumFractionDigits = 2
+        let absFormatted = formatter.string(from: NSNumber(value: abs(value))) ?? "€ 0,00"
+        return (value >= 0 ? "+" : "-") + absFormatted
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
+            // Net Amount Header Section
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Netto")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                
+                Text(formattedNetCurrency(netAmount))
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundColor(AppTheme.Colors.dynamicText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 14)
+            
+            // Divider between Net and Breakdown rows
+            Divider()
+                .background(AppTheme.Colors.dynamicBorder.opacity(0.6))
+                .padding(.horizontal, 16)
+            
             // Money In Row
             Button(action: {
                 let generator = UIImpactFeedbackGenerator(style: .light)
@@ -45,7 +80,7 @@ struct CashFlowBreakdownList: View {
                         .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.7))
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 16)
+                .padding(.vertical, 15)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -54,6 +89,7 @@ struct CashFlowBreakdownList: View {
             Divider()
                 .background(AppTheme.Colors.dynamicBorder.opacity(0.6))
                 .padding(.leading, 52)
+                .padding(.trailing, 16)
             
             // Money Out Row
             Button(action: {
@@ -82,7 +118,7 @@ struct CashFlowBreakdownList: View {
                         .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.7))
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 16)
+                .padding(.vertical, 15)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

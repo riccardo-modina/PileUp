@@ -181,16 +181,7 @@ struct CashFlowView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
                     
-                    // Netto Card (updates immediately on swipe/change)
-                    CashFlowNetCard(
-                        income: dashboardViewModel.monthlyIncome,
-                        expense: dashboardViewModel.monthlyExpense
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.8), value: dashboardViewModel.selectedPeriod)
-                    
-                    // Money In & Money Out Breakdown List (updates immediately on swipe/change)
+                    // Unified Cash Flow Card (Netto + Entrate/Uscite breakdown)
                     CashFlowBreakdownList(
                         income: dashboardViewModel.monthlyIncome,
                         expense: dashboardViewModel.monthlyExpense,
@@ -202,6 +193,7 @@ struct CashFlowView: View {
                         }
                     )
                     .padding(.horizontal, 20)
+                    .padding(.top, 4)
                     .animation(.spring(response: 0.35, dampingFraction: 0.8), value: dashboardViewModel.selectedPeriod)
                     
                     // Safe bottom padding for floating BottomMenu
