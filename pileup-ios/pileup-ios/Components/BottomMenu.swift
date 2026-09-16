@@ -78,8 +78,7 @@ struct BottomMenu: View {
             
             // Center "+" Button (lowered down)
             Button(action: {
-                let generator = UIImpactFeedbackGenerator(style: .medium)
-                generator.impactOccurred()
+                HapticHelper.medium()
                 onAddTapped()
             }) {
                 ZStack {
@@ -110,8 +109,7 @@ struct BottomMenu: View {
         let inactiveColor = AppTheme.Colors.dynamicSubtext
         
         Button(action: {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
+            HapticHelper.selection()
             if tab == .menu {
                 onMenuTapped()
             } else {
