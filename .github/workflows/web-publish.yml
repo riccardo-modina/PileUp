@@ -1,0 +1,44 @@
+name: Web Publish
+
+on:
+  push:
+    tags:
+      - 'web-*'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lowercase repo owner & extract version
+        id: meta
+        run: |
+          echo "REPO_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+          CLEAN_VERSION="${GITHUB_REF_NAME#web-}"
+          echo "clean_version=${CLEAN_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Web
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            VITE_API_URL=/api
+          tags: |
+            ghcr.io/${{ env.REPO_OWNER }}/pileup-web:latest
+            ghcr.io/${{ env.REPO_OWNER }}/pileup-web:${{ github.ref_name }}
+            ghcr.io/${{ env.REPO_OWNER }}/pileup-web:${{ steps.meta.outputs.clean_version }}
+            ghcr.io/${{ env.REPO_OWNER }}/pileup-frontend:latest
