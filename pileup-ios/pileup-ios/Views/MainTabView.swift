@@ -112,7 +112,10 @@ struct MainTabView: View {
             }
         }
         .sheet(isPresented: $showAddTransaction) {
-            AddTransactionView()
+            AddTransactionView(masterKey: authViewModel.masterKey)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("TransactionsUpdated"))) { _ in
+            dashboardViewModel.fetchMonthlyStats()
         }
     }
 }
