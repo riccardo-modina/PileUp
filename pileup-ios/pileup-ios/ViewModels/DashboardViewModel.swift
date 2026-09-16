@@ -134,13 +134,7 @@ class DashboardViewModel: ObservableObject {
     
     /// Computes the 4 visible months around the selected month
     func visibleMonths(for month: Int, year: Int) -> [(month: Int, year: Int)] {
-        let calendar = Calendar.current
-        let today = Date()
-        let currentYear = calendar.component(.year, from: today)
-        let currentMonth = calendar.component(.month, from: today)
-        
-        let canShowNext = (year < currentYear) || (year == currentYear && month < currentMonth)
-        let startOffset = canShowNext ? -2 : -3
+        let startOffset = -2
         
         var list: [(month: Int, year: Int)] = []
         for offset in 0..<4 {

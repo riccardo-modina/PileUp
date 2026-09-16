@@ -48,9 +48,8 @@ struct CashFlowDualBarChart: View {
         // Window of 4 months
         var monthsToDisplay: [(m: Int, y: Int)] = []
         
-        // Show up to 1 next month if available
-        let canShowNext = (selY < currentYear) || (selY == currentYear && selM < currentMonth)
-        let startOffset = canShowNext ? -2 : -3
+        // Window of 4 months: 2 past months, selected month, and month n+1 (gray placeholder if future)
+        let startOffset = -2
         
         for offset in 0..<4 {
             let relOffset = startOffset + offset
@@ -190,7 +189,7 @@ struct CashFlowDualBarChart: View {
             .padding(.horizontal, 16)
             
             // Base Guide Line at quota 0 (sitting directly underneath the bars, flush with their bottom)
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .center, spacing: 8) {
                 Rectangle()
                     .fill(AppTheme.Colors.dynamicBorder.opacity(0.8))
                     .frame(height: 1)
@@ -199,7 +198,6 @@ struct CashFlowDualBarChart: View {
                     .font(.system(size: 11, weight: .regular))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     .frame(width: 36, alignment: .trailing)
-                    .offset(y: -5)
             }
             .frame(height: 1)
             .padding(.horizontal, 16)
@@ -238,30 +236,6 @@ struct CashFlowDualBarChart: View {
             .padding(.top, 10)
         }
         .contentShape(Rectangle())
-        // Horizontal swipe gesture to change periods
-        .gesture(
-            DragGesture(minimumDistance: 25)
-                .onEnded { value in
-                    // Swipe Left -> Next Month
-                    if value.translation.width < -35 {
-                        if viewModel.selectedPeriod.canMoveForward() {
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred()
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                viewModel.nextPeriod()
-                            }
-                        }
-                    }
-                    // Swipe Right -> Previous Month
-                    else if value.translation.width > 35 {
-                        let generator = UIImpactFeedbackGenerator(style: .light)
-                        generator.impactOccurred()
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            viewModel.previousPeriod()
-                        }
-                    }
-                }
-        )
     }
     
     @ViewBuilder
