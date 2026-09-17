@@ -14,6 +14,10 @@ struct MainTabView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
+                // Continuous edge-to-edge app background
+                AppTheme.Colors.dynamicBackground
+                    .ignoresSafeArea()
+
                 // Tab Contents
                 Group {
                     switch selectedTab {
@@ -37,7 +41,7 @@ struct MainTabView: View {
                 // Dimmed Backdrop when menu is open
                 if showMenuSheet {
                     Color.black.opacity(0.35)
-                        .edgesIgnoringSafeArea(.all)
+                        .ignoresSafeArea()
                         .transition(.opacity)
                         .onTapGesture {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -54,6 +58,7 @@ struct MainTabView: View {
                             showMenuSheet = false
                         }
                     })
+                    .frame(maxWidth: 550)
                     .frame(height: max(geometry.size.height * 0.75, 450))
                     .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                     .shadow(color: Color.black.opacity(0.18), radius: 25, x: 0, y: -6)
@@ -76,24 +81,6 @@ struct MainTabView: View {
                     .zIndex(25)
                 }
                 
-                // Progressive blur background behind floating bar (matches frontend mobile-blur-bg)
-                VStack {
-                    Spacer()
-                    Rectangle()
-                        .fill(.ultraThinMaterial)
-                        .mask(
-                            LinearGradient(
-                                colors: [.clear, .black.opacity(0.8), .black],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(height: 110)
-                        .edgesIgnoringSafeArea(.bottom)
-                        .allowsHitTesting(false)
-                }
-                .zIndex(5)
-                
                 // Floating Bottom Menu with 4 items and central "+" button
                 BottomMenu(
                     selectedTab: $selectedTab,
@@ -106,11 +93,15 @@ struct MainTabView: View {
                         }
                     }
                 )
+                .frame(maxWidth: 550)
                 .padding(.horizontal, 16)
-                .padding(.bottom, 20)
+                .padding(.bottom, max(geometry.safeAreaInsets.bottom, 12))
                 .zIndex(30)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(edges: .bottom)
         }
+        .ignoresSafeArea(edges: .bottom)
         .sheet(isPresented: $showAddTransaction) {
             AddTransactionView(masterKey: authViewModel.masterKey)
         }
