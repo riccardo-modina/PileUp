@@ -123,8 +123,7 @@ struct CashFlowView: View {
                     // Date Navigator (< 1 Mag - 31 Mag >)
                     HStack {
                         Button(action: {
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred()
+                            HapticHelper.light()
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 dashboardViewModel.previousPeriod()
                             }
@@ -155,8 +154,7 @@ struct CashFlowView: View {
                         Spacer()
                         
                         Button(action: {
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred()
+                            HapticHelper.light()
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 dashboardViewModel.nextPeriod()
                             }
@@ -206,22 +204,22 @@ struct CashFlowView: View {
                 DragGesture(minimumDistance: 25)
                     .onEnded { value in
                         guard abs(value.translation.width) > abs(value.translation.height) else { return }
-                        // Swipe left -> Next month
+                        // Swipe left -> Next period
                         if value.translation.width < -35 {
                             if dashboardViewModel.selectedPeriod.canMoveForward() {
-                                let generator = UIImpactFeedbackGenerator(style: .light)
-                                generator.impactOccurred()
+                                HapticHelper.light()
                                 withAnimation(.easeInOut(duration: 0.25)) {
                                     dashboardViewModel.nextPeriod()
                                 }
                             }
                         }
-                        // Swipe right -> Previous month
+                        // Swipe right -> Previous period
                         else if value.translation.width > 35 {
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred()
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                dashboardViewModel.previousPeriod()
+                            if !dashboardViewModel.selectedPeriod.isTotal {
+                                HapticHelper.light()
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    dashboardViewModel.previousPeriod()
+                                }
                             }
                         }
                     }

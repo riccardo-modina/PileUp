@@ -108,27 +108,40 @@ class DashboardViewModel: ObservableObject {
     
     private let monthSymbols = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
     
-    // Cache per contenere i movimenti mensili per ciascun anno richiesto
+    // Cache for storing monthly movements for each requested year
     @Published var yearlyMovements: [Int: (income: [MonthlyStat], spending: [MonthlyStat])] = [:]
     
+    // Cache for annual totals of each year (used in yearly bar chart)
+    @Published var yearlyTotals: [Int: (income: Double, expense: Double)] = [:]
+    
     init() {
+        fetchAllYearsTotals()
         fetchMonthlyStats()
     }
     
     private func syncCurrentMonthFiguresFromMovements() {
-        guard case .monthYear(let m, let y) = selectedPeriod else { return }
-        let currentSymbol = monthSymbols[max(0, min(m - 1, 11))]
-        let m2 = String(format: "%02d", m)
-        let m1 = "\(m)"
-        
-        let incomeList = yearlyMovements[y]?.income ?? incomeMovements
-        let expenseList = yearlyMovements[y]?.spending ?? expenseMovements
-        
-        if let incStat = incomeList.first(where: { $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1 }) {
-            self.monthlyIncome = incStat.amount
-        }
-        if let expStat = expenseList.first(where: { $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1 }) {
-            self.monthlyExpense = expStat.amount
+        switch selectedPeriod {
+        case .monthYear(let m, let y):
+            let currentSymbol = monthSymbols[max(0, min(m - 1, 11))]
+            let m2 = String(format: "%02d", m)
+            let m1 = "\(m)"
+            
+            let incomeList = yearlyMovements[y]?.income ?? incomeMovements
+            let expenseList = yearlyMovements[y]?.spending ?? expenseMovements
+            
+            if let incStat = incomeList.first(where: { $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1 }) {
+                self.monthlyIncome = incStat.amount
+            }
+            if let expStat = expenseList.first(where: { $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1 }) {
+                self.monthlyExpense = expStat.amount
+            }
+        case .year(let y):
+            if let totals = yearlyTotals[y] {
+                self.monthlyIncome = totals.income
+                self.monthlyExpense = totals.expense
+            }
+        case .total:
+            break
         }
     }
     
@@ -181,6 +194,30 @@ class DashboardViewModel: ObservableObject {
         }
     }
     
+    func fetchAllYearsTotals() {
+        Task { @MainActor in
+            do {
+                let response: MonthlyStatsResponse = try await NetworkManager.shared.request(endpoint: "stats/monthly/?year=Totale", method: "GET")
+                for inc in response.income {
+                    if let y = Int(inc.month) {
+                        var current = self.yearlyTotals[y] ?? (income: 0.0, expense: 0.0)
+                        current.income = inc.amount
+                        self.yearlyTotals[y] = current
+                    }
+                }
+                for exp in response.spending {
+                    if let y = Int(exp.month) {
+                        var current = self.yearlyTotals[y] ?? (income: 0.0, expense: 0.0)
+                        current.expense = exp.amount
+                        self.yearlyTotals[y] = current
+                    }
+                }
+            } catch {
+                print("Failed to fetch all years totals: \(error)")
+            }
+        }
+    }
+    
     func fetchMonthlyStats() {
         isLoading = true
         errorMessage = nil
@@ -209,6 +246,9 @@ class DashboardViewModel: ObservableObject {
         case .year(let year):
             selectedYear = year
             queryItems.append(URLQueryItem(name: "year", value: "\(year)"))
+            if yearlyTotals.isEmpty {
+                fetchAllYearsTotals()
+            }
         case .total:
             selectedYear = Calendar.current.component(.year, from: Date())
             queryItems.append(URLQueryItem(name: "year", value: "Totale"))
@@ -242,7 +282,8 @@ class DashboardViewModel: ObservableObject {
                 self.incomeMovements = existing.income
                 self.expenseMovements = existing.spending
                 
-                if case .monthYear(let m, _) = self.selectedPeriod {
+                switch self.selectedPeriod {
+                case .monthYear(let m, _):
                     let currentSymbol = self.monthSymbols[max(0, min(m - 1, 11))]
                     let m2 = String(format: "%02d", m)
                     let m1 = "\(m)"
@@ -254,9 +295,29 @@ class DashboardViewModel: ObservableObject {
                     self.monthlyExpense = response.spending.first(where: {
                         $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1
                     })?.amount ?? 0.0
-                } else {
+                    
+                case .year(let y):
                     self.monthlyIncome = response.monthlyIncome
                     self.monthlyExpense = response.monthlyExpense
+                    self.yearlyTotals[y] = (income: response.monthlyIncome, expense: response.monthlyExpense)
+                    
+                case .total:
+                    self.monthlyIncome = response.monthlyIncome
+                    self.monthlyExpense = response.monthlyExpense
+                    for inc in response.income {
+                        if let y = Int(inc.month) {
+                            var current = self.yearlyTotals[y] ?? (income: 0.0, expense: 0.0)
+                            current.income = inc.amount
+                            self.yearlyTotals[y] = current
+                        }
+                    }
+                    for exp in response.spending {
+                        if let y = Int(exp.month) {
+                            var current = self.yearlyTotals[y] ?? (income: 0.0, expense: 0.0)
+                            current.expense = exp.amount
+                            self.yearlyTotals[y] = current
+                        }
+                    }
                 }
             } catch {
                 self.isLoading = false
