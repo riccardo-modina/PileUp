@@ -39,6 +39,7 @@ enum AppTab: String, CaseIterable, Identifiable {
 /// Floating bottom navigation bar matching the design system.
 /// Contains 4 tabs and an elevated center "+" button.
 struct BottomMenu: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var selectedTab: AppTab
     let onAddTapped: () -> Void
     let onMenuTapped: () -> Void
@@ -83,19 +84,13 @@ struct BottomMenu: View {
             }) {
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [AppTheme.Colors.prussianBlue, AppTheme.Colors.prussianBlueDark],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(AppTheme.Colors.willowGreen)
                         .frame(width: 54, height: 54)
-                        .shadow(color: AppTheme.Colors.prussianBlue.opacity(0.35), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color.black.opacity(0.14), radius: 6, x: 0, y: 3)
                     
                     Image(systemName: "plus")
                         .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.Colors.prussianBlue)
                 }
             }
             .offset(y: -10) // Lowered down
@@ -142,14 +137,30 @@ typealias CustomBottomBar = BottomMenu
 
 struct BottomMenu_Previews: PreviewProvider {
     static var previews: some View {
-        ZStack {
-            Color.gray.opacity(0.2).ignoresSafeArea()
-            BottomMenu(
-                selectedTab: .constant(.home),
-                onAddTapped: {},
-                onMenuTapped: {}
-            )
-            .padding(.horizontal, 16)
+        Group {
+            ZStack {
+                AppTheme.Colors.dynamicBackground.ignoresSafeArea()
+                BottomMenu(
+                    selectedTab: .constant(.home),
+                    onAddTapped: {},
+                    onMenuTapped: {}
+                )
+                .padding(.horizontal, 16)
+            }
+            .preferredColorScheme(.light)
+            .previewDisplayName("Light Mode")
+            
+            ZStack {
+                AppTheme.Colors.dynamicBackground.ignoresSafeArea()
+                BottomMenu(
+                    selectedTab: .constant(.home),
+                    onAddTapped: {},
+                    onMenuTapped: {}
+                )
+                .padding(.horizontal, 16)
+            }
+            .preferredColorScheme(.dark)
+            .previewDisplayName("Dark Mode")
         }
     }
 }

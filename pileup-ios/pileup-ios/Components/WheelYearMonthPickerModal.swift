@@ -154,7 +154,7 @@ struct WheelYearMonthPickerModal: View {
                 }) {
                     Image(systemName: "checkmark")
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.Colors.primaryButtonText)
                         .frame(width: 50, height: 50)
                         .background(AppTheme.Colors.primary)
                         .clipShape(Circle())

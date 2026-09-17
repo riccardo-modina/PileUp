@@ -15,6 +15,7 @@ struct CashFlowBarItem: Identifiable {
 /// Supports 4 months window in Month mode, 4 years window in Year mode,
 /// and 1 centered dual column in Total mode.
 struct CashFlowDualBarChart: View {
+    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject var viewModel: DashboardViewModel
     
     // Geometry constants
@@ -304,12 +305,24 @@ struct CashFlowDualBarChart: View {
         
         // Color: soft light grey/subtle tint if empty, or vibrant theme color
         let fillColor = isZero ? AppTheme.Colors.dynamicSubtext.opacity(0.18) : color
-        let barOpacity: Double = isSelected ? 1.0 : (isZero ? 0.5 : 0.72)
+        let isDark = colorScheme == .dark
+        
+        // In Dark mode: avoid murky darkening caused by 0.72 blending into dark background.
+        // Instead, use clear frosted transparency (0.42) with a crisp luminous stroke so it looks transparent, not dark.
+        let barOpacity: Double = isSelected ? 1.0 : (isZero ? 0.35 : (isDark ? 0.42 : 0.72))
         
         TopRoundedRectangle(radius: 3)
             .fill(fillColor)
             .opacity(barOpacity)
             .frame(width: currentBarWidth, height: calculatedHeight)
+            .overlay(
+                Group {
+                    if isDark && !isSelected && !isZero {
+                        TopRoundedRectangle(radius: 3)
+                            .stroke(color.opacity(0.65), lineWidth: 1)
+                    }
+                }
+            )
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: calculatedHeight)
     }
     
