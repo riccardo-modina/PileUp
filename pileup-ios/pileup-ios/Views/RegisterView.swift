@@ -30,9 +30,14 @@ struct RegisterView: View {
                     
                     Text(key)
                         .font(.system(size: 16, design: .monospaced))
+                        .foregroundColor(AppTheme.Colors.text)
                         .padding()
-                        .background(Color(.systemGray6))
+                        .background(AppTheme.Colors.cardBackground)
                         .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                        )
                         .textSelection(.enabled)
                         .padding(.horizontal)
                     
@@ -45,7 +50,7 @@ struct RegisterView: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(AppTheme.Colors.primary)
-                            .foregroundColor(.white)
+                            .foregroundColor(AppTheme.Colors.primaryButtonText)
                             .cornerRadius(10)
                     }
                     .padding(.horizontal)
@@ -62,27 +67,43 @@ struct RegisterView: View {
                     VStack(spacing: 16) {
                         TextField("Username", text: $username)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(AppTheme.Colors.cardBackground)
                             .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                            )
                             .autocapitalization(.none)
                         
                         TextField("Email", text: $email)
                             .keyboardType(.emailAddress)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(AppTheme.Colors.cardBackground)
                             .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                            )
                             .autocapitalization(.none)
                         
                         SecureField("Password (questa cifrerà i dati)", text: $password)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(AppTheme.Colors.cardBackground)
                             .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                            )
                         
                         if viewModel.globalSettings?.is_initialized == true {
                             TextField("Codice d'Invito", text: $inviteCode)
                                 .padding()
-                                .background(Color(.systemGray6))
+                                .background(AppTheme.Colors.cardBackground)
                                 .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                                )
                                 .autocapitalization(.none)
                         }
                     }
@@ -110,7 +131,7 @@ struct RegisterView: View {
                         HStack {
                             if viewModel.isLoading {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.primaryButtonText))
                             } else {
                                 Text("REGISTRATI")
                                     .font(.montserrat(size: 16, weight: .bold))
@@ -120,7 +141,7 @@ struct RegisterView: View {
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(AppTheme.Colors.primary)
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.Colors.primaryButtonText)
                         .cornerRadius(10)
                     }
                     .padding(.horizontal)
@@ -129,6 +150,7 @@ struct RegisterView: View {
             }
             .padding()
         }
+        .background(AppTheme.Colors.background.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -101,9 +101,15 @@ struct MenuView: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(AppTheme.Colors.cardBackground)
+                                    .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                            )
                         }
                         .padding(.horizontal, 20)
                         

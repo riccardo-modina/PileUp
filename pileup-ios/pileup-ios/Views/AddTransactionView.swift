@@ -502,7 +502,7 @@ struct AddTransactionView: View {
                             Text("Oggi")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(Calendar.current.isDateInToday(viewModel.date) && !showCustomDatePicker ? .white : AppTheme.Colors.dynamicText)
+                        .foregroundColor(Calendar.current.isDateInToday(viewModel.date) && !showCustomDatePicker ? AppTheme.Colors.primaryButtonText : AppTheme.Colors.dynamicText)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                         .background(
@@ -532,7 +532,7 @@ struct AddTransactionView: View {
                             Text("Ieri")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(Calendar.current.isDateInYesterday(viewModel.date) && !showCustomDatePicker ? .white : AppTheme.Colors.dynamicText)
+                        .foregroundColor(Calendar.current.isDateInYesterday(viewModel.date) && !showCustomDatePicker ? AppTheme.Colors.primaryButtonText : AppTheme.Colors.dynamicText)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                         .background(
@@ -559,7 +559,7 @@ struct AddTransactionView: View {
                             Text(showCustomDatePicker || (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date)) ? formattedShortDate(viewModel.date) : "Altra")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(showCustomDatePicker || (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date)) ? .white : AppTheme.Colors.dynamicText)
+                        .foregroundColor(showCustomDatePicker || (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date)) ? AppTheme.Colors.primaryButtonText : AppTheme.Colors.dynamicText)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                         .background(
@@ -841,17 +841,17 @@ struct AddTransactionView: View {
                     if viewModel.currentStep < 3 {
                         Text("Continua")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(AppTheme.Colors.primaryButtonText)
                         Image(systemName: "chevron.right")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(AppTheme.Colors.primaryButtonText)
                     } else {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(AppTheme.Colors.primaryButtonText)
                         Text("Salva Movimento")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(AppTheme.Colors.primaryButtonText)
                     }
                 }
                 .frame(maxWidth: .infinity)

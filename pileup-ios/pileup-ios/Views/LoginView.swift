@@ -38,14 +38,22 @@ struct LoginView: View {
                 VStack(spacing: 16) {
                     TextField("Nome utente", text: $username)
                         .padding()
-                        .background(Color(.systemGray6))
+                        .background(AppTheme.Colors.cardBackground)
                         .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                        )
                         .autocapitalization(.none)
                     
                     SecureField("Password", text: $password)
                         .padding()
-                        .background(Color(.systemGray6))
+                        .background(AppTheme.Colors.cardBackground)
                         .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                        )
                 }
                 .padding(.horizontal)
                 
@@ -64,7 +72,7 @@ struct LoginView: View {
                     HStack {
                         if viewModel.isLoading {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.primaryButtonText))
                         } else {
                             Text("ACCEDI")
                                 .font(.montserrat(size: 16, weight: .bold))
@@ -74,7 +82,7 @@ struct LoginView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(AppTheme.Colors.primary)
-                    .foregroundColor(.white)
+                    .foregroundColor(AppTheme.Colors.primaryButtonText)
                     .cornerRadius(10)
                 }
                 .padding(.horizontal)
@@ -94,6 +102,8 @@ struct LoginView: View {
                 Spacer()
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(AppTheme.Colors.background.ignoresSafeArea())
             .sheet(isPresented: $showSettings) {
                 ServerSettingsView()
             }
@@ -103,6 +113,14 @@ struct LoginView: View {
 
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
-        LoginView(viewModel: AuthViewModel())
+        Group {
+            LoginView(viewModel: AuthViewModel())
+                .preferredColorScheme(.light)
+                .previewDisplayName("Light Mode")
+            
+            LoginView(viewModel: AuthViewModel())
+                .preferredColorScheme(.dark)
+                .previewDisplayName("Dark Mode")
+        }
     }
 }

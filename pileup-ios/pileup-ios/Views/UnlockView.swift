@@ -20,7 +20,7 @@ struct UnlockView: View {
                 
                 Text("Sblocca per accedere ai tuoi dati")
                     .font(.montserrat(size: 15))
-                    .foregroundColor(.gray)
+                    .foregroundColor(AppTheme.Colors.textLight)
                 
                 Spacer().frame(height: 20)
                 
@@ -44,14 +44,18 @@ struct UnlockView: View {
                     
                     Text("Oppure usa la password")
                         .font(.montserrat(size: 12))
-                        .foregroundColor(.gray)
+                        .foregroundColor(AppTheme.Colors.textLight)
                         .textCase(.uppercase)
                 }
                 
                 SecureField("Password", text: $password)
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(AppTheme.Colors.cardBackground)
                     .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                    )
                     .padding(.horizontal)
                 
                 if let errorMessage = viewModel.errorMessage {
@@ -68,7 +72,7 @@ struct UnlockView: View {
                     HStack {
                         if viewModel.isLoading {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.primaryButtonText))
                         } else {
                             Text("SBLOCCA")
                                 .font(.montserrat(size: 16, weight: .bold))
@@ -78,7 +82,7 @@ struct UnlockView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(AppTheme.Colors.primary)
-                    .foregroundColor(.white)
+                    .foregroundColor(AppTheme.Colors.primaryButtonText)
                     .cornerRadius(10)
                 }
                 .padding(.horizontal)
@@ -91,11 +95,13 @@ struct UnlockView: View {
                 }) {
                     Text("Esci e usa un altro account")
                         .font(.montserrat(size: 14))
-                        .foregroundColor(.gray)
+                        .foregroundColor(AppTheme.Colors.textLight)
                 }
                 .padding(.bottom, 20)
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(AppTheme.Colors.background.ignoresSafeArea())
             .onAppear {
                 checkBiometrics()
             }
