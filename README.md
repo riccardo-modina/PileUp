@@ -1,38 +1,72 @@
-# 🐷 PileUp - Personal Finance Tracker
+# PileUp
 
-**PileUp** is a personal finance application designed to help you track your path to savings with ease. It is now a fully functional **Progressive Web App (PWA)**.
+Personal finance (NetWorth (WIP)) tracking platform with partial end-to-end encryption (E2EE), comprising a Django REST backend, a Vue 3 (with PWA capability), and a native SwiftUI iOS application (WIP).
 
-## Features
+## Repository Structure
 
--   **Installable (PWA)**: Install PileUp on your iOS, Android, or Desktop device for a native-like experience.
--   **Offline Support**: Access your financial data even when you're offline.
--   **Simple Design**: A premium, minimalist interface built for clarity and speed.
--   **Self-Hosted**: Full control over your data with an easy Docker-based setup.
+- `backend/`: Django, REST API, JWT authentication, and PostgreSQL as DB.
+- `frontend/`: Vue 3 PWA client with client-side cryptography.
+- `pileup-ios/`: ios app in swift, using swiftUI (WIP).
+- `terraform/`: Cloud infrastructure config files (WIP).
+- `docker-compose.yaml`: selfhosted container configuration.
 
-## Installation (Self-Hosted)
+## System Architecture
 
-To install and set up the project instantly, run:
+### Security and Cryptography
+- Partial End-to-End encryption (E2EE) using AES-256-CBC.
+- Local cryptographic key and session token persistence via Apple Keychain on iOS.
+
+### Backend (`backend/`)
+- Django REST Framework with JWT authentication.
+- PostgreSQL database.
+- Containerized deployment with Gunicorn and WhiteNoise.
+
+### Web Client (`frontend/`)
+- Vue 3, Vite, Pinia, and Tailwind CSS.
+- Client-side encryption and decryption.
+- Charts with ECharts and PrimeVue components.
+- PWA.
+
+### iOS Application (`pileup-ios/`)
+- Swift and SwiftUI.
+- Biometric unlock (Face ID / Touch ID) with Keychain token storage.
+
+### CI/CD and Operations
+- GitHub Actions workflows for Docker images (`pileup-backend`, `pileup-web`).
+- Docker Compose for self hosted deployment.
+
+## Deployment and Setup
+
+### Self-Hosted (Docker Compose)
 
 ```bash
+# Download setup files
 curl -sSL "https://raw.githubusercontent.com/riccardo-modina/PileUp/main/install.sh" | bash
-```
 
-This will download the necessary `docker-compose.yml` and `.env` files. Fill in the `.env` with your database credentials.
+# Configure environment
+# Edit .env with your credentials
 
-Once configured, start the application:
-
-```bash
+# Start containers
 docker compose up -d
 ```
 
-## Using PileUp as an App
+### Local Development
 
-Since PileUp is a PWA, you can add it to your home screen:
+Backend:
+```bash
+cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+./start.sh
+```
 
--   **iOS (Safari)**: Tap the **Share** icon and select **"Add to Home Screen"**.
--   **Android (Chrome)**: Tap the **three dots** menu and select **"Install app"** or **"Add to Home Screen"**.
--   **Desktop (Chrome/Edge)**: Click the **Install** icon in the address bar.
+Frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
----
+iOS App:
+Open `pileup-ios/pileup-ios.xcodeproj` in Xcode.
 
-Built by [riccardomodina](https://github.com/riccardo-modina)
