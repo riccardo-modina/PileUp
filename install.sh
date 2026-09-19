@@ -3,12 +3,12 @@
 echo "Setting up PileUp..."
 
 # download docker-compose.yaml
-curl -s -O https://raw.githubusercontent.com/GodzillaWasTaken/PileUp/main/docker-compose.yaml
+curl -s -O https://raw.githubusercontent.com/riccardo-modina/PileUp/main/docker-compose.yaml
 
 # download .env only if it doesn't exist
 if [ ! -f .env ]; then
     echo "Creating .env from example..."
-    curl -s -o .env https://raw.githubusercontent.com/GodzillaWasTaken/PileUp/main/.env_example
+    curl -s -o .env https://raw.githubusercontent.com/riccardo-modina/PileUp/main/.env_example
 else
     echo ".env already exists, skipping download to protect your secrets."
 fi
