@@ -76,8 +76,20 @@ class AddTransactionViewModel: ObservableObject {
     // E2EE Master Key passed from AuthViewModel or Keychain
     var masterKey: String? = nil
     
-    init(masterKey: String? = nil) {
+    private let categoryAPI: CategoryAPIProtocol
+    private let accountAPI: AccountAPIProtocol
+    private let transactionAPI: TransactionAPIProtocol
+    
+    init(
+        masterKey: String? = nil,
+        categoryAPI: CategoryAPIProtocol = CategoryAPI.shared,
+        accountAPI: AccountAPIProtocol = AccountAPI.shared,
+        transactionAPI: TransactionAPIProtocol = TransactionAPI.shared
+    ) {
         self.masterKey = masterKey
+        self.categoryAPI = categoryAPI
+        self.accountAPI = accountAPI
+        self.transactionAPI = transactionAPI
         fetchCategoriesAndAccounts()
     }
     
@@ -252,10 +264,9 @@ class AddTransactionViewModel: ObservableObject {
         
         Task {
             do {
-                // Fetch categories
-                async let catDataTask: [CategoryItem] = NetworkManager.shared.request(endpoint: "categorie/?page_size=all")
-                // Fetch accounts
-                async let accDataTask: [AccountItem] = NetworkManager.shared.request(endpoint: "conti/?page_size=all")
+                // Fetch categories and accounts in parallel via dedicated APIs
+                async let catDataTask = self.categoryAPI.getAllCategories()
+                async let accDataTask = self.accountAPI.getAllAccounts()
                 
                 let (fetchedCats, fetchedAccs) = try await (catDataTask, accDataTask)
                 
@@ -381,17 +392,7 @@ class AddTransactionViewModel: ObservableObject {
         
         Task {
             do {
-                guard let body = try? JSONEncoder().encode(payload) else {
-                    self.errorMessage = "Errore durante la codifica dei dati"
-                    self.isSubmitting = false
-                    return
-                }
-                
-                let _: MovementResponse = try await NetworkManager.shared.request(
-                    endpoint: "movimenti/",
-                    method: "POST",
-                    body: body
-                )
+                let _ = try await self.transactionAPI.createMovement(payload: payload)
                 
                 self.isSubmitting = false
                 self.saveSuccess = true

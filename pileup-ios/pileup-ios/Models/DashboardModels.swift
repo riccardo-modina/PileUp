@@ -1,12 +1,12 @@
 import Foundation
 
-struct MonthlyStat: Codable, Identifiable {
+nonisolated struct MonthlyStat: Codable, Identifiable, Sendable {
     var id: String { month }
     let month: String
     let amount: Double
 }
 
-struct MonthlyStatsResponse: Codable {
+nonisolated struct MonthlyStatsResponse: Codable, Sendable {
     let year: String
     let month: String?
     let income: [MonthlyStat]

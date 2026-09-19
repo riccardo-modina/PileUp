@@ -12,7 +12,16 @@ class AuthViewModel: ObservableObject {
     @Published var masterKey: String? = nil
     @Published var globalSettings: GlobalSettings? = nil
     
-    init() {
+    private let authAPI: AuthAPIProtocol
+    private let settingsAPI: SettingsAPIProtocol
+    
+    init(
+        authAPI: AuthAPIProtocol = AuthAPI.shared,
+        settingsAPI: SettingsAPIProtocol = SettingsAPI.shared
+    ) {
+        self.authAPI = authAPI
+        self.settingsAPI = settingsAPI
+        
         checkAuthStatus()
         fetchGlobalSettings()
         
@@ -32,7 +41,7 @@ class AuthViewModel: ObservableObject {
     func fetchGlobalSettings() {
         Task { @MainActor in
             do {
-                let settings: GlobalSettings = try await NetworkManager.shared.request(endpoint: "settings/")
+                let settings = try await self.settingsAPI.getGlobalSettings()
                 self.globalSettings = settings
             } catch {
                 // Fallback silenzioso in caso di errore fetch settings
@@ -66,16 +75,11 @@ class AuthViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        let parameters = ["username": username, "password": password]
-        guard let body = try? JSONSerialization.data(withJSONObject: parameters) else {
-            self.errorMessage = "Data encoding error"
-            self.isLoading = false
-            return
-        }
+        let credentials = LoginRequest(username: username, password: password)
         
         Task { @MainActor in
             do {
-                let response: TokenResponse = try await NetworkManager.shared.request(endpoint: "auth/jwt/create/", method: "POST", body: body)
+                let response = try await self.authAPI.login(credentials: credentials)
                 UserDefaults.standard.set(response.access, forKey: "authToken")
                 UserDefaults.standard.set(response.refresh, forKey: "refreshToken") // Save refresh token
                 UserDefaults.standard.set(username, forKey: "username") // Save username right after successful login
@@ -93,7 +97,7 @@ class AuthViewModel: ObservableObject {
         
         Task { @MainActor in
             do {
-                let profile: UserProfile = try await NetworkManager.shared.request(endpoint: "auth/profile/")
+                let profile = try await self.authAPI.getUserProfile()
                 self.isLoading = false
                 self.userProfile = profile
                 
@@ -145,27 +149,16 @@ class AuthViewModel: ObservableObject {
             return nil
         }
         
-        var parameters: [String: Any] = [
-            "username": username,
-            "email": email,
-            "password": password,
-            "encrypted_master_key": encryptedMasterKey
-        ]
-        
-        if let invite = inviteCode, !invite.isEmpty {
-            parameters["invite_code"] = invite
-        }
-        
-        guard let body = try? JSONSerialization.data(withJSONObject: parameters) else {
-            await MainActor.run {
-                self.errorMessage = "Data encoding error"
-                self.isLoading = false
-            }
-            return nil
-        }
+        let request = RegisterRequest(
+            username: username,
+            email: email,
+            password: password,
+            encrypted_master_key: encryptedMasterKey,
+            invite_code: inviteCode
+        )
         
         do {
-            let _: UserProfile = try await NetworkManager.shared.request(endpoint: "auth/register/", method: "POST", body: body)
+            let _ = try await authAPI.register(request: request)
             await MainActor.run { self.isLoading = false }
             return newMasterKey
         } catch {

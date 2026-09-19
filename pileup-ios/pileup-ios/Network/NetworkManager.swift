@@ -19,12 +19,15 @@ actor NetworkManager {
     
     private init() {}
     
-    func request<T: Decodable>(endpoint: String, method: String = "GET", body: Data? = nil) async throws -> T {
-        guard let url = URL(string: baseURL + endpoint) else {
-            throw NSError(domain: "Network", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
-        }
+    func request<T: Decodable & Sendable>(
+        endpoint: String,
+        method: String = "GET",
+        queryItems: [URLQueryItem]? = nil,
+        body: Data? = nil
+    ) async throws -> T {
+        let fullURL = try buildURL(endpoint: endpoint, queryItems: queryItems)
         
-        var request = URLRequest(url: url)
+        var request = URLRequest(url: fullURL)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
@@ -41,12 +44,10 @@ actor NetworkManager {
         if let httpResponse = response as? HTTPURLResponse {
             // If token expired, try to refresh
             if httpResponse.statusCode == 401 && endpoint != "auth/jwt/refresh/" && endpoint != "auth/jwt/create/" && endpoint != "auth/register/" {
-                
                 let refreshSuccess = try await refreshAccessToken()
-                
                 if refreshSuccess {
                     // Retry original request
-                    return try await self.request(endpoint: endpoint, method: method, body: body)
+                    return try await self.request(endpoint: endpoint, method: method, queryItems: queryItems, body: body)
                 } else {
                     // Logout if refresh fails
                     await MainActor.run {
@@ -57,11 +58,74 @@ actor NetworkManager {
             }
             
             if !(200...299).contains(httpResponse.statusCode) {
-                throw NSError(domain: "Network", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(httpResponse.statusCode)"])
+                let serverMessage = String(data: data, encoding: .utf8) ?? "Server error"
+                throw NSError(domain: "Network", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "\(serverMessage) (\(httpResponse.statusCode))"])
             }
         }
         
         return try JSONDecoder().decode(T.self, from: data)
+    }
+    
+    func request(
+        endpoint: String,
+        method: String = "GET",
+        queryItems: [URLQueryItem]? = nil,
+        body: Data? = nil
+    ) async throws {
+        let fullURL = try buildURL(endpoint: endpoint, queryItems: queryItems)
+        
+        var request = URLRequest(url: fullURL)
+        request.httpMethod = method
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = UserDefaults.standard.string(forKey: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        if let body = body {
+            request.httpBody = body
+        }
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            if httpResponse.statusCode == 401 && endpoint != "auth/jwt/refresh/" && endpoint != "auth/jwt/create/" && endpoint != "auth/register/" {
+                let refreshSuccess = try await refreshAccessToken()
+                if refreshSuccess {
+                    return try await self.request(endpoint: endpoint, method: method, queryItems: queryItems, body: body)
+                } else {
+                    await MainActor.run {
+                        NotificationCenter.default.post(name: NSNotification.Name("SessionExpired"), object: nil)
+                    }
+                    throw NSError(domain: "Network", code: 401, userInfo: [NSLocalizedDescriptionKey: "Session expired."])
+                }
+            }
+            
+            if !(200...299).contains(httpResponse.statusCode) {
+                let serverMessage = String(data: data, encoding: .utf8) ?? "Server error"
+                throw NSError(domain: "Network", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "\(serverMessage) (\(httpResponse.statusCode))"])
+            }
+        }
+    }
+    
+    private func buildURL(endpoint: String, queryItems: [URLQueryItem]?) throws -> URL {
+        let baseString = baseURL.hasSuffix("/") || endpoint.hasPrefix("/") ? baseURL + endpoint : baseURL + "/" + endpoint
+        
+        guard var components = URLComponents(string: baseString) else {
+            throw NSError(domain: "Network", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid URL: \(baseString)"])
+        }
+        
+        if let queryItems = queryItems, !queryItems.isEmpty {
+            var existingItems = components.queryItems ?? []
+            existingItems.append(contentsOf: queryItems)
+            components.queryItems = existingItems
+        }
+        
+        guard let url = components.url else {
+            throw NSError(domain: "Network", code: 400, userInfo: [NSLocalizedDescriptionKey: "Cannot create URL from components: \(baseString)"])
+        }
+        
+        return url
     }
     
     private func refreshAccessToken() async throws -> Bool {

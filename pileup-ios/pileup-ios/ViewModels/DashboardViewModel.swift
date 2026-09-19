@@ -114,7 +114,10 @@ class DashboardViewModel: ObservableObject {
     // Cache for annual totals of each year (used in yearly bar chart)
     @Published var yearlyTotals: [Int: (income: Double, expense: Double)] = [:]
     
-    init() {
+    private let statsAPI: StatsAPIProtocol
+    
+    init(statsAPI: StatsAPIProtocol = StatsAPI.shared) {
+        self.statsAPI = statsAPI
         fetchAllYearsTotals()
         fetchMonthlyStats()
     }
@@ -168,10 +171,9 @@ class DashboardViewModel: ObservableObject {
     }
     
     func fetchVisibleMonths(year: Int, months: [String]) {
-        let endpoint = "stats/monthly/?year=\(year)&months=\(months.joined(separator: ","))"
         Task { @MainActor in
             do {
-                let response: MonthlyStatsResponse = try await NetworkManager.shared.request(endpoint: endpoint, method: "GET")
+                let response = try await self.statsAPI.getMonthlyStats(year: "\(year)", months: months)
                 var existing = self.yearlyMovements[year] ?? (income: [], spending: [])
                 for inc in response.income {
                     if let idx = existing.income.firstIndex(where: { $0.month == inc.month }) {
@@ -197,7 +199,7 @@ class DashboardViewModel: ObservableObject {
     func fetchAllYearsTotals() {
         Task { @MainActor in
             do {
-                let response: MonthlyStatsResponse = try await NetworkManager.shared.request(endpoint: "stats/monthly/?year=Totale", method: "GET")
+                let response = try await self.statsAPI.getAllYearsTotals()
                 for inc in response.income {
                     if let y = Int(inc.month) {
                         var current = self.yearlyTotals[y] ?? (income: 0.0, expense: 0.0)
@@ -222,45 +224,43 @@ class DashboardViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        let endpoint = "stats/monthly/"
-        var queryItems: [URLQueryItem] = []
         let selectedYear: Int
+        let fetchTask: Task<MonthlyStatsResponse, Error>
         
         switch selectedPeriod {
         case .monthYear(let month, let year):
             selectedYear = year
-            queryItems.append(URLQueryItem(name: "year", value: "\(year)"))
-            
-            // Query only the 4 visible months (no unnecessary 12-month calculation)
             let visible = visibleMonths(for: month, year: year)
             let currentYearMonths = visible.filter { $0.year == year }.map { "\($0.month)" }
-            if !currentYearMonths.isEmpty {
-                queryItems.append(URLQueryItem(name: "months", value: currentYearMonths.joined(separator: ",")))
-            }
-            
-            // If visible months span across the previous year boundary, fetch only those specific visible months
             let prevYearMonths = visible.filter { $0.year == year - 1 }.map { "\($0.month)" }
+            
             if !prevYearMonths.isEmpty {
                 fetchVisibleMonths(year: year - 1, months: prevYearMonths)
             }
+            
+            fetchTask = Task {
+                try await self.statsAPI.getMonthlyStats(year: "\(year)", months: currentYearMonths.isEmpty ? nil : currentYearMonths)
+            }
+            
         case .year(let year):
             selectedYear = year
-            queryItems.append(URLQueryItem(name: "year", value: "\(year)"))
             if yearlyTotals.isEmpty {
                 fetchAllYearsTotals()
             }
+            fetchTask = Task {
+                try await self.statsAPI.getMonthlyStats(year: "\(year)", months: nil)
+            }
+            
         case .total:
             selectedYear = Calendar.current.component(.year, from: Date())
-            queryItems.append(URLQueryItem(name: "year", value: "Totale"))
+            fetchTask = Task {
+                try await self.statsAPI.getAllYearsTotals()
+            }
         }
-        
-        var urlComponents = URLComponents(string: endpoint)
-        urlComponents?.queryItems = queryItems
-        let finalEndpoint = urlComponents?.url?.absoluteString ?? endpoint
         
         Task { @MainActor in
             do {
-                let response: MonthlyStatsResponse = try await NetworkManager.shared.request(endpoint: finalEndpoint, method: "GET")
+                let response = try await fetchTask.value
                 self.isLoading = false
                 
                 var existing = self.yearlyMovements[selectedYear] ?? (income: [], spending: [])

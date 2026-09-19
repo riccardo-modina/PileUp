@@ -39,13 +39,14 @@ enum MovementType: String, CaseIterable, Identifiable, Codable {
 }
 
 /// Category model used in transaction forms.
-struct CategoryItem: Identifiable, Codable, Hashable {
+nonisolated struct CategoryItem: Identifiable, Codable, Hashable, Sendable {
     let id: Int
     let nome: String
     let tipo: String
     let color: String?
     let is_system: Bool?
     
+    @MainActor
     var displayColor: Color {
         if let hex = color, !hex.isEmpty {
             return Color(hex: hex)
@@ -59,7 +60,7 @@ struct CategoryItem: Identifiable, Codable, Hashable {
 }
 
 /// Account model used in transaction forms.
-struct AccountItem: Identifiable, Codable, Hashable {
+nonisolated struct AccountItem: Identifiable, Codable, Hashable, Sendable {
     let id: Int
     let nome: String
     let tipo: String?
@@ -67,6 +68,7 @@ struct AccountItem: Identifiable, Codable, Hashable {
     let color: String?
     let is_system: Bool?
     
+    @MainActor
     var displayColor: Color {
         if let hex = color, !hex.isEmpty {
             return Color(hex: hex)
@@ -80,7 +82,7 @@ struct AccountItem: Identifiable, Codable, Hashable {
 }
 
 /// Payload sent to POST /movimenti/.
-struct MovementPayload: Codable {
+nonisolated struct MovementPayload: Codable, Sendable {
     let titolo: String
     let importo: Double
     let data: String // YYYY-MM-DD
@@ -90,7 +92,7 @@ struct MovementPayload: Codable {
 }
 
 /// Response returned when creating or updating a movement.
-struct MovementResponse: Codable {
+nonisolated struct MovementResponse: Codable, Sendable {
     let id: Int?
     let titolo: String?
     let importo: Double?
@@ -125,7 +127,7 @@ struct MovementResponse: Codable {
 }
 
 /// Generic container for paginated list endpoints fallback.
-struct PaginatedListResponse<T: Codable>: Codable {
+nonisolated struct PaginatedListResponse<T: Codable & Sendable>: Codable, Sendable {
     let count: Int?
     let results: [T]
 }
