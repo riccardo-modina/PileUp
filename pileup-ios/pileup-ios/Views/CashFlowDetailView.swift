@@ -40,6 +40,12 @@ struct CashFlowDetailView: View {
             VStack(spacing: 0) {
                 headerBar
                 
+                if let err = viewModel.errorMessage {
+                    ErrorBanner(message: err)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 6)
+                }
+                
                 if viewModel.isLoading && viewModel.movements.isEmpty {
                     loadingView
                 } else {

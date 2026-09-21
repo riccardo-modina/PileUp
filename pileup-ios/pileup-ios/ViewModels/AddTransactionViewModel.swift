@@ -283,7 +283,7 @@ class AddTransactionViewModel: ObservableObject {
                 }
             } catch {
                 self.isLoadingData = false
-                self.errorMessage = "Impossibile caricare categorie e conti: \(error.localizedDescription)"
+                self.errorMessage = ErrorHandler.format(error)
             }
         }
     }
@@ -405,7 +405,7 @@ class AddTransactionViewModel: ObservableObject {
             } catch {
                 self.isSubmitting = false
                 print("Error saving movement: \(error)")
-                self.errorMessage = "Errore durante il salvataggio: \(error.localizedDescription)"
+                self.errorMessage = ErrorHandler.format(error)
                 HapticHelper.error()
             }
         }

@@ -193,7 +193,7 @@ final class CashFlowDetailViewModel: ObservableObject {
                 self.isLoading = false
             } catch {
                 if !Task.isCancelled {
-                    self.errorMessage = "Errore nel caricamento: \(error.localizedDescription)"
+                    self.errorMessage = ErrorHandler.format(error)
                     self.isLoading = false
                 }
             }
@@ -292,7 +292,7 @@ final class CashFlowDetailViewModel: ObservableObject {
         } catch {
             print("Failed to delete movement: \(error)")
             HapticHelper.error()
-            self.errorMessage = "Impossibile eliminare: \(error.localizedDescription)"
+            self.errorMessage = ErrorHandler.format(error)
         }
     }
     

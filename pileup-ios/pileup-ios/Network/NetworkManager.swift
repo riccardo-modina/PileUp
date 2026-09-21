@@ -53,13 +53,12 @@ actor NetworkManager {
                     await MainActor.run {
                         NotificationCenter.default.post(name: NSNotification.Name("SessionExpired"), object: nil)
                     }
-                    throw NSError(domain: "Network", code: 401, userInfo: [NSLocalizedDescriptionKey: "Session expired."])
+                    throw AppError.sessionExpired
                 }
             }
             
             if !(200...299).contains(httpResponse.statusCode) {
-                let serverMessage = String(data: data, encoding: .utf8) ?? "Server error"
-                throw NSError(domain: "Network", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "\(serverMessage) (\(httpResponse.statusCode))"])
+                throw ErrorHandler.parseBackendError(data: data, statusCode: httpResponse.statusCode)
             }
         }
         
@@ -97,13 +96,12 @@ actor NetworkManager {
                     await MainActor.run {
                         NotificationCenter.default.post(name: NSNotification.Name("SessionExpired"), object: nil)
                     }
-                    throw NSError(domain: "Network", code: 401, userInfo: [NSLocalizedDescriptionKey: "Session expired."])
+                    throw AppError.sessionExpired
                 }
             }
             
             if !(200...299).contains(httpResponse.statusCode) {
-                let serverMessage = String(data: data, encoding: .utf8) ?? "Server error"
-                throw NSError(domain: "Network", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "\(serverMessage) (\(httpResponse.statusCode))"])
+                throw ErrorHandler.parseBackendError(data: data, statusCode: httpResponse.statusCode)
             }
         }
     }
@@ -112,7 +110,7 @@ actor NetworkManager {
         let baseString = baseURL.hasSuffix("/") || endpoint.hasPrefix("/") ? baseURL + endpoint : baseURL + "/" + endpoint
         
         guard var components = URLComponents(string: baseString) else {
-            throw NSError(domain: "Network", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid URL: \(baseString)"])
+            throw AppError.invalidURL
         }
         
         if let queryItems = queryItems, !queryItems.isEmpty {

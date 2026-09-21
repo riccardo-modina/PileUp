@@ -60,7 +60,7 @@ class AuthViewModel: ObservableObject {
             }
         } else {
             DispatchQueue.main.async {
-                self.errorMessage = "Face ID non riuscito o annullato. Inserisci la password."
+                self.errorMessage = AppError.biometricsFailed.errorDescription
             }
         }
     }
@@ -86,7 +86,7 @@ class AuthViewModel: ObservableObject {
                 self.fetchProfileAndDeriveKey(password: password, username: username)
             } catch {
                 self.isLoading = false
-                self.errorMessage = "Invalid credentials or network error. (\(error.localizedDescription))"
+                self.errorMessage = ErrorHandler.format(error)
             }
         }
     }
@@ -117,7 +117,7 @@ class AuthViewModel: ObservableObject {
                         self.isAuthenticated = true
                         self.needsUnlock = false
                     } else {
-                        self.errorMessage = "Password non valida per la decrittografia E2E."
+                        self.errorMessage = AppError.invalidCredentials.errorDescription
                     }
                 } else {
                     // Registration hasn't set an E2E key yet, or older account.
@@ -127,7 +127,7 @@ class AuthViewModel: ObservableObject {
                 }
             } catch {
                 self.isLoading = false
-                self.errorMessage = "Errore durante il recupero del profilo: \(error.localizedDescription)"
+                self.errorMessage = ErrorHandler.format(error)
             }
         }
     }
@@ -143,7 +143,7 @@ class AuthViewModel: ObservableObject {
         let kek = CryptoHelper.deriveKeyEncryptionKey(password: password, salt: username)
         guard let encryptedMasterKey = CryptoHelper.encryptData(newMasterKey, key: kek) else {
             await MainActor.run {
-                self.errorMessage = "Errore nella generazione delle chiavi crittografiche."
+                self.errorMessage = AppError.keyDerivationFailed.errorDescription
                 self.isLoading = false
             }
             return nil
@@ -163,7 +163,7 @@ class AuthViewModel: ObservableObject {
             return newMasterKey
         } catch {
             await MainActor.run {
-                self.errorMessage = "Errore durante la registrazione. L'username potrebbe essere già in uso. (\(error.localizedDescription))"
+                self.errorMessage = ErrorHandler.format(error)
                 self.isLoading = false
             }
             throw error

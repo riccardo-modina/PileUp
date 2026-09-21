@@ -814,13 +814,7 @@ struct AddTransactionView: View {
             
             // Server error message if present
             if let err = viewModel.errorMessage {
-                Text(err)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(AppTheme.Colors.negative)
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(AppTheme.Colors.negative.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                ErrorBanner(message: err)
             }
         }
     }

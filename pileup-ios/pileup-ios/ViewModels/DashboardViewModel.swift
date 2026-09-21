@@ -321,7 +321,7 @@ class DashboardViewModel: ObservableObject {
                 }
             } catch {
                 self.isLoading = false
-                self.errorMessage = "Error fetching stats: \(error.localizedDescription)"
+                self.errorMessage = ErrorHandler.format(error)
             }
         }
     }
