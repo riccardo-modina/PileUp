@@ -6,22 +6,28 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("Account")) {
+            Section(header: Text("Account")
+                .font(.montserrat(size: 12, weight: .semibold))
+                .foregroundColor(AppTheme.Colors.textLight)) {
                 Button(action: {
                     showLogoutConfirmation = true
                 }) {
-                    HStack {
+                    HStack(spacing: 12) {
                         Image(systemName: "rectangle.portrait.and.arrow.right")
+                            .font(.system(size: 16, weight: .medium))
                         Text("Esci dal profilo")
-                            .fontWeight(.medium)
+                            .font(.montserrat(size: 15, weight: .medium))
                     }
                     .foregroundColor(AppTheme.Colors.negative)
                 }
+                .listRowBackground(AppTheme.Colors.cardBackground)
             }
             
             // Qui potrai aggiungere in futuro altre impostazioni
             // come cambio tema, notifiche, lingua, ecc.
         }
+        .scrollContentBackground(.hidden)
+        .background(AppTheme.Colors.background.ignoresSafeArea())
         .navigationTitle("Impostazioni")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarHidden(false) // Assicura che la barra di navigazione torni visibile

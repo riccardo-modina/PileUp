@@ -7,12 +7,20 @@ struct ServerSettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Configurazione Server"), footer: Text("Lascia vuoto per utilizzare il server cloud. Assicurati di includere http:// o https:// e terminare con /api/ se utilizzi un server locale/personalizzato.")) {
+                Section(header: Text("Configurazione Server")
+                    .font(.montserrat(size: 12, weight: .semibold))
+                    .foregroundColor(AppTheme.Colors.textLight),
+                        footer: Text("Lascia vuoto per utilizzare il server cloud. Assicurati di includere http:// o https:// e terminare con /api/ se utilizzi un server locale/personalizzato.")
+                    .font(.montserrat(size: 12))
+                    .foregroundColor(AppTheme.Colors.textLight)) {
                     TextField("Es. http://192.168.1.100:8080/api/", text: $customURL)
+                        .font(.montserrat(size: 15))
+                        .foregroundColor(AppTheme.Colors.text)
                         .keyboardType(.URL)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                 }
+                .listRowBackground(AppTheme.Colors.cardBackground)
                 
                 Section {
                     Button(action: {
@@ -20,18 +28,24 @@ struct ServerSettingsView: View {
                         saveURL()
                     }) {
                         Text("Ripristina Predefinito")
-                            .foregroundColor(.red)
+                            .font(.montserrat(size: 15, weight: .medium))
+                            .foregroundColor(AppTheme.Colors.negative)
                     }
                 }
+                .listRowBackground(AppTheme.Colors.cardBackground)
             }
+            .scrollContentBackground(.hidden)
+            .background(AppTheme.Colors.background.ignoresSafeArea())
             .navigationBarTitle("Impostazioni Server", displayMode: .inline)
             .navigationBarItems(
                 leading: Button("Annulla") {
                     presentationMode.wrappedValue.dismiss()
-                },
+                }
+                .foregroundColor(AppTheme.Colors.primary),
                 trailing: Button("Salva") {
                     saveURL()
                 }
+                .foregroundColor(AppTheme.Colors.primary)
                 .fontWeight(.bold)
             )
             .onAppear {
