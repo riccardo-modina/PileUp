@@ -221,6 +221,13 @@ struct CashFlowView: View {
         .onAppear {
             dashboardViewModel.fetchMonthlyStats()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetCashFlowDetail"))) { _ in
+            if activeDetailType != nil {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                    activeDetailType = nil
+                }
+            }
+        }
     }
 }
 

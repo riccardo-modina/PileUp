@@ -43,6 +43,19 @@ struct BottomMenu: View {
     @Binding var selectedTab: AppTab
     let onAddTapped: () -> Void
     let onMenuTapped: () -> Void
+    var onTabReselected: ((AppTab) -> Void)?
+    
+    init(
+        selectedTab: Binding<AppTab>,
+        onAddTapped: @escaping () -> Void,
+        onMenuTapped: @escaping () -> Void,
+        onTabReselected: ((AppTab) -> Void)? = nil
+    ) {
+        self._selectedTab = selectedTab
+        self.onAddTapped = onAddTapped
+        self.onMenuTapped = onMenuTapped
+        self.onTabReselected = onTabReselected
+    }
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -108,6 +121,12 @@ struct BottomMenu: View {
             if tab == .menu {
                 onMenuTapped()
             } else {
+                if tab == selectedTab {
+                    onTabReselected?(tab)
+                }
+                if tab == .cashflow {
+                    NotificationCenter.default.post(name: NSNotification.Name("ResetCashFlowDetail"), object: nil)
+                }
                 selectedTab = tab
             }
         }) {
