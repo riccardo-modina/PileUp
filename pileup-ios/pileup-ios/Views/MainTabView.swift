@@ -11,6 +11,9 @@ struct MainTabView: View {
     // Shared DashboardViewModel so all tabs share synchronized period & statistics
     @StateObject private var dashboardViewModel = DashboardViewModel()
     
+    // Adjust the bottom padding to not let the menu touch the safe area
+    private let bottomMenuPadding: CGFloat = 22
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
@@ -63,7 +66,7 @@ struct MainTabView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                     .shadow(color: Color.black.opacity(0.18), radius: 25, x: 0, y: -6)
                     .padding(.horizontal, 10)
-                    .padding(.bottom, 94) // Resting cleanly above the floating bottom menu
+                    .padding(.bottom, bottomMenuPadding + 82) // Resting cleanly above the floating bottom menu
                     .transition(.asymmetric(
                         insertion: .move(edge: .bottom).combined(with: .opacity),
                         removal: .move(edge: .bottom).combined(with: .opacity)
@@ -95,7 +98,7 @@ struct MainTabView: View {
                 )
                 .frame(maxWidth: 550)
                 .padding(.horizontal, 16)
-                .padding(.bottom, max(geometry.safeAreaInsets.bottom, 12))
+                .padding(.bottom, bottomMenuPadding)
                 .zIndex(30)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
