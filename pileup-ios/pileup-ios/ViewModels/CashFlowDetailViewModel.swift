@@ -20,7 +20,9 @@ final class CashFlowDetailViewModel: ObservableObject {
     @Published var categories: [CategoryItem] = []
     @Published var selectedCategoryId: Int? = nil {
         didSet {
-            recalculateFilteredMovements()
+            if oldValue != selectedCategoryId {
+                loadMovements(reset: true)
+            }
         }
     }
     @Published var searchText: String = "" {
@@ -34,15 +36,17 @@ final class CashFlowDetailViewModel: ObservableObject {
     @Published var periodTotal: Double = 0.0
     
     @Published var isLoading: Bool = false
-    @Published var isLoadingBackground: Bool = false
+    @Published var isLoadingMore: Bool = false
     @Published var hasMore: Bool = false
     @Published var errorMessage: String? = nil
     
     // MARK: - Dependencies
     private let transactionAPI: TransactionAPIProtocol
     private let categoryAPI: CategoryAPIProtocol
+    private let pageSize: Int = 10
     private var currentPage: Int = 1
-    private var currentFetchTask: Task<Void, Never>?
+    private var currentMovementsTask: Task<Void, Never>?
+    private var currentStatsTask: Task<Void, Never>?
     
     // Fallback curated palette for categories without hex colors
     private let fallbackPalette: [Color] = [
@@ -106,47 +110,31 @@ final class CashFlowDetailViewModel: ObservableObject {
     // MARK: - Data Fetching
     
     func loadData(reset: Bool = true) {
-        currentFetchTask?.cancel()
+        let (yearParam, monthParam) = extractPeriodParams()
         
-        currentFetchTask = Task { [weak self] in
+        fetchChartStats(yearParam: yearParam, monthParam: monthParam)
+        loadMovements(reset: true)
+    }
+    
+    private func extractPeriodParams() -> (year: String?, month: String?) {
+        switch period {
+        case .monthYear(let m, let y):
+            return ("\(y)", "\(m)")
+        case .year(let y):
+            return ("\(y)", nil)
+        case .total:
+            return ("Totale", nil)
+        }
+    }
+    
+    // MARK: - Chart Stats (Full month distribution without crypto decryption)
+    private func fetchChartStats(yearParam: String?, monthParam: String?) {
+        currentStatsTask?.cancel()
+        currentStatsTask = Task { [weak self] in
             guard let self = self else { return }
-            
-            if reset {
-                self.isLoading = true
-                self.currentPage = 1
-                self.errorMessage = nil
-            }
-            
-            // Extract year and month params
-            var yearParam: String? = nil
-            var monthParam: String? = nil
-            
-            switch self.period {
-            case .monthYear(let m, let y):
-                yearParam = "\(y)"
-                monthParam = "\(m)"
-            case .year(let y):
-                yearParam = "\(y)"
-                monthParam = nil
-            case .total:
-                yearParam = "Totale"
-                monthParam = nil
-            }
-            
-            // 1. Load categories if not yet loaded
-            if self.categories.isEmpty {
-                do {
-                    let allCats = try await self.categoryAPI.getAllCategories()
-                    self.categories = allCats.filter { $0.tipo == self.movementType.rawValue }
-                } catch {
-                    print("Notice: could not prefetch categories: \(error)")
-                }
-            }
-            
-            // 2. Fetch movements
             do {
                 let response = try await self.transactionAPI.getPaginatedMovements(
-                    page: self.currentPage,
+                    page: 1,
                     pageSize: "500",
                     year: yearParam,
                     month: monthParam,
@@ -154,7 +142,92 @@ final class CashFlowDetailViewModel: ObservableObject {
                     categoria: nil
                 )
                 
-                // Decrypt titles using cached masterKey
+                guard !Task.isCancelled else { return }
+                
+                var categoryMap: [String: (id: Int?, name: String, amount: Double, color: Color, hex: String, count: Int)] = [:]
+                var total: Double = 0.0
+                
+                for item in response.results {
+                    total += item.importo
+                    let catKey = item.categoria != nil ? "\(item.categoria!.id)" : "unclassified"
+                    let catName = item.categoria?.nome ?? "Senza Categoria"
+                    let catId = item.categoria?.id
+                    let hex = item.categoria?.color ?? ""
+                    
+                    if var existing = categoryMap[catKey] {
+                        existing.amount += item.importo
+                        existing.count += 1
+                        categoryMap[catKey] = existing
+                    } else {
+                        let color: Color
+                        if !hex.isEmpty {
+                            color = Color(hex: hex)
+                        } else {
+                            let index = abs(catKey.hashValue) % self.fallbackPalette.count
+                            color = self.fallbackPalette[index]
+                        }
+                        categoryMap[catKey] = (id: catId, name: catName, amount: item.importo, color: color, hex: hex, count: 1)
+                    }
+                }
+                
+                var slices: [CategoryPieSlice] = []
+                for (key, val) in categoryMap {
+                    let percentage = total > 0 ? (val.amount / total) : 0.0
+                    slices.append(
+                        CategoryPieSlice(
+                            id: key,
+                            categoryId: val.id,
+                            name: val.name,
+                            amount: val.amount,
+                            percentage: percentage,
+                            color: val.color,
+                            hexColor: val.hex,
+                            count: val.count
+                        )
+                    )
+                }
+                
+                self.periodTotal = total
+                self.pieSlices = slices.sorted { $0.amount > $1.amount }
+            } catch {
+                print("Notice: could not load chart stats: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - Movements Paginated Loading (10 items per page)
+    func loadMovements(reset: Bool = false) {
+        if reset {
+            currentMovementsTask?.cancel()
+            currentPage = 1
+            hasMore = true
+            isLoading = true
+            movements = []
+            filteredMovements = []
+        } else {
+            guard hasMore && !isLoading && !isLoadingMore else { return }
+            isLoadingMore = true
+        }
+        
+        let targetPage = currentPage
+        let catFilter = selectedCategoryId
+        let (yearParam, monthParam) = extractPeriodParams()
+        
+        currentMovementsTask = Task { [weak self] in
+            guard let self = self else { return }
+            
+            do {
+                let response = try await self.transactionAPI.getPaginatedMovements(
+                    page: targetPage,
+                    pageSize: "\(self.pageSize)",
+                    year: yearParam,
+                    month: monthParam,
+                    tipo: self.movementType.rawValue,
+                    categoria: catFilter
+                )
+                
+                guard !Task.isCancelled else { return }
+                
                 let masterKey = KeychainManager.shared.getMasterKey()
                 let decryptedList = response.results.map { item -> MovementItem in
                     var decryptedTitle = item.titolo
@@ -188,79 +261,29 @@ final class CashFlowDetailViewModel: ObservableObject {
                 }
                 
                 self.hasMore = response.next != nil
-                self.calculatePieSlices()
                 self.recalculateFilteredMovements()
                 self.isLoading = false
+                self.isLoadingMore = false
             } catch {
                 if !Task.isCancelled {
                     self.errorMessage = ErrorHandler.format(error)
                     self.isLoading = false
+                    self.isLoadingMore = false
                 }
             }
         }
     }
     
-    // MARK: - Calculations
-    
-    private func calculatePieSlices() {
-        var categoryMap: [String: (id: Int?, name: String, amount: Double, color: Color, hex: String, count: Int)] = [:]
-        var total: Double = 0.0
-        
-        for item in movements {
-            total += item.importo
-            let catKey = item.categoria != nil ? "\(item.categoria!.id)" : "unclassified"
-            let catName = item.categoria?.nome ?? "Senza Categoria"
-            let catId = item.categoria?.id
-            let hex = item.categoria?.color ?? ""
-            
-            if var existing = categoryMap[catKey] {
-                existing.amount += item.importo
-                existing.count += 1
-                categoryMap[catKey] = existing
-            } else {
-                let color: Color
-                if !hex.isEmpty {
-                    color = Color(hex: hex)
-                } else {
-                    let index = abs(catKey.hashValue) % fallbackPalette.count
-                    color = fallbackPalette[index]
-                }
-                categoryMap[catKey] = (id: catId, name: catName, amount: item.importo, color: color, hex: hex, count: 1)
-            }
-        }
-        
-        self.periodTotal = total
-        
-        // Build slices sorted by amount descending
-        var slices: [CategoryPieSlice] = []
-        for (key, val) in categoryMap {
-            let percentage = total > 0 ? (val.amount / total) : 0.0
-            slices.append(
-                CategoryPieSlice(
-                    id: key,
-                    categoryId: val.id,
-                    name: val.name,
-                    amount: val.amount,
-                    percentage: percentage,
-                    color: val.color,
-                    hexColor: val.hex,
-                    count: val.count
-                )
-            )
-        }
-        
-        self.pieSlices = slices.sorted { $0.amount > $1.amount }
+    func loadMoreMovements() {
+        guard hasMore && !isLoading && !isLoadingMore else { return }
+        currentPage += 1
+        loadMovements(reset: false)
     }
     
     private func recalculateFilteredMovements() {
         var list = movements
         
-        // Filter by Category
-        if let catId = selectedCategoryId {
-            list = list.filter { $0.categoria?.id == catId }
-        }
-        
-        // Filter by Search text
+        // Filter by Search text if present
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if !query.isEmpty {
             list = list.filter { item in
@@ -282,10 +305,13 @@ final class CashFlowDetailViewModel: ObservableObject {
             
             // Remove locally
             movements.removeAll { $0.id == item.id }
-            calculatePieSlices()
             recalculateFilteredMovements()
+            periodTotal = max(0, periodTotal - item.importo)
             
             HapticHelper.success()
+            
+            let (yearParam, monthParam) = extractPeriodParams()
+            fetchChartStats(yearParam: yearParam, monthParam: monthParam)
             
             // Notify other screens to update
             NotificationCenter.default.post(name: NSNotification.Name("TransactionsUpdated"), object: nil)

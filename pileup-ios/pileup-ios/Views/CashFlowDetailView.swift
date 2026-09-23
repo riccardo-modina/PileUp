@@ -304,9 +304,24 @@ struct CashFlowDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 30)
             } else {
-                VStack(spacing: 8) {
+                LazyVStack(spacing: 8) {
                     ForEach(viewModel.filteredMovements) { item in
                         movementRow(item)
+                            .onAppear {
+                                if item.id == viewModel.filteredMovements.last?.id {
+                                    viewModel.loadMoreMovements()
+                                }
+                            }
+                    }
+                    
+                    if viewModel.isLoadingMore {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                                .scaleEffect(0.9)
+                                .padding(.vertical, 12)
+                            Spacer()
+                        }
                     }
                 }
                 .padding(.horizontal, 20)
