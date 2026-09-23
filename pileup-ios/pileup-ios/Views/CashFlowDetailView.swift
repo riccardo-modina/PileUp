@@ -54,7 +54,7 @@ struct CashFlowDetailView: View {
                             chartAndPeriodSection
                             
                             if !viewModel.pieSlices.isEmpty {
-                                categoryFilterPills
+                                categoryDropdownSection
                             }
                             
                             movementsSection
@@ -253,52 +253,18 @@ struct CashFlowDetailView: View {
     
 
     
-    // MARK: - Category Filter Pills
+    // MARK: - Category Dropdown Section (Reusable Component)
     
-    private var categoryFilterPills: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                let isAllSelected = viewModel.selectedCategoryId == nil
-                Button(action: {
-                    HapticHelper.selection()
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                        viewModel.selectedCategoryId = nil
-                    }
-                }) {
-                    Text("Tutte")
-                        .font(.system(size: 13, weight: isAllSelected ? .bold : .medium))
-                        .foregroundColor(isAllSelected ? .white : AppTheme.Colors.dynamicText)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Capsule().fill(isAllSelected ? AppTheme.Colors.primary : AppTheme.Colors.dynamicCardBackground))
-                        .overlay(Capsule().stroke(AppTheme.Colors.dynamicBorder.opacity(isAllSelected ? 0 : 0.6), lineWidth: 1))
-                }
-                .buttonStyle(.plain)
-                
-                ForEach(viewModel.pieSlices) { slice in
-                    let isSelected = viewModel.selectedCategoryId == slice.categoryId
-                    Button(action: {
-                        HapticHelper.selection()
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                            viewModel.selectCategoryFilter(slice.categoryId)
-                        }
-                    }) {
-                        HStack(spacing: 6) {
-                            Circle().fill(slice.color).frame(width: 8, height: 8)
-                            Text(slice.name)
-                                .font(.system(size: 13, weight: isSelected ? .bold : .medium))
-                                .foregroundColor(isSelected ? .white : AppTheme.Colors.dynamicText)
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Capsule().fill(isSelected ? slice.color : AppTheme.Colors.dynamicCardBackground))
-                        .overlay(Capsule().stroke(AppTheme.Colors.dynamicBorder.opacity(isSelected ? 0 : 0.6), lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, 20)
-        }
+    private var categoryDropdownSection: some View {
+        CategoryPickerField(
+            title: "Filtra per categoria",
+            items: viewModel.pieSlices.map { CategoryPickerItem(slice: $0) },
+            selectedId: $viewModel.selectedCategoryId,
+            showAllOption: true,
+            allOptionLabel: "Tutti i movimenti"
+        )
+        .id(viewModel.periodFormattedString)
+        .padding(.horizontal, 20)
     }
     
     // MARK: - Movements Section
@@ -352,14 +318,9 @@ struct CashFlowDetailView: View {
     
     private func movementRow(_ item: MovementItem) -> some View {
         HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(item.categoryDisplayColor.opacity(0.15))
-                    .frame(width: 42, height: 42)
-                Image(systemName: item.isIncome ? "arrow.down.left" : "arrow.up.right")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(item.categoryDisplayColor)
-            }
+            Circle()
+                .fill(item.categoryDisplayColor)
+                .frame(width: 13, height: 13)
             
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.titolo.isEmpty ? item.categoryName : item.titolo)
@@ -376,7 +337,7 @@ struct CashFlowDetailView: View {
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     Text(item.categoryName)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(item.categoryDisplayColor)
+                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
                         .lineLimit(1)
                 }
             }
@@ -386,7 +347,7 @@ struct CashFlowDetailView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text("\(item.isIncome ? "+" : "-") \(item.formattedAmount)")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundColor(item.isIncome ? AppTheme.Colors.moneyIn : AppTheme.Colors.moneyOut)
+                    .foregroundColor(AppTheme.Colors.dynamicText)
                 
                 if let acc = item.conto?.nome {
                     Text(acc)
@@ -437,5 +398,13 @@ struct CashFlowDetailView: View {
         outFormatter.locale = Locale(identifier: "it_IT")
         outFormatter.dateFormat = "d MMM yyyy"
         return outFormatter.string(from: date)
+    }
+    
+    private func formatCurrency(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencySymbol = "€"
+        formatter.locale = Locale(identifier: "it_IT")
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "€ %.2f", value)
     }
 }

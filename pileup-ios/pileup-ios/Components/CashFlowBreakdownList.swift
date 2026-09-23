@@ -37,11 +37,15 @@ struct CashFlowBreakdownList: View {
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                 
-                Text(formattedNetCurrency(netAmount))
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundColor(AppTheme.Colors.dynamicText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                CurrencyAmountText(
+                    formattedNetCurrency(netAmount),
+                    size: 29,
+                    weight: .semibold,
+                    design: .rounded,
+                    color: AppTheme.Colors.dynamicText
+                )
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
