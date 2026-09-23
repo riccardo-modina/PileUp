@@ -50,7 +50,7 @@ struct CategoryPieChart: View {
         GeometryReader { _ in
             ZStack {
                 ForEach(sliceAngles, id: \.slice.id) { item in
-                    let isSelected = selectedCategoryId == item.slice.categoryId
+                    let isSelected = selectedCategoryId != nil && selectedCategoryId == item.slice.categoryId
                     let sliceOpacity: Double = (selectedCategoryId == nil || isSelected) ? 1.0 : 0.3
                     let scaleValue: CGFloat = isSelected ? 1.04 : 1.0
                     
@@ -99,17 +99,21 @@ struct CategoryPieChart: View {
                     .minimumScaleFactor(0.65)
                     .padding(.horizontal, 14)
                 
-                Text(formatCurrency(slice.amount))
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundColor(AppTheme.Colors.dynamicText)
-                    .minimumScaleFactor(0.65)
-                    .lineLimit(1)
-                    .padding(.horizontal, 8)
-                    .contentTransition(.numericText())
-                    .animation(.easeInOut(duration: 0.25), value: slice.amount)
+                CurrencyAmountText(
+                    formatCurrency(slice.amount),
+                    size: 26,
+                    weight: .regular,
+                    design: .rounded,
+                    color: AppTheme.Colors.dynamicText
+                )
+                .minimumScaleFactor(0.65)
+                .lineLimit(1)
+                .padding(.horizontal, 8)
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.25), value: slice.amount)
                 
                 Text(String(format: "%.1f%%", slice.percentage * 100))
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundColor(slice.color)
             } else {
                 Text(title.uppercased())
@@ -118,14 +122,18 @@ struct CategoryPieChart: View {
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     .padding(.horizontal, 14)
                 
-                Text(formatCurrency(totalAmount))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(AppTheme.Colors.dynamicText)
-                    .minimumScaleFactor(0.65)
-                    .lineLimit(1)
-                    .padding(.horizontal, 8)
-                    .contentTransition(.numericText())
-                    .animation(.easeInOut(duration: 0.25), value: totalAmount)
+                CurrencyAmountText(
+                    formatCurrency(totalAmount),
+                    size: 28,
+                    weight: .regular,
+                    design: .rounded,
+                    color: AppTheme.Colors.dynamicText
+                )
+                .minimumScaleFactor(0.65)
+                .lineLimit(1)
+                .padding(.horizontal, 8)
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.25), value: totalAmount)
             }
         }
         .frame(width: chartDiameter - ringThickness * 2 - 6, height: chartDiameter - ringThickness * 2 - 6)
@@ -140,15 +148,12 @@ struct CategoryPieChart: View {
         }
     }
     
-    // MARK: - Empty Placeholder
+    // MARK: - Empty State Placeholder
     
     private var emptyDonutPlaceholder: some View {
         ZStack {
             Circle()
-                .stroke(
-                    AppTheme.Colors.dynamicBorder.opacity(0.35),
-                    style: StrokeStyle(lineWidth: ringThickness, lineCap: .round, dash: [8, 8])
-                )
+                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.4), lineWidth: ringThickness)
                 .frame(width: chartDiameter - ringThickness, height: chartDiameter - ringThickness)
             
             VStack(spacing: 4) {
@@ -157,9 +162,13 @@ struct CategoryPieChart: View {
                     .tracking(1.2)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                 
-                Text(formatCurrency(0.0))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(AppTheme.Colors.dynamicText)
+                CurrencyAmountText(
+                    formatCurrency(0.0),
+                    size: 28,
+                    weight: .regular,
+                    design: .rounded,
+                    color: AppTheme.Colors.dynamicText
+                )
             }
         }
     }

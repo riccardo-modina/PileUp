@@ -12,18 +12,7 @@ struct AddTransactionView: View {
     @FocusState private var isAmountFocused: Bool
     // Toggles inline calendar picker if user chooses a custom date
     @State private var showCustomDatePicker: Bool = false
-    // Category dropdown menu and search query
-    @State private var isCategoryDropdownOpen: Bool = false
-    @State private var categorySearchQuery: String = ""
-    
-    private var searchedCategories: [CategoryItem] {
-        let list = viewModel.filteredCategories
-        let query = categorySearchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
-        if query.isEmpty {
-            return list
-        }
-        return list.filter { $0.nome.localizedCaseInsensitiveContains(query) }
-    }
+
     
     // Success animation overlay states
     @State private var showSuccessOverlay: Bool = false
@@ -321,158 +310,29 @@ struct AddTransactionView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
-            // C. Category Selection (Dropdown Menu with Search Bar)
-            VStack(alignment: .leading, spacing: 8) {
-                Text("CATEGORIA")
-                    .font(.system(size: 11, weight: .bold))
-                    .tracking(1.5)
-                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                
-                VStack(spacing: 0) {
-                    // Dropdown Trigger Header
-                    Button(action: {
-                        HapticHelper.light()
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                            isCategoryDropdownOpen.toggle()
-                            if isCategoryDropdownOpen {
-                                isAmountFocused = false
-                            }
+            // C. Category Selection (Reusable CategoryPickerField)
+            CategoryPickerField(
+                title: "CATEGORIA",
+                placeholder: "Seleziona categoria",
+                items: viewModel.filteredCategories.map { CategoryPickerItem(category: $0) },
+                selectedId: Binding(
+                    get: { viewModel.selectedCategory?.id },
+                    set: { newId in
+                        if let newId = newId {
+                            viewModel.selectedCategory = viewModel.filteredCategories.first(where: { $0.id == newId })
+                        } else {
+                            viewModel.selectedCategory = nil
                         }
-                    }) {
-                        HStack(spacing: 12) {
-                            if let selected = viewModel.selectedCategory {
-                                Circle()
-                                    .fill(selected.displayColor)
-                                    .frame(width: 14, height: 14)
-                                Text(selected.nome)
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(AppTheme.Colors.dynamicText)
-                            } else {
-                                Circle()
-                                    .fill(AppTheme.Colors.dynamicSubtext.opacity(0.3))
-                                    .frame(width: 14, height: 14)
-                                Text("Seleziona categoria")
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                                .rotationEffect(.degrees(isCategoryDropdownOpen ? 180 : 0))
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                        .background(AppTheme.Colors.dynamicCardBackground)
                     }
-                    .buttonStyle(.plain)
-                    
-                    // Collapsible Dropdown Content with Search Bar & Filtered List
-                    if isCategoryDropdownOpen {
-                        Divider()
-                            .background(AppTheme.Colors.dynamicBorder)
-                        
-                        VStack(spacing: 10) {
-                            // Search Bar
-                            HStack(spacing: 8) {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                                
-                                TextField("Cerca categoria...", text: $categorySearchQuery)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(AppTheme.Colors.dynamicText)
-                                    .textInputAutocapitalization(.never)
-                                    .disableAutocorrection(true)
-                                
-                                if !categorySearchQuery.isEmpty {
-                                    Button(action: {
-                                        HapticHelper.light()
-                                        categorySearchQuery = ""
-                                    }) {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 9)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(AppTheme.Colors.dynamicBackground)
-                            )
-                            
-                            // Category Options List
-                            if searchedCategories.isEmpty {
-                                Text("Nessuna categoria trovata")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                                    .padding(.vertical, 16)
-                                    .frame(maxWidth: .infinity)
-                            } else {
-                                ScrollView(.vertical, showsIndicators: true) {
-                                    VStack(spacing: 2) {
-                                        ForEach(searchedCategories) { cat in
-                                            let isSelected = viewModel.selectedCategory?.id == cat.id
-                                            Button(action: {
-                                                HapticHelper.selection()
-                                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
-                                                    viewModel.selectedCategory = cat
-                                                    isCategoryDropdownOpen = false
-                                                    categorySearchQuery = ""
-                                                }
-                                            }) {
-                                                HStack(spacing: 12) {
-                                                    Circle()
-                                                        .fill(cat.displayColor)
-                                                        .frame(width: 10, height: 10)
-                                                    
-                                                    Text(cat.nome)
-                                                        .font(.system(size: 14, weight: isSelected ? .bold : .medium))
-                                                        .foregroundColor(AppTheme.Colors.dynamicText)
-                                                    
-                                                    Spacer()
-                                                    
-                                                    if isSelected {
-                                                        Image(systemName: "checkmark")
-                                                            .font(.system(size: 12, weight: .bold))
-                                                            .foregroundColor(cat.displayColor)
-                                                    }
-                                                }
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 10)
-                                                .background(
-                                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                        .fill(isSelected ? cat.displayColor.opacity(0.12) : Color.clear)
-                                                )
-                                            }
-                                            .buttonStyle(.plain)
-                                        }
-                                    }
-                                    .padding(.vertical, 4)
-                                }
-                                .frame(maxHeight: 200)
-                            }
-                        }
-                        .padding(12)
-                        .background(AppTheme.Colors.dynamicCardBackground)
-                    }
+                ),
+                showAllOption: false,
+                allowClear: false,
+                showError: viewModel.showCategoryError,
+                errorMessage: "Seleziona una categoria",
+                onTap: {
+                    isAmountFocused = false
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(viewModel.showCategoryError ? AppTheme.Colors.negative : AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: viewModel.showCategoryError ? 1.5 : 1)
-                )
-                
-                if viewModel.showCategoryError {
-                    InputError(message: "Seleziona una categoria", type: .error)
-                        .padding(.horizontal, 4)
-                }
-            }
+            )
         }
     }
     
