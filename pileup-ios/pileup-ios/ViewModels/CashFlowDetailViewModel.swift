@@ -154,7 +154,7 @@ final class CashFlowDetailViewModel: ObservableObject {
                     categoria: nil
                 )
                 
-                // Decrypt titles using masterKey
+                // Decrypt titles using cached masterKey
                 let masterKey = KeychainManager.shared.getMasterKey()
                 let decryptedList = response.results.map { item -> MovementItem in
                     var decryptedTitle = item.titolo
