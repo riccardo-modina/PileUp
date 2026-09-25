@@ -102,7 +102,7 @@ struct CategoryPieChart: View {
                 CurrencyAmountText(
                     formatCurrency(slice.amount),
                     size: 26,
-                    weight: .regular,
+                    weight: .semibold,
                     design: .rounded,
                     color: AppTheme.Colors.dynamicText
                 )
