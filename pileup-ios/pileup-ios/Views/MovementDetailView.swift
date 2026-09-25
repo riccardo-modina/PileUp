@@ -399,23 +399,49 @@ struct MovementDetailView: View {
                             )
                     }
                     
-                    // Date Picker
+                    // Date Field
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Data")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
                         
-                        DatePicker(
-                            "",
-                            selection: $editDate,
-                            in: ...Date(),
-                            displayedComponents: [.date]
-                        )
-                        .datePickerStyle(.compact)
-                        .labelsHidden()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
+                        ZStack(alignment: .leading) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "calendar")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                                
+                                Text(formatDisplayDate(editDate))
+                                    .font(.system(size: 15, weight: .regular))
+                                    .foregroundColor(AppTheme.Colors.dynamicText)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(AppTheme.Colors.dynamicCardBackground)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
+                            )
+                            
+                            // Native DatePicker overlay (invisible pill, responsive to taps)
+                            DatePicker(
+                                "",
+                                selection: $editDate,
+                                in: ...Date(),
+                                displayedComponents: [.date]
+                            )
+                            .datePickerStyle(.compact)
+                            .labelsHidden()
+                            .blendMode(.destinationOver)
+                            .opacity(0.015)
+                            .scaleEffect(CGSize(width: 3.5, height: 1.2), anchor: .leading)
+                            .padding(.leading, 14)
+                        }
                     }
                     
                     // Category Picker
@@ -745,5 +771,12 @@ struct MovementDetailView: View {
         outFormatter.locale = Locale(identifier: "it_IT")
         outFormatter.dateFormat = "EEEE d MMMM yyyy"
         return outFormatter.string(from: date).capitalized
+    }
+    
+    private func formatDisplayDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "it_IT")
+        formatter.dateFormat = "d MMMM yyyy"
+        return formatter.string(from: date).capitalized
     }
 }
