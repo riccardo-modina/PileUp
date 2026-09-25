@@ -10,6 +10,7 @@ struct CashFlowDetailView: View {
     
     @State private var itemToDelete: MovementItem? = nil
     @State private var showDeleteConfirmation: Bool = false
+    @State private var selectedMovementForDetail: MovementItem? = nil
     @State private var dragOffset: CGFloat = 0
     
     init(
@@ -68,6 +69,32 @@ struct CashFlowDetailView: View {
                     }
                 }
             }
+            
+            // Custom confirmation sheet for delete
+            if showDeleteConfirmation, let item = itemToDelete {
+                ConfirmationBottomSheet(
+                    icon: "trash.fill",
+                    iconColor: AppTheme.Colors.negative,
+                    iconBackgroundColor: AppTheme.Colors.negative.opacity(0.12),
+                    title: "Elimina Movimento",
+                    message: "Sei sicuro di voler eliminare '\(item.titolo)' per \(item.formattedAmount)? Questa azione non può essere annullata.",
+                    confirmTitle: "Elimina",
+                    isDestructive: true,
+                    isLoading: false,
+                    onConfirm: {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            showDeleteConfirmation = false
+                        }
+                        Task { await viewModel.deleteMovement(item) }
+                    },
+                    cancelTitle: "Annulla",
+                    onCancel: {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            showDeleteConfirmation = false
+                        }
+                    }
+                )
+            }
         }
         .simultaneousGesture(
             DragGesture(minimumDistance: 15)
@@ -91,13 +118,19 @@ struct CashFlowDetailView: View {
                 viewModel.period = period
             }
         }
-        .confirmationDialog("Conferma Eliminazione", isPresented: $showDeleteConfirmation, titleVisibility: .visible, presenting: itemToDelete) { item in
-            Button("Elimina movimento", role: .destructive) {
-                Task { await viewModel.deleteMovement(item) }
-            }
-            Button("Annulla", role: .cancel) {}
-        } message: { item in
-            Text("Sei sicuro di voler eliminare '\(item.titolo)' per \(item.formattedAmount)? L'azione non può essere annullata.")
+        .sheet(item: $selectedMovementForDetail) { item in
+            MovementDetailView(
+                movement: item,
+                onUpdated: {
+                    viewModel.loadData(reset: true)
+                },
+                onDeleted: {
+                    viewModel.loadData(reset: true)
+                }
+            )
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("TransactionsUpdated"))) { _ in
+            viewModel.loadData(reset: true)
         }
     }
     
@@ -332,61 +365,74 @@ struct CashFlowDetailView: View {
     // MARK: - Movement Row
     
     private func movementRow(_ item: MovementItem) -> some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(item.categoryDisplayColor)
-                .frame(width: 13, height: 13)
-            
-            VStack(alignment: .leading, spacing: 3) {
-                Text(item.titolo.isEmpty ? item.categoryName : item.titolo)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(AppTheme.Colors.dynamicText)
-                    .lineLimit(1)
+        Button(action: {
+            HapticHelper.light()
+            selectedMovementForDetail = item
+        }) {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(item.categoryDisplayColor)
+                    .frame(width: 13, height: 13)
                 
-                HStack(spacing: 6) {
-                    Text(formatMovementDate(item.data))
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                    Text("•")
-                        .font(.system(size: 10))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                    Text(item.categoryName)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(item.titolo.isEmpty ? item.categoryName : item.titolo)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(AppTheme.Colors.dynamicText)
                         .lineLimit(1)
+                    
+                    HStack(spacing: 6) {
+                        Text(formatMovementDate(item.data))
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                        Text("•")
+                            .font(.system(size: 10))
+                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                        Text(item.categoryName)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                            .lineLimit(1)
+                    }
                 }
-            }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("\(item.isIncome ? "+" : "-") \(item.formattedAmount)")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundColor(AppTheme.Colors.dynamicText)
                 
-                if let acc = item.conto?.nome {
-                    Text(acc)
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        .lineLimit(1)
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(item.isIncome ? "+" : "-") \(item.formattedAmount)")
+                        .font(.system(size: 15, weight: .regular, design: .rounded))
+                        .foregroundColor(AppTheme.Colors.dynamicText)
+                    
+                    if let acc = item.conto?.nome {
+                        Text(acc)
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                            .lineLimit(1)
+                    }
                 }
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.6))
+                    .padding(.leading, 2)
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppTheme.Colors.dynamicCardBackground)
+                    .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 2)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+            )
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(AppTheme.Colors.dynamicCardBackground)
-                .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 2)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
-        )
+        .buttonStyle(MovementRowButtonStyle())
         .contextMenu {
             Button(role: .destructive, action: {
                 itemToDelete = item
-                showDeleteConfirmation = true
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    showDeleteConfirmation = true
+                }
             }) {
                 Label("Elimina Movimento", systemImage: "trash")
             }
@@ -423,3 +469,14 @@ struct CashFlowDetailView: View {
         return formatter.string(from: NSNumber(value: value)) ?? String(format: "€ %.2f", value)
     }
 }
+
+/// Subtle spring press animation providing clear tactile/visual feedback on card taps.
+struct MovementRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.985 : 1.0)
+            .opacity(configuration.isPressed ? 0.88 : 1.0)
+            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
