@@ -339,7 +339,7 @@ struct MovementDetailView: View {
                     Text("Entrata").tag(MovementType.income)
                 }
                 .pickerStyle(.segmented)
-                .onChange(of: editType) { newType in
+                .onChange(of: editType) { _, newType in
                     hideKeyboard()
                     // Adjust category when switching type
                     if let cat = selectedCategory, cat.tipo != newType.rawValue {
