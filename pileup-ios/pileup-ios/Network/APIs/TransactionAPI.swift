@@ -5,6 +5,7 @@ protocol TransactionAPIProtocol: Sendable {
     func getMovements(page: Int?, pageSize: String?, year: String?, month: String?, tipo: String?, categoria: Int?) async throws -> [MovementItem]
     func getPaginatedMovements(page: Int?, pageSize: String?, year: String?, month: String?, tipo: String?, categoria: Int?) async throws -> PaginatedListResponse<MovementItem>
     func getMovement(id: Int) async throws -> MovementItem
+    func updateMovement(id: Int, payload: MovementPayload) async throws -> MovementResponse
     func deleteMovement(id: Int) async throws
 }
 
@@ -94,6 +95,15 @@ final class TransactionAPI: TransactionAPIProtocol, @unchecked Sendable {
         return try await network.request(
             endpoint: "movimenti/\(id)/",
             method: "GET"
+        )
+    }
+    
+    func updateMovement(id: Int, payload: MovementPayload) async throws -> MovementResponse {
+        let body = try JSONEncoder().encode(payload)
+        return try await network.request(
+            endpoint: "movimenti/\(id)/",
+            method: "PATCH",
+            body: body
         )
     }
     
