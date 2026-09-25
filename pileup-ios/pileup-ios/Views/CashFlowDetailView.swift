@@ -77,7 +77,7 @@ struct CashFlowDetailView: View {
                     iconColor: AppTheme.Colors.negative,
                     iconBackgroundColor: AppTheme.Colors.negative.opacity(0.12),
                     title: "Elimina Movimento",
-                    message: "Sei sicuro di voler eliminare '\(item.titolo)' per \(item.formattedAmount)? Questa azione non può essere annullata.",
+                    message: "Sei sicuro di voler eliminare '\(item.titolo)', \(item.formattedAmount)? Questa azione non può essere annullata.",
                     confirmTitle: "Elimina",
                     isDestructive: true,
                     isLoading: false,
