@@ -111,6 +111,10 @@ struct MainTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("TransactionsUpdated"))) { _ in
             dashboardViewModel.fetchMonthlyStats()
         }
+        .task {
+            // Checks and initializes local offline accounts cache if not yet present on disk
+            await PendingTransactionsStore.shared.ensureAccountsCache()
+        }
     }
 }
 

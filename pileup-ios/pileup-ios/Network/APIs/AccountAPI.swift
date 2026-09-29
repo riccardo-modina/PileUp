@@ -13,6 +13,10 @@ final class AccountAPI: AccountAPIProtocol, @unchecked Sendable {
         self.network = network
     }
     
+    /// Fetches all user accounts.
+    /// NOTE FOR FUTURE DEVELOPMENT: When account management endpoints (create, edit, delete) are implemented
+    /// (e.g. POST/PUT/DELETE /conti/), call `PendingTransactionsStore.shared.updateAccountsCache(...)`
+    /// to keep the local offline accounts cache in sync for Apple Wallet background card matching.
     func getAllAccounts() async throws -> [AccountItem] {
         return try await network.request(
             endpoint: "conti/",
