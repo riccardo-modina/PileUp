@@ -1,4 +1,6 @@
 {
+  "name": "pileup",
+  "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
     "axios": "^1.11.0"
