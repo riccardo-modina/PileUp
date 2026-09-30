@@ -43,10 +43,12 @@ final class CashFlowDetailViewModel: ObservableObject {
     // MARK: - Dependencies
     private let transactionAPI: TransactionAPIProtocol
     private let categoryAPI: CategoryAPIProtocol
+    private let statsAPI: StatsAPIProtocol
     private let pageSize: Int = 10
     private var currentPage: Int = 1
     private var currentMovementsTask: Task<Void, Never>?
     private var currentStatsTask: Task<Void, Never>?
+    private var currentAuthoritativeStatsTask: Task<Void, Never>?
     
     // Fallback curated palette for categories without hex colors
     private let fallbackPalette: [Color] = [
@@ -67,13 +69,15 @@ final class CashFlowDetailViewModel: ObservableObject {
         period: DataPeriod = .total,
         onPeriodChanged: ((DataPeriod) -> Void)? = nil,
         transactionAPI: TransactionAPIProtocol = TransactionAPI.shared,
-        categoryAPI: CategoryAPIProtocol = CategoryAPI.shared
+        categoryAPI: CategoryAPIProtocol = CategoryAPI.shared,
+        statsAPI: StatsAPIProtocol = StatsAPI.shared
     ) {
         self.movementType = movementType
         self.period = period
         self.onPeriodChanged = onPeriodChanged
         self.transactionAPI = transactionAPI
         self.categoryAPI = categoryAPI
+        self.statsAPI = statsAPI
     }
     
     // MARK: - Title & Format Helpers
@@ -112,6 +116,7 @@ final class CashFlowDetailViewModel: ObservableObject {
     func loadData(reset: Bool = true) {
         let (yearParam, monthParam) = extractPeriodParams()
         
+        fetchPeriodTotalStats(yearParam: yearParam, monthParam: monthParam)
         fetchChartStats(yearParam: yearParam, monthParam: monthParam)
         loadMovements(reset: true)
     }
@@ -127,15 +132,43 @@ final class CashFlowDetailViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Chart Stats (Full month distribution without crypto decryption)
+    // MARK: - Authoritative Server Stats
+    private func fetchPeriodTotalStats(yearParam: String?, monthParam: String?) {
+        // Remove past request to avoid data override
+        currentAuthoritativeStatsTask?.cancel()
+        currentAuthoritativeStatsTask = Task { [weak self] in
+            guard let self = self else { return }
+            do {
+                let stats: MonthlyStatsResponse
+                switch self.period {
+                case .monthYear(let m, let y):
+                    stats = try await self.statsAPI.getMonthlyStats(year: "\(y)", month: "\(m)", months: nil)
+                case .year(let y):
+                    stats = try await self.statsAPI.getMonthlyStats(year: "\(y)", month: nil, months: nil)
+                case .total:
+                    stats = try await self.statsAPI.getAllYearsTotals()
+                }
+                
+                guard !Task.isCancelled else { return }
+                let authoritativeTotal = self.movementType == .income ? stats.monthlyIncome : stats.monthlyExpense
+                self.periodTotal = authoritativeTotal
+            } catch {
+                print("Notice: could not load authoritative stats: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - Chart Stats (Full period distribution without crypto decryption)
     private func fetchChartStats(yearParam: String?, monthParam: String?) {
         currentStatsTask?.cancel()
         currentStatsTask = Task { [weak self] in
             guard let self = self else { return }
             do {
-                let response = try await self.transactionAPI.getPaginatedMovements(
+                var allMovements: [MovementItem] = []
+                
+                let firstResponse = try await self.transactionAPI.getPaginatedMovements(
                     page: 1,
-                    pageSize: "500",
+                    pageSize: "all",
                     year: yearParam,
                     month: monthParam,
                     tipo: self.movementType.rawValue,
@@ -143,11 +176,31 @@ final class CashFlowDetailViewModel: ObservableObject {
                 )
                 
                 guard !Task.isCancelled else { return }
+                allMovements.append(contentsOf: firstResponse.results)
+                
+                // Fallback: If server paginates anyway (e.g. next != nil), fetch all remaining pages
+                var currentPage = 1
+                var nextUrl = firstResponse.next
+                while nextUrl != nil && !Task.isCancelled {
+                    currentPage += 1
+                    let nextPage = try await self.transactionAPI.getPaginatedMovements(
+                        page: currentPage,
+                        pageSize: "100",
+                        year: yearParam,
+                        month: monthParam,
+                        tipo: self.movementType.rawValue,
+                        categoria: nil
+                    )
+                    allMovements.append(contentsOf: nextPage.results)
+                    nextUrl = nextPage.next
+                }
+                
+                guard !Task.isCancelled else { return }
                 
                 var categoryMap: [String: (id: Int?, name: String, amount: Double, color: Color, hex: String, count: Int)] = [:]
                 var total: Double = 0.0
                 
-                for item in response.results {
+                for item in allMovements {
                     total += item.importo
                     let catKey = item.categoria != nil ? "\(item.categoria!.id)" : "unclassified"
                     let catName = item.categoria?.nome ?? "Senza Categoria"
@@ -187,7 +240,9 @@ final class CashFlowDetailViewModel: ObservableObject {
                     )
                 }
                 
-                self.periodTotal = total
+                if self.periodTotal == 0 || abs(self.periodTotal - total) > 0.001 {
+                    self.periodTotal = total
+                }
                 self.pieSlices = slices.sorted { $0.amount > $1.amount }
             } catch {
                 print("Notice: could not load chart stats: \(error)")

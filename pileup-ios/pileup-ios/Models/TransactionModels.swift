@@ -268,4 +268,39 @@ nonisolated struct PaginatedListResponse<T: Codable & Sendable>: Codable, Sendab
     let next: String?
     let previous: String?
     let results: [T]
+    
+    enum CodingKeys: String, CodingKey {
+        case count, next, previous, results
+    }
+    
+    init(count: Int? = nil, next: String? = nil, previous: String? = nil, results: [T]) {
+        self.count = count
+        self.next = next
+        self.previous = previous
+        self.results = results
+    }
+    
+    init(from decoder: Decoder) throws {
+        if let container = try? decoder.container(keyedBy: CodingKeys.self) {
+            self.count = try container.decodeIfPresent(Int.self, forKey: .count)
+            self.next = try container.decodeIfPresent(String.self, forKey: .next)
+            self.previous = try container.decodeIfPresent(String.self, forKey: .previous)
+            self.results = try container.decodeIfPresent([T].self, forKey: .results) ?? []
+        } else {
+            let singleValue = try decoder.singleValueContainer()
+            let list = try singleValue.decode([T].self)
+            self.count = list.count
+            self.next = nil
+            self.previous = nil
+            self.results = list
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(count, forKey: .count)
+        try container.encodeIfPresent(next, forKey: .next)
+        try container.encodeIfPresent(previous, forKey: .previous)
+        try container.encode(results, forKey: .results)
+    }
 }
