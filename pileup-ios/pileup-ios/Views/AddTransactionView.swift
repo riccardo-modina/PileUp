@@ -2,6 +2,8 @@ import SwiftUI
 
 /// Fast guided wizard view for recording expenses and incomes.
 /// Organized into 3 sequential steps with a top progress bar and smooth animated transitions.
+/// Fully responsive in both Dark and Light mode using AppTheme.Colors tokens.
+/// Strictly NO strange colored focus or selection borders.
 struct AddTransactionView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var viewModel: AddTransactionViewModel
@@ -13,21 +15,42 @@ struct AddTransactionView: View {
     // Toggles inline calendar picker if user chooses a custom date
     @State private var showCustomDatePicker: Bool = false
 
-    
     // Success animation overlay states
     @State private var showSuccessOverlay: Bool = false
     @State private var checkmarkScale: CGFloat = 0.2
     @State private var pulseRingScale: CGFloat = 0.8
     @State private var pulseRingOpacity: Double = 0.7
+    // Tracks navigation direction for natural animated transitions (forward vs back swipe)
+    @State private var isGoingBack: Bool = false
     
     init(masterKey: String? = nil) {
         _viewModel = StateObject(wrappedValue: AddTransactionViewModel(masterKey: masterKey))
     }
     
+    private var stepTransition: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: isGoingBack ? .leading : .trailing).combined(with: .opacity),
+            removal: .move(edge: isGoingBack ? .trailing : .leading).combined(with: .opacity)
+        )
+    }
+    
+    private func handleBack() {
+        guard viewModel.currentStep > 1 else { return }
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        HapticHelper.light()
+        isGoingBack = true
+        viewModel.previousStep()
+    }
+    
+    private func handleNext() {
+        isGoingBack = false
+        viewModel.nextStep()
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {
-                AppTheme.Colors.dynamicBackground
+                AppTheme.Colors.formBackground
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -46,22 +69,13 @@ struct AddTransactionView: View {
                                 switch viewModel.currentStep {
                                 case 1:
                                     step1CategoryAndAmount
-                                        .transition(.asymmetric(
-                                            insertion: .move(edge: .leading).combined(with: .opacity),
-                                            removal: .move(edge: .leading).combined(with: .opacity)
-                                        ))
+                                        .transition(stepTransition)
                                 case 2:
                                     step2DateAndAccount
-                                        .transition(.asymmetric(
-                                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                                            removal: .move(edge: .leading).combined(with: .opacity)
-                                        ))
+                                        .transition(stepTransition)
                                 case 3:
                                     step3DetailsAndConfirm
-                                        .transition(.asymmetric(
-                                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                                            removal: .move(edge: .trailing).combined(with: .opacity)
-                                        ))
+                                        .transition(stepTransition)
                                 default:
                                     EmptyView()
                                 }
@@ -74,6 +88,17 @@ struct AddTransactionView: View {
                     
                     Spacer(minLength: 0)
                 }
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 25)
+                        .onEnded { value in
+                            let horizontal = value.translation.width
+                            let vertical = value.translation.height
+                            // Swipe from left to right: horizontal is positive and dominates vertical movement
+                            if horizontal > 50 && horizontal > abs(vertical) * 1.3 {
+                                handleBack()
+                            }
+                        }
+                )
                 
                 // 3. Fixed Bottom Action Button
                 VStack {
@@ -144,24 +169,22 @@ struct AddTransactionView: View {
     // MARK: - 1. Header & Progress Section
     
     private var headerSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             HStack(alignment: .center) {
                 // Back button (visible starting from Step 2)
                 if viewModel.currentStep > 1 {
                     Button(action: {
-                        HapticHelper.light()
-                        viewModel.previousStep()
+                        handleBack()
                     }) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 6) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 14, weight: .semibold))
                             Text("Indietro")
                                 .font(.system(size: 14, weight: .medium))
                         }
-                        .foregroundColor(AppTheme.Colors.dynamicText)
+                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     }
                 } else {
-                    // Placeholder to preserve centered alignment
                     Color.clear
                         .frame(width: 60, height: 20)
                 }
@@ -170,10 +193,10 @@ struct AddTransactionView: View {
                 
                 // Step counter label
                 Text("Passo \(viewModel.currentStep) di 3")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     .textCase(.uppercase)
-                    .tracking(1)
+                    .tracking(1.5)
                 
                 Spacer()
                 
@@ -186,9 +209,11 @@ struct AddTransactionView: View {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.8))
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                        .frame(width: 32, height: 32)
+                        .background(Circle().fill(AppTheme.Colors.dynamicBorder.opacity(0.4)))
                 }
             }
             
@@ -197,15 +222,15 @@ struct AddTransactionView: View {
                 ZStack(alignment: .leading) {
                     Capsule()
                         .fill(AppTheme.Colors.dynamicBorder.opacity(0.5))
-                        .frame(height: 5)
+                        .frame(height: 4)
                     
                     Capsule()
                         .fill(AppTheme.Colors.dynamicText)
-                        .frame(width: geometry.size.width * CGFloat(viewModel.progress), height: 5)
+                        .frame(width: geometry.size.width * CGFloat(viewModel.progress), height: 4)
                         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.progress)
                 }
             }
-            .frame(height: 5)
+            .frame(height: 4)
         }
     }
     
@@ -213,9 +238,23 @@ struct AddTransactionView: View {
     
     private var step1CategoryAndAmount: some View {
         VStack(alignment: .leading, spacing: 22) {
-            // A. Segmented Pill for Movement Type
+            // Screen Title & Subtitle (clean modern typography, adapting to light/dark)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Nuovo movimento")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundColor(AppTheme.Colors.dynamicText)
+                
+                Text("Seleziona la tipologia, inserisci l'importo e assegna una categoria.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 4)
+            
+            // A. Segmented Pill for Movement Type (clean pills without strange colored strokes)
             HStack(spacing: 8) {
                 ForEach(MovementType.allCases) { type in
+                    let isSelected = viewModel.movementType == type
                     Button(action: {
                         HapticHelper.selection()
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
@@ -228,65 +267,89 @@ struct AddTransactionView: View {
                             Text(type.title)
                                 .font(.system(size: 13, weight: .semibold))
                         }
-                        .foregroundColor(viewModel.movementType == type ? .white : AppTheme.Colors.dynamicText)
-                        .padding(.vertical, 9)
+                        .foregroundColor(isSelected ? AppTheme.Colors.dynamicText : AppTheme.Colors.dynamicSubtext)
+                        .padding(.vertical, 10)
                         .frame(maxWidth: .infinity)
                         .background(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(viewModel.movementType == type ? type.accentColor : AppTheme.Colors.dynamicCardBackground)
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(isSelected ? AppTheme.Colors.formCardActive : AppTheme.Colors.dynamicCardBackground)
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(viewModel.movementType == type ? Color.clear : AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                         )
-                        .shadow(color: viewModel.movementType == type ? type.accentColor.opacity(0.25) : Color.black.opacity(0.02), radius: 4, y: 2)
                     }
                     .buttonStyle(.plain)
                 }
             }
             
-            // B. Hero Amount Input
-            // B. Hero Amount Input
+            // B. Hero Amount Input (matching the prefix badge + input look in the screenshot)
             VStack(alignment: .leading, spacing: 6) {
                 Text("IMPORTO")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.5)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                 
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("€")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                HStack(spacing: 10) {
+                    // Currency badge (resembling the country flag container in the screenshot)
+                    HStack(spacing: 6) {
+                        Text("EUR")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundColor(AppTheme.Colors.dynamicText)
+                        Text("€")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                    }
+                    .padding(.horizontal, 14)
+                    .frame(height: 58)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(AppTheme.Colors.dynamicCardBackground)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                    )
                     
-                    TextField("0,00", text: Binding(
-                        get: { viewModel.amountString },
-                        set: { viewModel.updateAmount($0) }
-                    ))
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
-                    .foregroundColor((viewModel.showLimitError || viewModel.showZeroError) ? AppTheme.Colors.negative : AppTheme.Colors.dynamicText)
-                    .keyboardType(.decimalPad)
-                    .focused($isAmountFocused)
-                    .multilineTextAlignment(.leading)
-                    .frame(minWidth: 120)
+                    // Amount TextField container (clean box, no strange colored border on focus)
+                    HStack(spacing: 8) {
+                        TextField("0,00", text: Binding(
+                            get: { viewModel.amountString },
+                            set: { viewModel.updateAmount($0) }
+                        ))
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundColor(AppTheme.Colors.dynamicText)
+                        .keyboardType(.decimalPad)
+                        .focused($isAmountFocused)
+                        .multilineTextAlignment(.leading)
+                        
+                        if !viewModel.amountString.isEmpty {
+                            Button(action: {
+                                HapticHelper.light()
+                                viewModel.amountString = ""
+                                viewModel.updateAmount("")
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(height: 58)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(AppTheme.Colors.dynamicCardBackground)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                    )
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(AppTheme.Colors.dynamicCardBackground)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(
-                            (viewModel.showLimitError || viewModel.showZeroError)
-                                ? AppTheme.Colors.negative
-                                : (viewModel.parsedAmount > 0 ? viewModel.movementType.accentColor.opacity(0.4) : AppTheme.Colors.dynamicBorder),
-                            lineWidth: 1.5
-                        )
-                )
                 .shake(animatableData: viewModel.shakeAmount ? 1 : 0)
                 
-                // Form input error messages matching frontend StepAmount.vue
+                // Form input error messages
                 VStack(alignment: .leading, spacing: 4) {
                     if viewModel.showNumericError {
                         InputError(message: "Sono consentiti solo numeri e un separatore decimale", type: .warning)
@@ -301,16 +364,16 @@ struct AddTransactionView: View {
                         InputError(message: "Limite massimo di 10M superato!", type: .error)
                     }
                     
-                    Text("Max: 10.000.000 €")
+                    Text("Massimo consentito: 10.000.000 €")
                         .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                        .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.7))
                         .padding(.top, 1)
                 }
                 .padding(.horizontal, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
-            // C. Category Selection (Reusable CategoryPickerField)
+            // C. Category Selection
             CategoryPickerField(
                 title: "CATEGORIA",
                 placeholder: "Seleziona categoria",
@@ -329,6 +392,8 @@ struct AddTransactionView: View {
                 allowClear: false,
                 showError: viewModel.showCategoryError,
                 errorMessage: "Seleziona una categoria",
+                customBackgroundColor: AppTheme.Colors.dynamicCardBackground,
+                customBorderColor: AppTheme.Colors.dynamicBorder.opacity(0.5),
                 onTap: {
                     isAmountFocused = false
                 }
@@ -340,6 +405,19 @@ struct AddTransactionView: View {
     
     private var step2DateAndAccount: some View {
         VStack(alignment: .leading, spacing: 24) {
+            // Screen Title & Subtitle
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Quando e dove")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundColor(AppTheme.Colors.dynamicText)
+                
+                Text("Indica la data del movimento e il conto di riferimento.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 4)
+            
             // A. Date
             VStack(alignment: .leading, spacing: 10) {
                 Text("QUANDO?")
@@ -349,9 +427,10 @@ struct AddTransactionView: View {
                 
                 HStack(spacing: 8) {
                     // Option 1: Today
+                    let isToday = Calendar.current.isDateInToday(viewModel.date) && !showCustomDatePicker
                     Button(action: {
                         HapticHelper.selection()
-                        withAnimation {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                             viewModel.date = Date()
                             showCustomDatePicker = false
                         }
@@ -362,25 +441,26 @@ struct AddTransactionView: View {
                             Text("Oggi")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(Calendar.current.isDateInToday(viewModel.date) && !showCustomDatePicker ? AppTheme.Colors.primaryButtonText : AppTheme.Colors.dynamicText)
+                        .foregroundColor(isToday ? AppTheme.Colors.dynamicText : AppTheme.Colors.dynamicSubtext)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Calendar.current.isDateInToday(viewModel.date) && !showCustomDatePicker ? AppTheme.Colors.primary : AppTheme.Colors.dynamicCardBackground)
+                                .fill(isToday ? AppTheme.Colors.formCardActive : AppTheme.Colors.dynamicCardBackground)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
                     
                     // Option 2: Yesterday
+                    let isYesterday = Calendar.current.isDateInYesterday(viewModel.date) && !showCustomDatePicker
                     Button(action: {
                         HapticHelper.selection()
                         if let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date()) {
-                            withAnimation {
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                                 viewModel.date = yesterday
                                 showCustomDatePicker = false
                             }
@@ -392,49 +472,50 @@ struct AddTransactionView: View {
                             Text("Ieri")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(Calendar.current.isDateInYesterday(viewModel.date) && !showCustomDatePicker ? AppTheme.Colors.primaryButtonText : AppTheme.Colors.dynamicText)
+                        .foregroundColor(isYesterday ? AppTheme.Colors.dynamicText : AppTheme.Colors.dynamicSubtext)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Calendar.current.isDateInYesterday(viewModel.date) && !showCustomDatePicker ? AppTheme.Colors.primary : AppTheme.Colors.dynamicCardBackground)
+                                .fill(isYesterday ? AppTheme.Colors.formCardActive : AppTheme.Colors.dynamicCardBackground)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
                     
                     // Option 3: Other date
+                    let isOther = showCustomDatePicker || (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date))
                     Button(action: {
                         HapticHelper.selection()
-                        withAnimation {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                             showCustomDatePicker.toggle()
                         }
                     }) {
                         HStack(spacing: 6) {
                             Image(systemName: "calendar.badge.clock")
                                 .font(.system(size: 13))
-                            Text(showCustomDatePicker || (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date)) ? formattedShortDate(viewModel.date) : "Altra")
+                            Text(isOther ? formattedShortDate(viewModel.date) : "Altra")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(showCustomDatePicker || (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date)) ? AppTheme.Colors.primaryButtonText : AppTheme.Colors.dynamicText)
+                        .foregroundColor(isOther ? AppTheme.Colors.dynamicText : AppTheme.Colors.dynamicSubtext)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(showCustomDatePicker || (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date)) ? AppTheme.Colors.primary : AppTheme.Colors.dynamicCardBackground)
+                                .fill(isOther ? AppTheme.Colors.formCardActive : AppTheme.Colors.dynamicCardBackground)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
                 }
                 
-                // Expanded graphical DatePicker when selected
+                // Expanded graphical DatePicker when selected (adapts to light/dark automatically)
                 if showCustomDatePicker {
                     DatePicker(
                         "Seleziona data",
@@ -450,7 +531,7 @@ struct AddTransactionView: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                     )
                 }
                 
@@ -481,17 +562,17 @@ struct AddTransactionView: View {
                                     viewModel.selectedAccount = acc
                                 }
                             }) {
-                                HStack(spacing: 12) {
+                                HStack(spacing: 14) {
                                     ZStack {
                                         Circle()
-                                            .fill(acc.displayColor.opacity(0.15))
-                                            .frame(width: 38, height: 38)
+                                            .fill(acc.displayColor.opacity(0.18))
+                                            .frame(width: 40, height: 40)
                                         Image(systemName: acc.tipo == "contanti" ? "banknote" : "creditcard")
                                             .font(.system(size: 16))
                                             .foregroundColor(acc.displayColor)
                                     }
                                     
-                                    VStack(alignment: .leading, spacing: 2) {
+                                    VStack(alignment: .leading, spacing: 3) {
                                         Text(acc.nome)
                                             .font(.system(size: 15, weight: .semibold))
                                             .foregroundColor(AppTheme.Colors.dynamicText)
@@ -505,18 +586,18 @@ struct AddTransactionView: View {
                                     if isSelected {
                                         Image(systemName: "checkmark.circle.fill")
                                             .font(.system(size: 20))
-                                            .foregroundColor(viewModel.movementType.accentColor)
+                                            .foregroundColor(AppTheme.Colors.dynamicText)
                                     }
                                 }
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
                                 .background(
                                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .fill(isSelected ? viewModel.movementType.accentColor.opacity(0.08) : AppTheme.Colors.dynamicCardBackground)
+                                        .fill(isSelected ? AppTheme.Colors.formCardActive : AppTheme.Colors.dynamicCardBackground)
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .stroke(isSelected ? viewModel.movementType.accentColor : (viewModel.showAccountError ? AppTheme.Colors.negative : AppTheme.Colors.dynamicBorder.opacity(0.6)), lineWidth: isSelected ? 1.5 : 1)
+                                        .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                                 )
                             }
                             .buttonStyle(.plain)
@@ -536,17 +617,30 @@ struct AddTransactionView: View {
     
     private var step3DetailsAndConfirm: some View {
         VStack(alignment: .leading, spacing: 22) {
+            // Screen Title & Subtitle
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Riepilogo e dettagli")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundColor(AppTheme.Colors.dynamicText)
+                
+                Text("Verifica i dati del movimento e aggiungi note opzionali.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 4)
+            
             // A. Summary Mini Card
             VStack(spacing: 14) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(viewModel.movementType.title.uppercased())
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .tracking(1.5)
                             .foregroundColor(viewModel.movementType.accentColor)
                         
                         Text("€ " + String(format: "%.2f", viewModel.parsedAmount))
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
                             .foregroundColor(AppTheme.Colors.dynamicText)
                     }
                     
@@ -561,15 +655,18 @@ struct AddTransactionView: View {
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(AppTheme.Colors.dynamicText)
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(cat.displayColor.opacity(0.12))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(AppTheme.Colors.formCardActive)
                         .clipShape(Capsule())
+                        .overlay(
+                            Capsule().stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                        )
                     }
                 }
                 
                 Divider()
-                    .background(AppTheme.Colors.dynamicBorder)
+                    .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
                 
                 HStack {
                     if let acc = viewModel.selectedAccount {
@@ -595,17 +692,17 @@ struct AddTransactionView: View {
                     }
                 }
             }
-            .padding(16)
+            .padding(18)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(AppTheme.Colors.dynamicCardBackground)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
             )
             
-            // B. Optional Title / Description with Smart Category Default
+            // B. Optional Title / Description
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("DESCRIZIONE (OPZIONALE)")
@@ -622,14 +719,15 @@ struct AddTransactionView: View {
                 
                 TextField(viewModel.defaultTitle + " (da categoria)", text: $viewModel.customTitle)
                     .font(.system(size: 15))
+                    .foregroundColor(AppTheme.Colors.dynamicText)
                     .padding(14)
                     .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(AppTheme.Colors.dynamicCardBackground)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                     )
                     .onChange(of: viewModel.customTitle) {
                         if viewModel.customTitle.count > 50 {
@@ -654,16 +752,18 @@ struct AddTransactionView: View {
                 }
                 
                 TextEditor(text: $viewModel.notes)
-                    .frame(height: 70)
+                    .scrollContentBackground(.hidden)
+                    .frame(height: 75)
                     .font(.system(size: 14))
-                    .padding(8)
+                    .foregroundColor(AppTheme.Colors.dynamicText)
+                    .padding(10)
                     .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(AppTheme.Colors.dynamicCardBackground)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                     )
                     .onChange(of: viewModel.notes) {
                         if viewModel.notes.count > 200 {
@@ -679,42 +779,42 @@ struct AddTransactionView: View {
         }
     }
     
-    // MARK: - 5. Bottom Action Bar
+    // MARK: - 5. Bottom Action Bar (matching the Revolut button, responsive to dark & light mode)
     
     private var bottomActionBar: some View {
         VStack(spacing: 8) {
             Button(action: {
                 HapticHelper.medium()
                 if viewModel.currentStep < 3 {
-                    viewModel.nextStep()
+                    handleNext()
                 } else {
                     viewModel.submitTransaction()
                 }
             }) {
                 HStack(spacing: 8) {
-                    if viewModel.currentStep < 3 {
+                    if viewModel.isSubmitting {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext))
+                    } else if viewModel.currentStep < 3 {
                         Text("Continua")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(AppTheme.Colors.primaryButtonText)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(AppTheme.Colors.primaryButtonText)
+                            .foregroundColor(isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext)
                     } else {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(AppTheme.Colors.primaryButtonText)
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundColor(isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext)
                         Text("Salva Movimento")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(AppTheme.Colors.primaryButtonText)
+                            .foregroundColor(isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 54)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(isStepValid ? AppTheme.Colors.primary : AppTheme.Colors.dynamicSubtext.opacity(0.3))
+                    Capsule()
+                        .fill(isStepValid ? AppTheme.Colors.buttonActiveBackground : AppTheme.Colors.buttonDisabledBackground)
                 )
-                .shadow(color: isStepValid ? AppTheme.Colors.primary.opacity(0.25) : Color.clear, radius: 10, y: 4)
+                .shadow(color: isStepValid ? AppTheme.Colors.buttonActiveBackground.opacity(0.12) : Color.clear, radius: 10, y: 3)
             }
             .disabled(!isStepValid || viewModel.isSubmitting)
             .buttonStyle(.plain)
@@ -736,7 +836,7 @@ struct AddTransactionView: View {
         VStack(spacing: 16) {
             Spacer(minLength: 50)
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.primary))
+                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.dynamicText))
                 .scaleEffect(1.3)
             Text("Caricamento opzioni...")
                 .font(.system(size: 14, weight: .medium))
@@ -763,27 +863,22 @@ struct AddTransactionView: View {
     
     private var successAnimationOverlay: some View {
         ZStack {
-            // Blurred background backdrop
-            Rectangle()
-                .fill(.ultraThinMaterial)
+            AppTheme.Colors.dynamicBackground.opacity(0.85)
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
                 // Animated badge with ripple pulse ring
                 ZStack {
-                    // Outer pulse ripple ring
                     Circle()
                         .stroke(AppTheme.Colors.willowGreen.opacity(pulseRingOpacity), lineWidth: 3)
                         .frame(width: 100, height: 100)
                         .scaleEffect(pulseRingScale)
                     
-                    // Main circle badge with shadow
                     Circle()
                         .fill(AppTheme.Colors.willowGreen)
                         .frame(width: 88, height: 88)
                         .shadow(color: AppTheme.Colors.willowGreen.opacity(0.4), radius: 16, x: 0, y: 8)
                     
-                    // Spring-bouncing checkmark
                     Image(systemName: "checkmark")
                         .font(.system(size: 40, weight: .bold))
                         .foregroundColor(AppTheme.Colors.inkBlack)
@@ -804,11 +899,11 @@ struct AddTransactionView: View {
             .background(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .fill(AppTheme.Colors.dynamicCardBackground)
-                    .shadow(color: Color.black.opacity(0.12), radius: 24, x: 0, y: 12)
+                    .shadow(color: Color.black.opacity(0.15), radius: 24, x: 0, y: 12)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
             )
             .padding(.horizontal, 36)
             .scaleEffect(checkmarkScale > 0.5 ? 1.0 : 0.85)

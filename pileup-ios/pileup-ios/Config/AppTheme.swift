@@ -103,6 +103,35 @@ struct AppTheme {
             })
         }
 
+        // Form & Surface Tokens (Adaptive Light / Dark mode)
+        static var formBackground: Color {
+            dynamicBackground
+        }
+        
+        static var formCardActive: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#273449") : UIColor(hex: "#e2e8f0")
+            })
+        }
+        
+        static var buttonActiveBackground: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#f8fafc") : UIColor(hex: "#0f172a")
+            })
+        }
+        
+        static var buttonActiveText: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#0f172a") : UIColor(hex: "#f8fafc")
+            })
+        }
+        
+        static var buttonDisabledBackground: Color {
+            Color(uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#1e2638") : UIColor(hex: "#e2e8f0")
+            })
+        }
+
         // Palette-bound app aliases
         static var primary: Color { dynamicPrimary }
         static var primaryButtonText: Color { dynamicPrimaryButtonText }

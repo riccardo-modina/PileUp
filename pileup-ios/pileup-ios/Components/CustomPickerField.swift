@@ -59,6 +59,8 @@ struct CustomPickerField: View {
     var allowClear: Bool = false
     var showError: Bool = false
     var errorMessage: String? = nil
+    var customBackgroundColor: Color? = nil
+    var customBorderColor: Color? = nil
     var onTap: (() -> Void)? = nil
     var onSelect: ((Int?) -> Void)? = nil
     
@@ -142,13 +144,13 @@ struct CustomPickerField: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .background(AppTheme.Colors.dynamicCardBackground)
+                .background(customBackgroundColor ?? AppTheme.Colors.dynamicCardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .stroke(
-                            showError ? AppTheme.Colors.negative : AppTheme.Colors.dynamicBorder.opacity(0.6),
-                            lineWidth: showError ? 1.5 : 1
+                            customBorderColor ?? (showError ? AppTheme.Colors.negative : AppTheme.Colors.dynamicBorder.opacity(0.6)),
+                            lineWidth: 1
                         )
                 )
                 .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
@@ -337,11 +339,11 @@ struct CustomSelectionSheet: View {
                                     .padding(.vertical, item.subtitle != nil ? 10 : 14)
                                     .background(
                                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .fill(isSelected ? item.color.opacity(0.08) : AppTheme.Colors.dynamicCardBackground)
+                                            .fill(isSelected ? AppTheme.Colors.dynamicBorder.opacity(0.18) : AppTheme.Colors.dynamicCardBackground)
                                     )
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .stroke(isSelected ? item.color : AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: isSelected ? 1.5 : 1)
+                                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.4), lineWidth: 1)
                                     )
                                 }
                                 .buttonStyle(.plain)
