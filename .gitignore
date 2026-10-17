@@ -276,3 +276,5 @@ docker-compose.override.yaml
 # Docs
 docs/
 
+# Plans
+plans/
