@@ -275,6 +275,7 @@ docker-compose.override.yaml
 
 # Docs
 docs/
+shortcut/
 
-# Plans
-plans/
+# ML training data
+MLData/
