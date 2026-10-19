@@ -2,8 +2,8 @@ import Foundation
 import CreateML
 import CoreML
 
-let jsonURL = URL(fileURLWithPath: "/Users/riccardomodina/src/PileUp/pileup-ios/ML/data/bank_notifications_training.json")
-let outputURL = URL(fileURLWithPath: "/Users/riccardomodina/src/PileUp/pileup-ios/ML/model/BankNotificationWordTagger.mlmodel")
+let jsonURL = URL(fileURLWithPath: "/Users/riccardomodina/src/PileUp/pileup-ios/MLData/data/bank_notifications_training.json")
+let outputURL = URL(fileURLWithPath: "/Users/riccardomodina/src/PileUp/pileup-ios/pileup-ios/ShortcutsIntegration/LogWalletTransaction/BankNotificationWordTagger.mlmodel")
 
 print("1. Loading training data from \(jsonURL.path)...")
 do {

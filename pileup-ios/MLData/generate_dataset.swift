@@ -520,7 +520,7 @@ let encoder = JSONEncoder()
 encoder.outputFormatting = [.prettyPrinted]
 let jsonData = try encoder.encode(dataset)
 
-let outputPath = "/Users/riccardomodina/src/PileUp/pileup-ios/ML/data/bank_notifications_training.json"
+let outputPath = "/Users/riccardomodina/src/PileUp/pileup-ios/MLData/data/bank_notifications_training.json"
 try jsonData.write(to: URL(fileURLWithPath: outputPath))
 
 print("Saved dataset to \(outputPath)")

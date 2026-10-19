@@ -32,6 +32,13 @@ public final class BankNotificationParser {
     private func loadModel() {
         if let modelURL = Bundle.main.url(forResource: "BankNotificationWordTagger", withExtension: "mlmodelc") {
             self.model = try? MLModel(contentsOf: modelURL)
+            return
+        }
+        if let rawURL = Bundle.main.url(forResource: "BankNotificationWordTagger", withExtension: "mlmodel") {
+            if let compiled = try? MLModel.compileModel(at: rawURL) {
+                self.model = try? MLModel(contentsOf: compiled)
+                return
+            }
         }
     }
     

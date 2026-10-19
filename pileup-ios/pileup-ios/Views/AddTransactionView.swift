@@ -14,6 +14,9 @@ struct AddTransactionView: View {
     @FocusState private var isAmountFocused: Bool
     // Toggles inline calendar picker if user chooses a custom date
     @State private var showCustomDatePicker: Bool = false
+    // Pending transactions debug sheet & store
+    @ObservedObject private var pendingStore = PendingTransactionsStore.shared
+    @State private var showPendingDebugSheet: Bool = false
 
     // Success animation overlay states
     @State private var showSuccessOverlay: Bool = false
@@ -128,6 +131,18 @@ struct AddTransactionView: View {
                 }
             }
             .navigationBarHidden(true)
+            .sheet(isPresented: $showPendingDebugSheet) {
+                PendingTransactionsDebugView { selectedTx in
+                    // Precompila il form con i dati del movimento selezionato
+                    viewModel.updateAmount(String(format: "%.2f", selectedTx.amount))
+                    viewModel.customTitle = selectedTx.title
+                    viewModel.date = selectedTx.date
+                    if let accId = selectedTx.accountId,
+                       let acc = viewModel.availableAccounts.first(where: { $0.id == accId }) {
+                        viewModel.selectedAccount = acc
+                    }
+                }
+            }
             .alert(isPresented: $showDiscardAlert) {
                 Alert(
                     title: Text("Modifiche non salvate"),
@@ -185,8 +200,35 @@ struct AddTransactionView: View {
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     }
                 } else {
-                    Color.clear
-                        .frame(width: 60, height: 20)
+                    // Tasto debug per movimenti catturati da Intent / Wallet / SMS
+                    Button(action: {
+                        HapticHelper.light()
+                        showPendingDebugSheet = true
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "tray.full.fill")
+                                .font(.system(size: 12))
+                            if !pendingStore.pendingTransactions.isEmpty {
+                                Text("\(pendingStore.pendingTransactions.count)")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 1)
+                                    .background(AppTheme.Colors.willowGreen)
+                                    .foregroundColor(AppTheme.Colors.inkBlack)
+                                    .clipShape(Capsule())
+                            }
+                        }
+                        .foregroundColor(AppTheme.Colors.dynamicText)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule().fill(AppTheme.Colors.dynamicCardBackground)
+                        )
+                        .overlay(
+                            Capsule().stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
                 
                 Spacer()
@@ -250,6 +292,46 @@ struct AddTransactionView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 4)
+            
+            // Banner movimenti in sospeso se presenti
+            if !pendingStore.pendingTransactions.isEmpty {
+                Button(action: {
+                    HapticHelper.light()
+                    showPendingDebugSheet = true
+                }) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(AppTheme.Colors.dynamicPrimary)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(pendingStore.pendingTransactions.count) movimento da confermare")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(AppTheme.Colors.dynamicText)
+                            Text("Tocca per esaminare e precompilare il form")
+                                .font(.system(size: 11))
+                                .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(AppTheme.Colors.dynamicCardBackground)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(AppTheme.Colors.dynamicPrimary.opacity(0.35), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
             
             // A. Segmented Pill for Movement Type (clean pills without strange colored strokes)
             HStack(spacing: 8) {
