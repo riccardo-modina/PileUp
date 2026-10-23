@@ -21,6 +21,9 @@ struct PendingTransactionsDebugView: View {
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 20) {
+                        // 0. Temporary Debug Banner
+                        debugWarningBanner
+                        
                         // 1. Info / Status Header
                         headerInfoCard
                         
@@ -58,6 +61,50 @@ struct PendingTransactionsDebugView: View {
                 }
             }
         }
+    }
+    
+    // MARK: - 0. Debug Banner
+    
+    private var debugWarningBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "ladybug.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(AppTheme.Colors.dynamicPrimary)
+                .frame(width: 34, height: 34)
+                .background(Circle().fill(AppTheme.Colors.dynamicPrimary.opacity(0.15)))
+            
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text("VISTA DI DEBUG TEMPORANEA")
+                        .font(.system(size: 11, weight: .bold))
+                        .tracking(1.0)
+                        .foregroundColor(AppTheme.Colors.dynamicPrimary)
+                    
+                    Text("DEV ONLY")
+                        .font(.system(size: 9, weight: .bold))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(AppTheme.Colors.dynamicPrimary.opacity(0.18))
+                        .foregroundColor(AppTheme.Colors.dynamicPrimary)
+                        .clipShape(Capsule())
+                }
+                
+                Text("Schermata temporanea per verificare la ricezione dei movimenti da AppIntent/SMS prima dell'integrazione finale.")
+                    .font(.system(size: 11))
+                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+            }
+            
+            Spacer()
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(AppTheme.Colors.dynamicCardBackground)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(AppTheme.Colors.dynamicPrimary.opacity(0.35), lineWidth: 1)
+        )
     }
     
     // MARK: - 1. Info Header
@@ -130,66 +177,78 @@ struct PendingTransactionsDebugView: View {
                         .stroke(AppTheme.Colors.dynamicBorder.opacity(0.4), lineWidth: 1)
                 )
             } else {
-                VStack(spacing: 12) {
-                    ForEach(store.pendingTransactions) { tx in
-                        transactionCard(tx)
+                VStack(spacing: 0) {
+                    ForEach(Array(store.pendingTransactions.enumerated()), id: \.element.id) { index, tx in
+                        VStack(spacing: 0) {
+                            transactionCard(tx)
+                            
+                            if index < store.pendingTransactions.count - 1 {
+                                Divider()
+                                    .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
+                                    .padding(.horizontal, 16)
+                            }
+                        }
                     }
                 }
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(AppTheme.Colors.dynamicCardBackground)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
         }
     }
     
     private func transactionCard(_ tx: PendingWalletTransactionModel) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(tx.title)
-                        .font(.system(size: 17, weight: .bold))
-                        .foregroundColor(AppTheme.Colors.dynamicText)
-                    
-                    Text(formattedDate(tx.date))
-                        .font(.system(size: 12))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
+        VStack(alignment: .leading, spacing: 5) {
+            // Line 1: Title (Bold)
+            Text(tx.title)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(AppTheme.Colors.dynamicText)
+                .lineLimit(1)
+            
+            // Line 2: Account or Subtitle (Subtext)
+            HStack(spacing: 4) {
+                if let accId = tx.accountId {
+                    Image(systemName: "creditcard")
+                        .font(.system(size: 11))
+                    Text("Conto ID: \(accId)")
+                        .font(.system(size: 13, weight: .regular))
+                } else {
+                    Text("Nessun conto abbinato")
+                        .font(.system(size: 13, weight: .regular))
                 }
+            }
+            .foregroundColor(AppTheme.Colors.dynamicSubtext)
+            .lineLimit(1)
+            
+            // Line 3: Date on left, Amount & Actions on right
+            HStack(alignment: .center, spacing: 8) {
+                Text(formattedDate(tx.date))
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
                 
                 Spacer()
                 
                 Text(String(format: "%.2f €", tx.amount))
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundColor(AppTheme.Colors.dynamicPrimary)
-            }
-            
-            Divider()
-                .background(AppTheme.Colors.dynamicBorder.opacity(0.4))
-            
-            HStack {
-                if let accId = tx.accountId {
-                    HStack(spacing: 4) {
-                        Image(systemName: "creditcard")
-                            .font(.system(size: 11))
-                        Text("Conto ID: \(accId)")
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                } else {
-                    Text("Nessun conto abbinato")
-                        .font(.system(size: 12))
-                        .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.7))
-                }
-                
-                Spacer()
                 
                 // Actions
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     // Discard
                     Button(action: {
                         HapticHelper.light()
                         store.removeTransaction(id: tx.id)
                     }) {
                         Image(systemName: "trash")
-                            .font(.system(size: 13))
+                            .font(.system(size: 12))
                             .foregroundColor(AppTheme.Colors.negative)
-                            .padding(8)
+                            .padding(6)
                             .background(Circle().fill(AppTheme.Colors.negative.opacity(0.12)))
                     }
                     .buttonStyle(.plain)
@@ -200,30 +259,24 @@ struct PendingTransactionsDebugView: View {
                         onSelectTransaction?(tx)
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 4) {
                             Image(systemName: "arrow.down.doc.fill")
-                                .font(.system(size: 12))
+                                .font(.system(size: 11))
                             Text("Usa")
-                                .font(.system(size: 13, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                         }
                         .foregroundColor(AppTheme.Colors.buttonActiveText)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .background(Capsule().fill(AppTheme.Colors.buttonActiveBackground))
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(AppTheme.Colors.dynamicCardBackground)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
-        )
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
     }
     
     // MARK: - 3. Simulator
@@ -231,7 +284,7 @@ struct PendingTransactionsDebugView: View {
     private var simulatorSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("🧪 SIMULATORE RAPIDO SMS / INTENT")
+                Text("SIMULATORE RAPIDO SMS / INTENT")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.5)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
@@ -274,9 +327,13 @@ struct PendingTransactionsDebugView: View {
                     )
                 
                 if let status = parseResultStatus {
-                    Text(status)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(AppTheme.Colors.dynamicPrimary)
+                    HStack(spacing: 6) {
+                        Image(systemName: "info.circle.fill")
+                            .font(.system(size: 12))
+                        Text(status)
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(AppTheme.Colors.dynamicPrimary)
                 }
                 
                 Button(action: simulateIncomingSMS) {
@@ -337,12 +394,12 @@ struct PendingTransactionsDebugView: View {
                 cardName: parsed.paymentProvider
             )
             if success {
-                parseResultStatus = "✅ Rilevato: \(String(format: "%.2f", parsed.amount)) € presso \(parsed.merchant) (\(parsed.paymentProvider ?? "nessun provider"))"
+                parseResultStatus = "Rilevato: \(String(format: "%.2f", parsed.amount)) € presso \(parsed.merchant) (\(parsed.paymentProvider ?? "nessun provider"))"
             } else {
-                parseResultStatus = "⚠️ Rilevato ma già presente in coda (duplicato ignorato)."
+                parseResultStatus = "Rilevato ma già presente in coda (duplicato ignorato)."
             }
         } else {
-            parseResultStatus = "❌ Nessuna spesa o esercente valido estratto dal testo."
+            parseResultStatus = "Nessuna spesa o esercente valido estratto dal testo."
         }
     }
     
