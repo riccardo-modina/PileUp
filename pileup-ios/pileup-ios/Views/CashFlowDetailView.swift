@@ -337,26 +337,46 @@ struct CashFlowDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 30)
             } else {
-                LazyVStack(spacing: 8) {
-                    ForEach(viewModel.filteredMovements) { item in
-                        movementRow(item)
-                            .onAppear {
-                                if item.id == viewModel.filteredMovements.last?.id {
-                                    viewModel.loadMoreMovements()
+                VStack(spacing: 0) {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(viewModel.filteredMovements.enumerated()), id: \.element.id) { index, item in
+                            VStack(spacing: 0) {
+                                movementRow(item)
+                                    .onAppear {
+                                        if item.id == viewModel.filteredMovements.last?.id {
+                                            viewModel.loadMoreMovements()
+                                        }
+                                    }
+                                
+                                if index < viewModel.filteredMovements.count - 1 {
+                                    Divider()
+                                        .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
+                                        .padding(.horizontal, 16)
                                 }
                             }
-                    }
-                    
-                    if viewModel.isLoadingMore {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                                .scaleEffect(0.9)
-                                .padding(.vertical, 12)
-                            Spacer()
+                        }
+                        
+                        if viewModel.isLoadingMore {
+                            HStack {
+                                Spacer()
+                                ProgressView()
+                                    .scaleEffect(0.9)
+                                    .padding(.vertical, 14)
+                                Spacer()
+                            }
                         }
                     }
                 }
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(AppTheme.Colors.dynamicCardBackground)
+                        .shadow(color: Color.black.opacity(0.02), radius: 6, x: 0, y: 2)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .padding(.horizontal, 20)
             }
         }
@@ -364,67 +384,62 @@ struct CashFlowDetailView: View {
     
     // MARK: - Movement Row
     
+    private func movementSubtitle(for item: MovementItem) -> String {
+        let account = item.conto?.nome ?? "Conto"
+        if let desc = item.descrizione?.trimmingCharacters(in: .whitespacesAndNewlines), !desc.isEmpty {
+            return "\(account) • \(desc)"
+        }
+        return account
+    }
+    
     private func movementRow(_ item: MovementItem) -> some View {
         Button(action: {
             HapticHelper.light()
             selectedMovementForDetail = item
         }) {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(item.categoryDisplayColor)
-                    .frame(width: 13, height: 13)
+            VStack(alignment: .leading, spacing: 5) {
+                // Line 1: Title (Bold, prominent)
+                Text(item.titolo.isEmpty ? item.categoryName : item.titolo)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(AppTheme.Colors.dynamicText)
+                    .lineLimit(1)
                 
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(item.titolo.isEmpty ? item.categoryName : item.titolo)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(AppTheme.Colors.dynamicText)
+                // Line 2: Subtitle (Account • Description)
+                Text(movementSubtitle(for: item))
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                    .lineLimit(1)
+                
+                // Line 3: Category dot + Category name · Date on Left, Amount on Right
+                HStack(alignment: .center, spacing: 6) {
+                    Circle()
+                        .fill(item.categoryDisplayColor)
+                        .frame(width: 8, height: 8)
+                    
+                    Text(item.categoryName)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(AppTheme.Colors.dynamicText.opacity(0.85))
                         .lineLimit(1)
                     
-                    HStack(spacing: 6) {
-                        Text(formatMovementDate(item.data))
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        Text("•")
-                            .font(.system(size: 10))
-                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        Text(item.categoryName)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                            .lineLimit(1)
-                    }
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(item.isIncome ? "+" : "-") \(item.formattedAmount)")
-                        .font(.system(size: 15, weight: .regular, design: .rounded))
-                        .foregroundColor(AppTheme.Colors.dynamicText)
+                    Text("·")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.6))
                     
-                    if let acc = item.conto?.nome {
-                        Text(acc)
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                            .lineLimit(1)
-                    }
+                    Text(formatMovementDate(item.data))
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                        .lineLimit(1)
+                    
+                    Spacer()
+                    
+                    Text("\(item.isIncome ? "+" : "-") \(item.formattedAmount)")
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundColor(item.isIncome ? AppTheme.Colors.moneyIn : AppTheme.Colors.dynamicText)
                 }
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.6))
-                    .padding(.leading, 2)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(AppTheme.Colors.dynamicCardBackground)
-                    .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 2)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
-            )
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
         }
         .buttonStyle(MovementRowButtonStyle())
         .contextMenu {
@@ -470,13 +485,12 @@ struct CashFlowDetailView: View {
     }
 }
 
-/// Subtle spring press animation providing clear tactile/visual feedback on card taps.
+/// Subtle press animation providing clear tactile/visual feedback on card taps in the unified list.
 struct MovementRowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.985 : 1.0)
-            .opacity(configuration.isPressed ? 0.88 : 1.0)
-            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
+            .background(configuration.isPressed ? AppTheme.Colors.dynamicText.opacity(0.04) : Color.clear)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
