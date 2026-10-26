@@ -6,6 +6,9 @@ struct CashFlowView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @State private var activeDetailType: MovementType? = nil
+    @ObservedObject private var pendingStore = PendingTransactionsStore.shared
+    @State private var showPendingConfirmationSheet: Bool = false
+    @State private var selectedPendingTx: PendingWalletTransactionModel? = nil
     
     private let monthNamesShort = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
     
@@ -163,6 +166,14 @@ struct CashFlowView: View {
                     .padding(.top, 4)
                     .animation(.spring(response: 0.35, dampingFraction: 0.8), value: dashboardViewModel.selectedPeriod)
                     
+                    // Bottone movimenti da confermare dallo Shortcut (appare solo se presenti)
+                    if !pendingStore.pendingTransactions.isEmpty {
+                        confirmTransactionsButton
+                            .padding(.horizontal, 20)
+                            .padding(.top, 10)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                    
                     // Safe bottom padding for floating BottomMenu
                     Spacer(minLength: 120)
                 }
@@ -217,7 +228,18 @@ struct CashFlowView: View {
             }
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.85), value: activeDetailType)
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: pendingStore.pendingTransactions.count)
         .navigationBarHidden(true)
+        .sheet(isPresented: $showPendingConfirmationSheet) {
+            PendingTransactionsView { selectedTx in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    selectedPendingTx = selectedTx
+                }
+            }
+        }
+        .sheet(item: $selectedPendingTx) { tx in
+            AddTransactionView(initialPendingTransaction: tx)
+        }
         .onAppear {
             dashboardViewModel.fetchMonthlyStats()
         }
@@ -228,6 +250,64 @@ struct CashFlowView: View {
                 }
             }
         }
+    }
+    
+    // MARK: - Bottone Movimenti Shortcut da Confermare
+    
+    private var confirmTransactionsButton: some View {
+        let count = pendingStore.pendingTransactions.count
+        return Button(action: {
+            HapticHelper.light()
+            showPendingConfirmationSheet = true
+        }) {
+            HStack(spacing: 12) {
+                // Leading Icon in round container
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.Colors.dynamicPrimary.opacity(0.12))
+                        .frame(width: 38, height: 38)
+                    
+                    Image(systemName: "tray.and.arrow.down.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppTheme.Colors.dynamicPrimary)
+                }
+                
+                // Titles
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(count == 1 ? "1 movimento da confermare" : "\(count) movimenti da confermare")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(AppTheme.Colors.dynamicText)
+                }
+                
+                Spacer()
+                
+                // Badge count & Chevron
+                HStack(spacing: 6) {
+                    Text("\(count)")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundColor(AppTheme.Colors.buttonActiveText)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Capsule().fill(AppTheme.Colors.dynamicPrimary))
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.7))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppTheme.Colors.dynamicCardBackground)
+                    .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 2)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 
