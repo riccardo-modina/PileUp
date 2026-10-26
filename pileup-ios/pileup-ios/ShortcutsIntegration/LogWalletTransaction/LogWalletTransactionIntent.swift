@@ -7,7 +7,7 @@ public struct LogWalletTransactionIntent: AppIntent {
     public static var title: LocalizedStringResource = "Registra Movimento di Spesa"
     
     public static var description = IntentDescription(
-        "Intercetta e salva un movimento di spesa in PileUp da qualsiasi sorgente (Apple Wallet, notifiche push bancarie, SMS o automazioni personalizzate)."
+        "Intercetta e salva un movimento di spesa in PileUp da notifiche push bancarie, messaggi o automazioni personalizzate."
     )
     
     /// Optional explicit amount passed from Apple Pay / Wallet
@@ -46,6 +46,7 @@ public struct LogWalletTransactionIntent: AppIntent {
         self.rawNotificationText = rawNotificationText
     }
     
+    @MainActor
     public func perform() async throws -> some IntentResult & ProvidesDialog {
         let txDate = date ?? Date()
         
