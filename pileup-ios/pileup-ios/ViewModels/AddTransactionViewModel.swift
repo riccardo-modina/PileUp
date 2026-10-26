@@ -76,20 +76,30 @@ class AddTransactionViewModel: ObservableObject {
     // E2EE Master Key passed from AuthViewModel or Keychain
     var masterKey: String? = nil
     
+    private let initialPendingTx: PendingWalletTransactionModel?
     private let categoryAPI: CategoryAPIProtocol
     private let accountAPI: AccountAPIProtocol
     private let transactionAPI: TransactionAPIProtocol
     
     init(
         masterKey: String? = nil,
+        initialPendingTransaction: PendingWalletTransactionModel? = nil,
         categoryAPI: CategoryAPIProtocol = CategoryAPI.shared,
         accountAPI: AccountAPIProtocol = AccountAPI.shared,
         transactionAPI: TransactionAPIProtocol = TransactionAPI.shared
     ) {
         self.masterKey = masterKey
+        self.initialPendingTx = initialPendingTransaction
         self.categoryAPI = categoryAPI
         self.accountAPI = accountAPI
         self.transactionAPI = transactionAPI
+        
+        if let tx = initialPendingTransaction {
+            self.amountString = String(format: "%.2f", tx.amount).replacingOccurrences(of: ".", with: ",")
+            self.customTitle = tx.title
+            self.date = tx.date
+        }
+        
         fetchCategoriesAndAccounts()
     }
     
@@ -274,11 +284,19 @@ class AddTransactionViewModel: ObservableObject {
                 self.accounts = fetchedAccs
                 self.isLoadingData = false
                 
-                // Auto-select first matching category if available
-                self.autoSelectFirstCategoryIfNeeded()
+                // Match category if specified in pending transaction, otherwise auto-select first
+                if let initialTx = self.initialPendingTx, let catId = initialTx.categoryId,
+                   let matchingCat = self.categories.first(where: { $0.id == catId }) {
+                    self.selectedCategory = matchingCat
+                } else {
+                    self.autoSelectFirstCategoryIfNeeded()
+                }
                 
-                // Auto-select first available account if unset
-                if self.selectedAccount == nil {
+                // Match account if specified in pending transaction, otherwise auto-select first available account
+                if let initialTx = self.initialPendingTx, let accId = initialTx.accountId,
+                   let matchingAcc = self.availableAccounts.first(where: { $0.id == accId }) {
+                    self.selectedAccount = matchingAcc
+                } else if self.selectedAccount == nil {
                     self.selectedAccount = self.availableAccounts.first
                 }
             } catch {
