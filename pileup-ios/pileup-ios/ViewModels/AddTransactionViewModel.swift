@@ -104,10 +104,16 @@ class AddTransactionViewModel: ObservableObject {
         setupNotificationObservers()
     }
     
+    // listen to notification coming from create category view
     private func setupNotificationObservers() {
         NotificationCenter.default.addObserver(forName: NSNotification.Name("CategoriesUpdated"), object: nil, queue: .main) { [weak self] note in
-            if let cat = note.object as? CategoryItem {
-                guard let self = self else { return }
+            // extract data structure from notification, before task execution to be thread safe
+            // since notification type is not thread safe
+            let cat = note.object as? CategoryItem
+            // Task used to update item list (category in this case)
+            // Since categories is a publish var once is updated it emits a signal captured by the ui
+            Task { @MainActor [weak self] in
+                guard let self = self, let cat = cat else { return }
                 if !self.categories.contains(where: { $0.id == cat.id }) {
                     self.categories.append(cat)
                 }
@@ -116,8 +122,9 @@ class AddTransactionViewModel: ObservableObject {
         }
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name("AccountsUpdated"), object: nil, queue: .main) { [weak self] note in
-            if let acc = note.object as? AccountItem {
-                guard let self = self else { return }
+            let acc = note.object as? AccountItem
+            Task { @MainActor [weak self] in
+                guard let self = self, let acc = acc else { return }
                 if !self.accounts.contains(where: { $0.id == acc.id }) {
                     self.accounts.append(acc)
                 }

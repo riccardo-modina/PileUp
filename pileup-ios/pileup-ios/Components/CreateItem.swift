@@ -121,7 +121,7 @@ struct CreateItem: View {
                             
                             ColorPicker("", selection: $customColor, supportsOpacity: false)
                                 .labelsHidden()
-                                .onChange(of: customColor) { newColor in
+                                .onChange(of: customColor) { _, newColor in
                                     if let hex = newColor.toHex() {
                                         selectedHex = hex
                                     }
