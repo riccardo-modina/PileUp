@@ -3,6 +3,15 @@ import Foundation
 protocol CategoryAPIProtocol: Sendable {
     func getAllCategories() async throws -> [CategoryItem]
     func getCategories(page: Int, pageSize: Int) async throws -> [CategoryItem]
+    func createCategory(nome: String, tipo: String, color: String) async throws -> CategoryItem
+    func updateCategory(id: Int, nome: String, tipo: String, color: String) async throws -> CategoryItem
+    func deleteCategory(id: Int) async throws
+}
+
+private struct CreateCategoryPayload: Codable, Sendable {
+    let nome: String
+    let tipo: String
+    let color: String
 }
 
 final class CategoryAPI: CategoryAPIProtocol, @unchecked Sendable {
@@ -41,4 +50,32 @@ final class CategoryAPI: CategoryAPIProtocol, @unchecked Sendable {
             )
         }
     }
+    
+    func createCategory(nome: String, tipo: String, color: String) async throws -> CategoryItem {
+        let payload = CreateCategoryPayload(nome: nome, tipo: tipo, color: color)
+        let body = try JSONEncoder().encode(payload)
+        return try await network.request(
+            endpoint: "categorie/",
+            method: "POST",
+            body: body
+        )
+    }
+    
+    func updateCategory(id: Int, nome: String, tipo: String, color: String) async throws -> CategoryItem {
+        let payload = CreateCategoryPayload(nome: nome, tipo: tipo, color: color)
+        let body = try JSONEncoder().encode(payload)
+        return try await network.request(
+            endpoint: "categorie/\(id)/",
+            method: "PATCH",
+            body: body
+        )
+    }
+    
+    func deleteCategory(id: Int) async throws {
+        try await network.request(
+            endpoint: "categorie/\(id)/",
+            method: "DELETE"
+        )
+    }
 }
+

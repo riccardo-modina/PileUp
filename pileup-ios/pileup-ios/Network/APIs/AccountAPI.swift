@@ -3,6 +3,15 @@ import Foundation
 protocol AccountAPIProtocol: Sendable {
     func getAllAccounts() async throws -> [AccountItem]
     func getAccounts(page: Int, pageSize: Int) async throws -> [AccountItem]
+    func createAccount(nome: String, tipo: String, color: String) async throws -> AccountItem
+    func updateAccount(id: Int, nome: String, tipo: String, color: String) async throws -> AccountItem
+    func deleteAccount(id: Int) async throws
+}
+
+private struct CreateAccountPayload: Codable, Sendable {
+    let nome: String
+    let tipo: String
+    let color: String
 }
 
 final class AccountAPI: AccountAPIProtocol, @unchecked Sendable {
@@ -14,9 +23,6 @@ final class AccountAPI: AccountAPIProtocol, @unchecked Sendable {
     }
     
     /// Fetches all user accounts.
-    /// NOTE FOR FUTURE DEVELOPMENT: When account management endpoints (create, edit, delete) are implemented
-    /// (e.g. POST/PUT/DELETE /conti/), call `PendingTransactionsStore.shared.updateAccountsCache(...)`
-    /// to keep the local offline accounts cache in sync for Apple Wallet background card matching.
     func getAllAccounts() async throws -> [AccountItem] {
         return try await network.request(
             endpoint: "conti/",
@@ -43,6 +49,50 @@ final class AccountAPI: AccountAPIProtocol, @unchecked Sendable {
                 method: "GET",
                 queryItems: queryItems
             )
+        }
+    }
+    
+    func createAccount(nome: String, tipo: String, color: String) async throws -> AccountItem {
+        let payload = CreateAccountPayload(nome: nome, tipo: tipo, color: color)
+        let body = try JSONEncoder().encode(payload)
+        let created: AccountItem = try await network.request(
+            endpoint: "conti/",
+            method: "POST",
+            body: body
+        )
+        Task {
+            if let all = try? await getAllAccounts() {
+                PendingTransactionsStore.shared.updateAccountsCache(all)
+            }
+        }
+        return created
+    }
+    
+    func updateAccount(id: Int, nome: String, tipo: String, color: String) async throws -> AccountItem {
+        let payload = CreateAccountPayload(nome: nome, tipo: tipo, color: color)
+        let body = try JSONEncoder().encode(payload)
+        let updated: AccountItem = try await network.request(
+            endpoint: "conti/\(id)/",
+            method: "PATCH",
+            body: body
+        )
+        Task {
+            if let all = try? await getAllAccounts() {
+                PendingTransactionsStore.shared.updateAccountsCache(all)
+            }
+        }
+        return updated
+    }
+    
+    func deleteAccount(id: Int) async throws {
+        try await network.request(
+            endpoint: "conti/\(id)/",
+            method: "DELETE"
+        )
+        Task {
+            if let all = try? await getAllAccounts() {
+                PendingTransactionsStore.shared.updateAccountsCache(all)
+            }
         }
     }
 }
