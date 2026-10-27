@@ -179,93 +179,119 @@ struct ManageItem: View {
                     
                     // List of Items
                     ScrollView(.vertical, showsIndicators: true) {
-                        LazyVStack(spacing: 8) {
-                            ForEach(items) { item in
-                                let isSelected = selectedItemId == item.id
-                                Button(action: {
-                                    HapticHelper.selection()
-                                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
-                                        if selectedItemId == item.id {
-                                            selectedItemId = nil
-                                        } else {
-                                            selectedItemId = item.id
-                                        }
-                                    }
-                                }) {
-                                    HStack(spacing: 12) {
-                                        // Color / Icon badge
-                                        if let icon = item.icon {
-                                            ZStack {
-                                                Circle()
-                                                    .fill(item.color.opacity(0.15))
-                                                    .frame(width: 34, height: 34)
-                                                Image(systemName: icon)
-                                                    .font(.system(size: 15))
-                                                    .foregroundColor(item.color)
-                                            }
-                                        } else {
-                                            Circle()
-                                                .fill(item.color)
-                                                .frame(width: 16, height: 16)
-                                        }
-                                        
-                                        // Name and subtitle
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            HStack(spacing: 6) {
-                                                Text(item.name)
-                                                    .font(.system(size: 15, weight: .semibold))
-                                                    .foregroundColor(AppTheme.Colors.dynamicText)
-                                                    .lineLimit(1)
-                                                
-                                                if item.isSystem {
-                                                    Text("Sistema")
-                                                        .font(.system(size: 10, weight: .bold))
-                                                        .padding(.horizontal, 6)
-                                                        .padding(.vertical, 2)
-                                                        .background(AppTheme.Colors.dynamicSubtext.opacity(0.15))
-                                                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                                                        .clipShape(Capsule())
+                        if items.isEmpty {
+                            VStack(spacing: 8) {
+                                Image(systemName: "tray")
+                                    .font(.system(size: 28))
+                                    .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.4))
+                                    .padding(.top, 24)
+                                Text("Nessun elemento disponibile")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 30)
+                        } else {
+                            VStack(spacing: 0) {
+                                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                                    let isSelected = selectedItemId == item.id
+                                    VStack(spacing: 0) {
+                                        Button(action: {
+                                            HapticHelper.selection()
+                                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                                if selectedItemId == item.id {
+                                                    selectedItemId = nil
+                                                } else {
+                                                    selectedItemId = item.id
                                                 }
                                             }
-                                            
-                                            if let sub = item.subtitle {
-                                                Text(sub)
-                                                    .font(.system(size: 12))
-                                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                                        }) {
+                                            HStack(spacing: 12) {
+                                                // Color / Icon badge
+                                                if let icon = item.icon {
+                                                    ZStack {
+                                                        Circle()
+                                                            .fill(item.color.opacity(0.15))
+                                                            .frame(width: 32, height: 32)
+                                                        Image(systemName: icon)
+                                                            .font(.system(size: 15))
+                                                            .foregroundColor(item.color)
+                                                    }
+                                                } else {
+                                                    Circle()
+                                                        .fill(item.color)
+                                                        .frame(width: 14, height: 14)
+                                                }
+                                                
+                                                // Name and subtitle
+                                                VStack(alignment: .leading, spacing: 2) {
+                                                    HStack(spacing: 6) {
+                                                        Text(item.name)
+                                                            .font(.system(size: 15, weight: .semibold))
+                                                            .foregroundColor(AppTheme.Colors.dynamicText)
+                                                            .lineLimit(1)
+                                                        
+                                                        if item.isSystem {
+                                                            Text("Sistema")
+                                                                .font(.system(size: 10, weight: .bold))
+                                                                .padding(.horizontal, 6)
+                                                                .padding(.vertical, 2)
+                                                                .background(AppTheme.Colors.dynamicSubtext.opacity(0.15))
+                                                                .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                                                                .clipShape(Capsule())
+                                                        }
+                                                    }
+                                                    
+                                                    if let sub = item.subtitle {
+                                                        Text(sub)
+                                                            .font(.system(size: 12, weight: .regular))
+                                                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                                                    }
+                                                }
+                                                
+                                                Spacer()
+                                                
+                                                // Selection Radio Indicator
+                                                ZStack {
+                                                    Circle()
+                                                        .stroke(isSelected ? (colorScheme == .dark ? Color.white : Color(hex: "#0f172a")) : AppTheme.Colors.dynamicBorder, lineWidth: 1.5)
+                                                        .frame(width: 20, height: 20)
+                                                    
+                                                    if isSelected {
+                                                        Circle()
+                                                            .fill(colorScheme == .dark ? Color.white : Color(hex: "#0f172a"))
+                                                            .frame(width: 10, height: 10)
+                                                    }
+                                                }
                                             }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, item.subtitle != nil ? 11 : 13)
+                                            .background(isSelected ? AppTheme.Colors.dynamicBorder.opacity(0.18) : Color.clear)
+                                            .contentShape(Rectangle())
                                         }
+                                        .buttonStyle(.plain)
                                         
-                                        Spacer()
-                                        
-                                        // Selection Radio Indicator
-                                        ZStack {
-                                            Circle()
-                                                .stroke(isSelected ? (colorScheme == .dark ? Color.white : Color(hex: "#0f172a")) : AppTheme.Colors.dynamicBorder, lineWidth: 1.5)
-                                                .frame(width: 20, height: 20)
-                                            
-                                            if isSelected {
-                                                Circle()
-                                                    .fill(colorScheme == .dark ? Color.white : Color(hex: "#0f172a"))
-                                                    .frame(width: 10, height: 10)
-                                            }
+                                        if index < items.count - 1 {
+                                            Divider()
+                                                .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
+                                                .padding(.horizontal, 16)
                                         }
                                     }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .fill(isSelected ? AppTheme.Colors.dynamicBorder.opacity(0.2) : AppTheme.Colors.dynamicCardBackground)
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .stroke(isSelected ? (colorScheme == .dark ? Color.white.opacity(0.6) : Color(hex: "#0f172a").opacity(0.6)) : AppTheme.Colors.dynamicBorder.opacity(0.4), lineWidth: 1)
-                                    )
                                 }
-                                .buttonStyle(.plain)
                             }
+                            .background(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .fill(AppTheme.Colors.dynamicCardBackground)
+                                    .shadow(color: Color.black.opacity(0.02), radius: 6, x: 0, y: 2)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 24)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 24)
                     }
                 }
                 

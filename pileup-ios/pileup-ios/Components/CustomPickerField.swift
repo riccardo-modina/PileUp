@@ -388,118 +388,130 @@ struct CustomSelectionSheet: View {
                 
                 // List of Items
                 ScrollView(.vertical, showsIndicators: true) {
-                    LazyVStack(spacing: 8) {
-                        // All option row if enabled
-                        if showAllOption && (searchQuery.isEmpty || allOptionLabel.lowercased().contains(searchQuery.lowercased())) {
-                            let isAllSelected = selectedId == nil
-                            Button(action: {
-                                HapticHelper.selection()
-                                selectedId = nil
-                                onSelect?(nil)
-                                dismiss()
-                            }) {
-                                HStack(spacing: 12) {
-                                    Text(allOptionLabel)
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundColor(AppTheme.Colors.dynamicText)
-                                    
-                                    Spacer()
-                                    
-                                    if isAllSelected {
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 14, weight: .bold))
-                                            .foregroundColor(AppTheme.Colors.dynamicText)
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .fill(isAllSelected ? AppTheme.Colors.dynamicBorder.opacity(0.18) : AppTheme.Colors.dynamicCardBackground)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .stroke(isAllSelected ? AppTheme.Colors.dynamicBorder : AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
-                                )
-                            }
-                            .buttonStyle(.plain)
+                    if filteredItems.isEmpty && (!showAllOption || !searchQuery.isEmpty) {
+                        VStack(spacing: 8) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 28))
+                                .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.4))
+                                .padding(.top, 24)
+                            Text("Nessun elemento trovato")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppTheme.Colors.dynamicSubtext)
                         }
-                        
-                        if filteredItems.isEmpty {
-                            VStack(spacing: 8) {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.4))
-                                    .padding(.top, 24)
-                                Text("Nessun elemento trovato")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 20)
-                        } else {
-                            ForEach(filteredItems) { item in
-                                let isSelected = selectedId != nil && selectedId == item.id
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 30)
+                    } else {
+                        VStack(spacing: 0) {
+                            // All option row if enabled
+                            if showAllOption && (searchQuery.isEmpty || allOptionLabel.lowercased().contains(searchQuery.lowercased())) {
+                                let isAllSelected = selectedId == nil
                                 Button(action: {
                                     HapticHelper.selection()
-                                    selectedId = item.id
-                                    onSelect?(item.id)
+                                    selectedId = nil
+                                    onSelect?(nil)
                                     dismiss()
                                 }) {
                                     HStack(spacing: 12) {
-                                        if let icon = item.icon {
-                                            ZStack {
-                                                Circle()
-                                                    .fill(item.color.opacity(0.15))
-                                                    .frame(width: 34, height: 34)
-                                                Image(systemName: icon)
-                                                    .font(.system(size: 15))
-                                                    .foregroundColor(item.color)
-                                            }
-                                        } else {
-                                            Circle()
-                                                .fill(item.color)
-                                                .frame(width: 14, height: 14)
-                                        }
-                                        
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(item.name)
-                                                .font(.system(size: 15, weight: .semibold))
-                                                .foregroundColor(AppTheme.Colors.dynamicText)
-                                                .lineLimit(1)
-                                            
-                                            if let sub = item.subtitle {
-                                                Text(sub)
-                                                    .font(.system(size: 12))
-                                                    .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                                            }
-                                        }
+                                        Text(allOptionLabel)
+                                            .font(.system(size: 15, weight: .semibold))
+                                            .foregroundColor(AppTheme.Colors.dynamicText)
                                         
                                         Spacer()
                                         
-                                        if isSelected {
+                                        if isAllSelected {
                                             Image(systemName: "checkmark")
                                                 .font(.system(size: 14, weight: .bold))
-                                                .foregroundColor(item.color)
+                                                .foregroundColor(AppTheme.Colors.dynamicText)
                                         }
                                     }
                                     .padding(.horizontal, 16)
-                                    .padding(.vertical, item.subtitle != nil ? 10 : 14)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .fill(isSelected ? AppTheme.Colors.dynamicBorder.opacity(0.18) : AppTheme.Colors.dynamicCardBackground)
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.4), lineWidth: 1)
-                                    )
+                                    .padding(.vertical, 14)
+                                    .background(isAllSelected ? AppTheme.Colors.dynamicBorder.opacity(0.18) : Color.clear)
+                                    .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
+                                
+                                if !filteredItems.isEmpty {
+                                    Divider()
+                                        .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
+                                        .padding(.horizontal, 16)
+                                }
+                            }
+                            
+                            ForEach(Array(filteredItems.enumerated()), id: \.element.id) { index, item in
+                                let isSelected = selectedId != nil && selectedId == item.id
+                                VStack(spacing: 0) {
+                                    Button(action: {
+                                        HapticHelper.selection()
+                                        selectedId = item.id
+                                        onSelect?(item.id)
+                                        dismiss()
+                                    }) {
+                                        HStack(spacing: 12) {
+                                            if let icon = item.icon {
+                                                ZStack {
+                                                    Circle()
+                                                        .fill(item.color.opacity(0.15))
+                                                        .frame(width: 32, height: 32)
+                                                    Image(systemName: icon)
+                                                        .font(.system(size: 15))
+                                                        .foregroundColor(item.color)
+                                                }
+                                            } else {
+                                                Circle()
+                                                    .fill(item.color)
+                                                    .frame(width: 12, height: 12)
+                                            }
+                                            
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(item.name)
+                                                    .font(.system(size: 15, weight: .semibold))
+                                                    .foregroundColor(AppTheme.Colors.dynamicText)
+                                                    .lineLimit(1)
+                                                
+                                                if let sub = item.subtitle {
+                                                    Text(sub)
+                                                        .font(.system(size: 12, weight: .regular))
+                                                        .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                                                }
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            if isSelected {
+                                                Image(systemName: "checkmark")
+                                                    .font(.system(size: 14, weight: .bold))
+                                                    .foregroundColor(item.color)
+                                            }
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, item.subtitle != nil ? 11 : 13)
+                                        .background(isSelected ? AppTheme.Colors.dynamicBorder.opacity(0.18) : Color.clear)
+                                        .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    
+                                    if index < filteredItems.count - 1 {
+                                        Divider()
+                                            .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
+                                            .padding(.horizontal, 16)
+                                    }
+                                }
                             }
                         }
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(AppTheme.Colors.dynamicCardBackground)
+                                .shadow(color: Color.black.opacity(0.02), radius: 6, x: 0, y: 2)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 24)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 24)
                 }
             }
             .navigationTitle(title)

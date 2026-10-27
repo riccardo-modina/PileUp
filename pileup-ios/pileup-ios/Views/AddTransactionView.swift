@@ -560,56 +560,68 @@ struct AddTransactionView: View {
                         .font(.system(size: 13))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
                 } else {
-                    VStack(spacing: 8) {
-                        ForEach(viewModel.availableAccounts) { acc in
+                    VStack(spacing: 0) {
+                        ForEach(Array(viewModel.availableAccounts.enumerated()), id: \.element.id) { index, acc in
                             let isSelected = viewModel.selectedAccount?.id == acc.id
-                            Button(action: {
-                                HapticHelper.selection()
-                                withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
-                                    viewModel.selectedAccount = acc
+                            VStack(spacing: 0) {
+                                Button(action: {
+                                    HapticHelper.selection()
+                                    withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
+                                        viewModel.selectedAccount = acc
+                                    }
+                                }) {
+                                    HStack(spacing: 14) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(acc.displayColor.opacity(0.18))
+                                                .frame(width: 36, height: 36)
+                                            Image(systemName: acc.tipo == "contanti" ? "banknote" : "creditcard")
+                                                .font(.system(size: 16))
+                                                .foregroundColor(acc.displayColor)
+                                        }
+                                        
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(acc.nome)
+                                                .font(.system(size: 15, weight: .semibold))
+                                                .foregroundColor(AppTheme.Colors.dynamicText)
+                                            Text(acc.tipo == "contanti" ? "Contanti" : "Conto Corrente")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(AppTheme.Colors.dynamicSubtext)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        if isSelected {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(AppTheme.Colors.dynamicText)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .background(isSelected ? AppTheme.Colors.formCardActive : Color.clear)
+                                    .contentShape(Rectangle())
                                 }
-                            }) {
-                                HStack(spacing: 14) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(acc.displayColor.opacity(0.18))
-                                            .frame(width: 40, height: 40)
-                                        Image(systemName: acc.tipo == "contanti" ? "banknote" : "creditcard")
-                                            .font(.system(size: 16))
-                                            .foregroundColor(acc.displayColor)
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 3) {
-                                        Text(acc.nome)
-                                            .font(.system(size: 15, weight: .semibold))
-                                            .foregroundColor(AppTheme.Colors.dynamicText)
-                                        Text(acc.tipo == "contanti" ? "Contanti" : "Conto Corrente")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    if isSelected {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(AppTheme.Colors.dynamicText)
-                                    }
+                                .buttonStyle(.plain)
+                                
+                                if index < viewModel.availableAccounts.count - 1 {
+                                    Divider()
+                                        .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
+                                        .padding(.horizontal, 16)
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .fill(isSelected ? AppTheme.Colors.formCardActive : AppTheme.Colors.dynamicCardBackground)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
-                                )
                             }
-                            .buttonStyle(.plain)
                         }
                     }
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(AppTheme.Colors.dynamicCardBackground)
+                            .shadow(color: Color.black.opacity(0.02), radius: 6, x: 0, y: 2)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
                 
                 if viewModel.showAccountError {
