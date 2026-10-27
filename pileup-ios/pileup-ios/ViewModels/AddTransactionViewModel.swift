@@ -101,6 +101,29 @@ class AddTransactionViewModel: ObservableObject {
         }
         
         fetchCategoriesAndAccounts()
+        setupNotificationObservers()
+    }
+    
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("CategoriesUpdated"), object: nil, queue: .main) { [weak self] note in
+            if let cat = note.object as? CategoryItem {
+                guard let self = self else { return }
+                if !self.categories.contains(where: { $0.id == cat.id }) {
+                    self.categories.append(cat)
+                }
+                self.selectedCategory = cat
+            }
+        }
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("AccountsUpdated"), object: nil, queue: .main) { [weak self] note in
+            if let acc = note.object as? AccountItem {
+                guard let self = self else { return }
+                if !self.accounts.contains(where: { $0.id == acc.id }) {
+                    self.accounts.append(acc)
+                }
+                self.selectedAccount = acc
+            }
+        }
     }
     
     // MARK: - Real-Time Amount Sanitization & Input Controls

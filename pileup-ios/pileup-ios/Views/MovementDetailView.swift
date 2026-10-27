@@ -153,6 +153,22 @@ struct MovementDetailView: View {
             .onAppear {
                 initializeData()
             }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("CategoriesUpdated"))) { note in
+                if let cat = note.object as? CategoryItem {
+                    if !categories.contains(where: { $0.id == cat.id }) {
+                        categories.append(cat)
+                    }
+                    selectedCategory = cat
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("AccountsUpdated"))) { note in
+                if let acc = note.object as? AccountItem {
+                    if !accounts.contains(where: { $0.id == acc.id }) {
+                        accounts.append(acc)
+                    }
+                    selectedAccount = acc
+                }
+            }
         }
     }
     

@@ -381,10 +381,10 @@ struct AddTransactionView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             
             // C. Category Selection
-            CategoryPickerField(
+            CustomPickerField(
                 title: "CATEGORIA",
                 placeholder: "Seleziona categoria",
-                items: viewModel.filteredCategories.map { CategoryPickerItem(category: $0) },
+                items: viewModel.filteredCategories.map { CustomPickerItem(category: $0) },
                 selectedId: Binding(
                     get: { viewModel.selectedCategory?.id },
                     set: { newId in

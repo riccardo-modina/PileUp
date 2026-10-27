@@ -143,4 +143,16 @@ struct AppTheme {
         static var textLight: Color { dynamicSubtext }
         static var neutral: Color { dynamicSubtext }
     }
+    
+    struct Palette {
+        /// Curated presets for Categories, Accounts, and tags across the app
+        static let presets: [String] = [
+            "#1FBC9C", "#2ECC71", "#3498DB", "#9B59B6", "#34495E",
+            "#F1C40F", "#E67E22", "#E74C3C", "#95A5A6", "#3B82F6",
+            "#8B5CF6", "#EC4899", "#10B981", "#64748B"
+        ]
+        
+        static let defaultCategoryColor = "#1FBC9C"
+        static let defaultAccountColor = "#3498DB"
+    }
 }

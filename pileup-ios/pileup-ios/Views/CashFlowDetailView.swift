@@ -289,9 +289,9 @@ struct CashFlowDetailView: View {
     // MARK: - Category Dropdown Section (Reusable Component)
     
     private var categoryDropdownSection: some View {
-        CategoryPickerField(
+        CustomPickerField(
             title: "Filtra per categoria",
-            items: viewModel.pieSlices.map { CategoryPickerItem(slice: $0) },
+            items: viewModel.pieSlices.map { CustomPickerItem(slice: $0) },
             selectedId: $viewModel.selectedCategoryId,
             showAllOption: true,
             allOptionLabel: "Tutti i movimenti"

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Unified, generic item model for Picker selection (Categories, Accounts, or any selectable item)
 struct CustomPickerItem: Identifiable, Equatable {
@@ -7,13 +8,24 @@ struct CustomPickerItem: Identifiable, Equatable {
     let subtitle: String?
     let icon: String?
     let color: Color
+    var colorHex: String? = nil
+    var isSystem: Bool = false
+    var itemType: ItemType? = nil
     
-    init(id: Int?, name: String, subtitle: String? = nil, icon: String? = nil, color: Color = AppTheme.Colors.primary) {
+    enum ItemType: Equatable {
+        case category(tipo: String?)
+        case account
+    }
+    
+    init(id: Int?, name: String, subtitle: String? = nil, icon: String? = nil, color: Color = AppTheme.Colors.primary, colorHex: String? = nil, isSystem: Bool = false, itemType: ItemType? = nil) {
         self.id = id
         self.name = name
         self.subtitle = subtitle
         self.icon = icon
         self.color = color
+        self.colorHex = colorHex
+        self.isSystem = isSystem
+        self.itemType = itemType
     }
     
     init(category: CategoryItem) {
@@ -22,6 +34,9 @@ struct CustomPickerItem: Identifiable, Equatable {
         self.subtitle = nil
         self.icon = nil
         self.color = category.displayColor
+        self.colorHex = category.color
+        self.isSystem = category.isSystem
+        self.itemType = .category(tipo: category.tipo)
     }
     
     init(account: AccountItem) {
@@ -30,6 +45,9 @@ struct CustomPickerItem: Identifiable, Equatable {
         self.subtitle = account.tipo == "contanti" ? "Contanti" : "Conto Corrente"
         self.icon = account.tipo == "contanti" ? "banknote" : "creditcard"
         self.color = account.displayColor
+        self.colorHex = account.color
+        self.isSystem = account.isSystem
+        self.itemType = .account
     }
     
     init(slice: CategoryPieSlice) {
@@ -38,11 +56,19 @@ struct CustomPickerItem: Identifiable, Equatable {
         self.subtitle = nil
         self.icon = nil
         self.color = slice.color
+        self.colorHex = slice.color.toHex()
+        self.isSystem = false
+        self.itemType = nil
     }
 }
 
-// Backwards compatibility alias
-typealias CategoryPickerItem = CustomPickerItem
+
+/// Defines the type of entity managed by the picker when allowing creation
+enum CustomPickerType: Equatable {
+    case category(defaultType: String? = nil)
+    case account
+    case generic(title: String)
+}
 
 /// Unified, clean Picker Field that opens a native Bottom Sheet.
 /// Highly reusable for Categories, Accounts, or any selectable list.
@@ -64,11 +90,57 @@ struct CustomPickerField: View {
     var onTap: (() -> Void)? = nil
     var onSelect: ((Int?) -> Void)? = nil
     
+    // Add option configuration
+    var pickerType: CustomPickerType? = nil
+    var allowAdd: Bool? = nil
+    var onCategoryCreated: ((CategoryItem) -> Void)? = nil
+    var onAccountCreated: ((AccountItem) -> Void)? = nil
+    var onAddNew: (() -> Void)? = nil
+    
     @State private var isSheetPresented: Bool = false
+    @State private var newlyAddedItems: [CustomPickerItem] = []
+    
+    private var resolvedPickerType: CustomPickerType? {
+        if let explicit = pickerType {
+            return explicit
+        }
+        for item in items {
+            if case .category(let tipo) = item.itemType {
+                return .category(defaultType: tipo ?? "uscita")
+            } else if item.itemType == .account {
+                return .account
+            }
+        }
+        let combined = "\(sheetTitle ?? "") \(placeholder) \(title ?? "")".lowercased()
+        if combined.contains("conto") {
+            return .account
+        }
+        if combined.contains("categor") {
+            return .category(defaultType: "uscita")
+        }
+        return nil
+    }
+    
+    private var shouldAllowAdd: Bool {
+        if let explicit = allowAdd {
+            return explicit
+        }
+        return !showAllOption && resolvedPickerType != nil
+    }
+    
+    private var combinedItems: [CustomPickerItem] {
+        var result = items
+        for item in newlyAddedItems {
+            if !result.contains(where: { $0.id == item.id }) {
+                result.append(item)
+            }
+        }
+        return result
+    }
     
     private var selectedItem: CustomPickerItem? {
         guard let id = selectedId else { return nil }
-        return items.first(where: { $0.id == id })
+        return combinedItems.first(where: { $0.id == id })
     }
     
     var body: some View {
@@ -166,18 +238,32 @@ struct CustomPickerField: View {
             CustomSelectionSheet(
                 title: sheetTitle ?? (showAllOption ? "Filtra" : placeholder),
                 searchPlaceholder: searchPlaceholder,
-                items: items,
+                items: combinedItems,
                 selectedId: $selectedId,
                 showAllOption: showAllOption,
                 allOptionLabel: allOptionLabel,
-                onSelect: onSelect
+                onSelect: onSelect,
+                pickerType: resolvedPickerType,
+                allowAdd: shouldAllowAdd,
+                onCategoryCreated: { cat in
+                    let item = CustomPickerItem(category: cat)
+                    if !newlyAddedItems.contains(where: { $0.id == item.id }) {
+                        newlyAddedItems.append(item)
+                    }
+                    onCategoryCreated?(cat)
+                },
+                onAccountCreated: { acc in
+                    let item = CustomPickerItem(account: acc)
+                    if !newlyAddedItems.contains(where: { $0.id == item.id }) {
+                        newlyAddedItems.append(item)
+                    }
+                    onAccountCreated?(acc)
+                },
+                onAddNew: onAddNew
             )
         }
     }
 }
-
-// Backwards compatibility alias
-typealias CategoryPickerField = CustomPickerField
 
 /// Spacious Bottom Sheet for selecting an item with live search and clean rows.
 struct CustomSelectionSheet: View {
@@ -188,17 +274,43 @@ struct CustomSelectionSheet: View {
     var showAllOption: Bool = false
     var allOptionLabel: String = "Tutti i movimenti"
     var onSelect: ((Int?) -> Void)? = nil
+    
+    var pickerType: CustomPickerType? = nil
+    var allowAdd: Bool = false
+    var onCategoryCreated: ((CategoryItem) -> Void)? = nil
+    var onAccountCreated: ((AccountItem) -> Void)? = nil
+    var onAddNew: (() -> Void)? = nil
+    
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     
     @State private var searchQuery: String = ""
+    @State private var localItems: [CustomPickerItem] = []
+    
+    @State private var isManageSheetPresented: Bool = false
+    
+    private var currentItems: [CustomPickerItem] {
+        localItems.isEmpty ? items : localItems
+    }
     
     private var filteredItems: [CustomPickerItem] {
         let query = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if query.isEmpty {
-            return items
+            return currentItems
         }
-        return items.filter { item in
+        return currentItems.filter { item in
             item.name.lowercased().contains(query) || (item.subtitle?.lowercased().contains(query) ?? false)
+        }
+    }
+    
+    private func manageButtonTitle(for type: CustomPickerType) -> String {
+        switch type {
+        case .category:
+            return "Gestisci categorie"
+        case .account:
+            return "Gestisci conti"
+        case .generic(let title):
+            return "Gestisci \(title.lowercased())"
         }
     }
     
@@ -237,6 +349,42 @@ struct CustomSelectionSheet: View {
                 )
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
+                
+                // Manage Button under Search Bar
+                if allowAdd, let type = pickerType {
+                    Button(action: {
+                        HapticHelper.light()
+                        if let onAddNew = onAddNew {
+                            onAddNew()
+                        } else {
+                            isManageSheetPresented = true
+                        }
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "slider.horizontal.3")
+                                .font(.system(size: 15, weight: .semibold))
+                            
+                            Text(manageButtonTitle(for: type))
+                                .font(.system(size: 14, weight: .bold))
+                                .lineLimit(1)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .opacity(0.6)
+                        }
+                        .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 13)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(colorScheme == .dark ? Color.white : Color(hex: "#0f172a"))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 20)
+                }
                 
                 // List of Items
                 ScrollView(.vertical, showsIndicators: true) {
@@ -369,8 +517,48 @@ struct CustomSelectionSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+        .onAppear {
+            if localItems.isEmpty {
+                localItems = items
+            }
+        }
+        .sheet(isPresented: $isManageSheetPresented) {
+            if let type = pickerType {
+                ManageItem(
+                    pickerType: type,
+                    items: $localItems,
+                    availableColors: dynamicPaletteColors,
+                    onCreated: { newItem in
+                        selectedId = newItem.id
+                        onSelect?(newItem.id)
+                    },
+                    onUpdated: { updatedItem in
+                        // Items list is updated via binding
+                    },
+                    onDeleted: { deletedId in
+                        if selectedId == deletedId {
+                            selectedId = nil
+                            onSelect?(nil)
+                        }
+                    }
+                )
+            }
+        }
+    }
+    
+    private var dynamicPaletteColors: [String] {
+        var set: [String] = []
+        for hex in AppTheme.Palette.presets {
+            if !set.contains(where: { $0.caseInsensitiveCompare(hex) == .orderedSame }) {
+                set.append(hex)
+            }
+        }
+        for item in items {
+            if let hex = item.color.toHex(), !set.contains(where: { $0.caseInsensitiveCompare(hex) == .orderedSame }) {
+                set.append(hex)
+            }
+        }
+        return set
     }
 }
 
-// Backwards compatibility alias
-typealias CategorySelectionSheet = CustomSelectionSheet
