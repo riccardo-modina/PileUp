@@ -89,7 +89,7 @@ struct ConfirmationBottomSheet: View {
                         )
                         .foregroundColor(isDestructive ? .white : AppTheme.Colors.primaryButtonText)
                         .shadow(
-                            color: isDestructive ? AppTheme.Colors.negative.opacity(0.25) : AppTheme.Colors.primary.opacity(0.25),
+                            color: isDestructive ? AppTheme.Colors.negative.opacity(0.25) : Color.black.opacity(0.12),
                             radius: 8,
                             y: 3
                         )

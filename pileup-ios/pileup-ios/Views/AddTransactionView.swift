@@ -886,17 +886,12 @@ struct AddTransactionView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
-                // Animated badge with ripple pulse ring
+                // Animated checkmark badge
                 ZStack {
-                    Circle()
-                        .stroke(AppTheme.Colors.willowGreen.opacity(pulseRingOpacity), lineWidth: 3)
-                        .frame(width: 100, height: 100)
-                        .scaleEffect(pulseRingScale)
-                    
                     Circle()
                         .fill(AppTheme.Colors.willowGreen)
                         .frame(width: 88, height: 88)
-                        .shadow(color: AppTheme.Colors.willowGreen.opacity(0.4), radius: 16, x: 0, y: 8)
+                        .shadow(color: Color.black.opacity(0.18), radius: 12, x: 0, y: 6)
                     
                     Image(systemName: "checkmark")
                         .font(.system(size: 40, weight: .bold))

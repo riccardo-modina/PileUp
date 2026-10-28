@@ -43,11 +43,15 @@ struct MenuView: View {
                     VStack(spacing: 24) {
                         ZStack {
                             Circle()
-                                .fill(AppTheme.Colors.primary.opacity(0.1))
+                                .fill(AppTheme.Colors.dynamicCardBackground)
                                 .frame(width: 80, height: 80)
+                                .overlay(
+                                    Circle()
+                                        .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
+                                )
                             
                             Image(systemName: "line.3.horizontal")
-                                .font(.system(size: 32))
+                                .font(.system(size: 30))
                                 .foregroundColor(AppTheme.Colors.primary)
                         }
                         .padding(.top, 12)
@@ -70,7 +74,11 @@ struct MenuView: View {
                             .foregroundColor(AppTheme.Colors.primary)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .background(AppTheme.Colors.primary.opacity(0.08))
+                            .background(AppTheme.Colors.dynamicCardBackground)
+                            .overlay(
+                                Capsule()
+                                    .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
+                            )
                             .clipShape(Capsule())
                         
                         // Quick link to settings for user convenience
@@ -80,8 +88,14 @@ struct MenuView: View {
                                     .font(.system(size: 18))
                                     .foregroundColor(AppTheme.Colors.primary)
                                     .frame(width: 36, height: 36)
-                                    .background(AppTheme.Colors.primary.opacity(0.1))
-                                    .clipShape(Circle())
+                                    .background(
+                                        Circle()
+                                            .fill(AppTheme.Colors.dynamicCardBackground)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
+                                            )
+                                    )
                                 
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Impostazioni Account")

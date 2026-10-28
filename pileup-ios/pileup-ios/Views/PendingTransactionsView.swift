@@ -85,7 +85,14 @@ struct PendingTransactionsView: View {
                 .font(.system(size: 22))
                 .foregroundColor(AppTheme.Colors.dynamicPrimary)
                 .frame(width: 44, height: 44)
-                .background(Circle().fill(AppTheme.Colors.dynamicPrimary.opacity(0.15)))
+                .background(
+                    Circle()
+                        .fill(AppTheme.Colors.dynamicCardBackground)
+                        .overlay(
+                            Circle()
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                        )
+                )
             
             VStack(alignment: .leading, spacing: 3) {
                 Text("\(store.pendingTransactions.count) movimenti in coda")

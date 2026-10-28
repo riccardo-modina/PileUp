@@ -36,7 +36,7 @@ extension Color {
 struct AppTheme {
     struct Colors {
         // Core Palette Tokens
-        static let baseWillowGreen = Color(hex: "#8ce857")
+        static let baseWillowGreen = Color(hex: "#6ecc3b")
         static var willowGreen: Color { dynamicGreen }
         static let brightSnow = Color(hex: "#f8fafc")
         static let prussianBlue = Color(hex: "#0f172a")
@@ -50,7 +50,7 @@ struct AppTheme {
         // Dynamic adaptive green token (vibrant in Dark mode, softer and less glaring in Light mode)
         static var dynamicGreen: Color {
             Color(uiColor: UIColor { trait in
-                trait.userInterfaceStyle == .dark ? UIColor(hex: "#8ce857") : UIColor(hex: "#72cb3e")
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#6ecc3b") : UIColor(hex: "#72cb3e")
             })
         }
         

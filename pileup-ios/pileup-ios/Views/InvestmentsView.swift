@@ -9,11 +9,15 @@ struct InvestmentsView: View {
                 
                 ZStack {
                     Circle()
-                        .fill(AppTheme.Colors.primary.opacity(0.1))
-                        .frame(width: 100, height: 100)
+                        .fill(AppTheme.Colors.dynamicCardBackground)
+                        .frame(width: 90, height: 90)
+                        .overlay(
+                            Circle()
+                                .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
+                        )
                     
                     Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.system(size: 44))
+                        .font(.system(size: 40))
                         .foregroundColor(AppTheme.Colors.primary)
                 }
                 
@@ -35,7 +39,11 @@ struct InvestmentsView: View {
                     .foregroundColor(AppTheme.Colors.primary)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(AppTheme.Colors.primary.opacity(0.08))
+                    .background(AppTheme.Colors.dynamicCardBackground)
+                    .overlay(
+                        Capsule()
+                            .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
+                    )
                     .clipShape(Capsule())
                 
                 Spacer()

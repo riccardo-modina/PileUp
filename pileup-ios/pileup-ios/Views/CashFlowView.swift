@@ -264,8 +264,12 @@ struct CashFlowView: View {
                 // Leading Icon in round container
                 ZStack {
                     Circle()
-                        .fill(AppTheme.Colors.dynamicPrimary.opacity(0.12))
+                        .fill(AppTheme.Colors.dynamicCardBackground)
                         .frame(width: 38, height: 38)
+                        .overlay(
+                            Circle()
+                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
+                        )
                     
                     Image(systemName: "tray.and.arrow.down.fill")
                         .font(.system(size: 16, weight: .semibold))
