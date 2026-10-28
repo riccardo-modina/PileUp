@@ -75,13 +75,13 @@ struct AppTheme {
         
         static var dynamicBackground: Color {
             Color(uiColor: UIColor { trait in
-                trait.userInterfaceStyle == .dark ? UIColor(hex: "#0f172a") : UIColor(hex: "#f8fafc")
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#0d1117") : UIColor(hex: "#f8fafc")
             })
         }
         
         static var dynamicCardBackground: Color {
             Color(uiColor: UIColor { trait in
-                trait.userInterfaceStyle == .dark ? UIColor(hex: "#1e293b") : UIColor.white
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#161b22") : UIColor.white
             })
         }
         
@@ -99,7 +99,7 @@ struct AppTheme {
         
         static var dynamicBorder: Color {
             Color(uiColor: UIColor { trait in
-                trait.userInterfaceStyle == .dark ? UIColor(hex: "#334155") : UIColor(hex: "#e2e8f0")
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#30363d") : UIColor(hex: "#e2e8f0")
             })
         }
 
@@ -110,7 +110,7 @@ struct AppTheme {
         
         static var formCardActive: Color {
             Color(uiColor: UIColor { trait in
-                trait.userInterfaceStyle == .dark ? UIColor(hex: "#273449") : UIColor(hex: "#e2e8f0")
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#21262d") : UIColor(hex: "#e2e8f0")
             })
         }
         
@@ -128,7 +128,7 @@ struct AppTheme {
         
         static var buttonDisabledBackground: Color {
             Color(uiColor: UIColor { trait in
-                trait.userInterfaceStyle == .dark ? UIColor(hex: "#1e2638") : UIColor(hex: "#e2e8f0")
+                trait.userInterfaceStyle == .dark ? UIColor(hex: "#1c2128") : UIColor(hex: "#e2e8f0")
             })
         }
 
