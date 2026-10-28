@@ -21,6 +21,11 @@ struct CashFlowDualBarChart: View {
     // Geometry constants
     private let chartHeight: CGFloat = 160
     
+    // Effective maximum height for bars so they stay cleanly within chart bounds and flush with the top guide line
+    private var maxBarHeight: CGFloat {
+        chartHeight - 8
+    }
+    
     private var isTotalMode: Bool {
         viewModel.selectedPeriod.isTotal
     }
@@ -203,7 +208,7 @@ struct CashFlowDualBarChart: View {
                 HStack(alignment: .bottom, spacing: 0) {
                     ForEach(barItems) { item in
                         VStack(spacing: 0) {
-                            Spacer()
+                            Spacer(minLength: 0)
                             
                             HStack(alignment: .bottom, spacing: currentBarGap) {
                                 // Money In Bar
@@ -225,7 +230,7 @@ struct CashFlowDualBarChart: View {
                                 )
                             }
                         }
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, maxHeight: chartHeight, alignment: .bottom)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             if !item.isFutureOrEmpty || canSelect(item) {
@@ -238,9 +243,9 @@ struct CashFlowDualBarChart: View {
                     Spacer()
                         .frame(width: 44)
                 }
-                .frame(height: chartHeight)
+                .frame(height: chartHeight, alignment: .bottom)
             }
-            .frame(height: chartHeight)
+            .frame(height: chartHeight, alignment: .bottomLeading)
             .padding(.horizontal, 16)
             
             // Base Guide Line at quota 0 (sitting directly underneath the bars, flush with their bottom)
@@ -301,7 +306,7 @@ struct CashFlowDualBarChart: View {
         // Low placeholder height (8pt) with subtle opacity for empty/future periods
         let minPlaceholderHeight: CGFloat = 8
         let ratio = CGFloat(min(max(amount / safeMax, 0.0), 1.0))
-        let calculatedHeight = isZero ? minPlaceholderHeight : max(chartHeight * ratio, minPlaceholderHeight)
+        let calculatedHeight = isZero ? minPlaceholderHeight : max(maxBarHeight * ratio, minPlaceholderHeight)
         
         // Color: soft light grey/subtle tint if empty, or vibrant theme color
         let fillColor = isZero ? AppTheme.Colors.dynamicSubtext.opacity(0.18) : color
