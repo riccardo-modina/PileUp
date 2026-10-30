@@ -21,7 +21,7 @@ struct CashFlowDualBarChart: View {
     // Geometry constants
     private let chartHeight: CGFloat = 160
     
-    // Effective maximum height for bars so they stay cleanly within chart bounds and flush with the top guide line
+    // Height to fix alligment problem
     private var maxBarHeight: CGFloat {
         chartHeight - 8
     }
@@ -312,22 +312,21 @@ struct CashFlowDualBarChart: View {
         let fillColor = isZero ? AppTheme.Colors.dynamicSubtext.opacity(0.18) : color
         let isDark = colorScheme == .dark
         
-        // In Dark mode: avoid murky darkening caused by 0.72 blending into dark background.
-        // Instead, use clear frosted transparency (0.42) with a crisp luminous stroke so it looks transparent, not dark.
+       
         let barOpacity: Double = isSelected ? 1.0 : (isZero ? 0.35 : (isDark ? 0.42 : 0.72))
         
         TopRoundedRectangle(radius: 3)
             .fill(fillColor)
             .opacity(barOpacity)
             .frame(width: currentBarWidth, height: calculatedHeight)
-            .overlay(
-                Group {
-                    if isDark && !isSelected && !isZero {
-                        TopRoundedRectangle(radius: 3)
-                            .stroke(color.opacity(0.65), lineWidth: 1)
-                    }
-                }
-            )
+            // .overlay(
+            //     Group {
+            //         if isDark && !isSelected && !isZero {
+            //             TopRoundedRectangle(radius: 3)
+            //                 .stroke(color.opacity(0.65), lineWidth: 1)
+            //         }
+            //     }
+            // )
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: calculatedHeight)
     }
     
