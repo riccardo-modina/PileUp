@@ -316,9 +316,13 @@ struct CashFlowDualBarChart: View {
         let barOpacity: Double = isSelected ? 1.0 : (isZero ? 0.35 : (isDark ? 0.42 : 0.72))
         
         TopRoundedRectangle(radius: 3)
-            .fill(fillColor)
-            .opacity(barOpacity)
+            .fill(AppTheme.Colors.dynamicBackground)
             .frame(width: currentBarWidth, height: calculatedHeight)
+            .overlay(
+                TopRoundedRectangle(radius: 3)
+                    .fill(fillColor)
+                    .opacity(barOpacity)
+            )
             // .overlay(
             //     Group {
             //         if isDark && !isSelected && !isZero {
@@ -335,7 +339,7 @@ struct CashFlowDualBarChart: View {
         HStack(spacing: 8) {
             Line()
                 .stroke(
-                    AppTheme.Colors.dynamicBorder.opacity(0.6),
+                    AppTheme.Colors.dynamicBorder.opacity(1),
                     style: StrokeStyle(lineWidth: 0.8, dash: [4, 4])
                 )
                 .frame(height: 1)
