@@ -29,13 +29,13 @@ class AddTransactionViewModel: ObservableObject {
     @Published var amountString: String = ""
     
     // MARK: - Validation & Feedback States (Matching Frontend useCurrencyInput.js and Form Steps)
-    @Published var showNumericError: Bool = false     // "Sono consentiti solo numeri e un separatore decimale"
-    @Published var showDecimalError: Bool = false     // "Massimo 4 cifre decimali consentite"
-    @Published var showZeroError: Bool = false        // "L'importo deve essere maggiore di zero"
-    @Published var showLimitError: Bool = false       // "Limite massimo di 10M superato!"
-    @Published var showCategoryError: Bool = false    // "Seleziona una categoria"
-    @Published var showAccountError: Bool = false     // "Seleziona un conto"
-    @Published var showFutureDateError: Bool = false  // "Non è possibile selezionare una data futura — impostata la data di oggi."
+    @Published var showNumericError: Bool = false     // "Only numbers and one decimal separator are allowed"
+    @Published var showDecimalError: Bool = false     // "Maximum 4 decimal places allowed"
+    @Published var showZeroError: Bool = false        // "Amount must be greater than zero"
+    @Published var showLimitError: Bool = false       // "Maximum limit of 10M exceeded!"
+    @Published var showCategoryError: Bool = false    // "Select a category"
+    @Published var showAccountError: Bool = false     // "Select an account"
+    @Published var showFutureDateError: Bool = false  // "Cannot select a future date — reset to today's date."
     
     // MARK: - Step 2: Date & Account
     @Published var date: Date = Date() {

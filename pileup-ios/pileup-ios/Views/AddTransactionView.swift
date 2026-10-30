@@ -258,7 +258,7 @@ struct AddTransactionView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 4)
             
-            // A. Segmented Pill for Movement Type (clean pills without strange colored strokes)
+            // A. Segmented Pill for Movement Type
             HStack(spacing: 8) {
                 ForEach(MovementType.allCases) { type in
                     let isSelected = viewModel.movementType == type
@@ -274,23 +274,19 @@ struct AddTransactionView: View {
                             Text(type.title)
                                 .font(.system(size: 13, weight: .semibold))
                         }
-                        .foregroundColor(isSelected ? AppTheme.Colors.dynamicText : AppTheme.Colors.dynamicSubtext)
+                        .foregroundColor(isSelected ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext)
                         .padding(.vertical, 10)
                         .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(isSelected ? AppTheme.Colors.formCardActive : AppTheme.Colors.dynamicCardBackground)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
+                                .fill(isSelected ? AppTheme.Colors.buttonActiveBackground : AppTheme.Colors.buttonDisabledBackground)
                         )
                     }
                     .buttonStyle(.plain)
                 }
             }
             
-            // B. Hero Amount Input (matching the prefix badge + input look in the screenshot)
+            // B. Amount Input
             VStack(alignment: .leading, spacing: 6) {
                 Text("IMPORTO")
                     .font(.system(size: 11, weight: .bold))
@@ -298,7 +294,7 @@ struct AddTransactionView: View {
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                 
                 HStack(spacing: 10) {
-                    // Currency badge (resembling the country flag container in the screenshot)
+                    // Currency badge
                     HStack(spacing: 6) {
                         Text("EUR")
                             .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -819,9 +815,6 @@ struct AddTransactionView: View {
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext)
                     } else {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 17, weight: .bold))
-                            .foregroundColor(isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext)
                         Text("Salva Movimento")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext)
