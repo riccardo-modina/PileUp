@@ -1,24 +1,24 @@
 //
-//  ContentView.swift
-//  pileup-ios
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
 //
-//  Created by Riccardo Modina on 18/08/26.
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
 //
 
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var authViewModel = AuthViewModel()
-    
+    @StateObject
+    private var authViewModel = AuthViewModel()
+
     var body: some View {
-        Group {
-            if authViewModel.isAuthenticated {
-                MainTabView(authViewModel: authViewModel)
-            } else if authViewModel.needsUnlock {
-                UnlockView(viewModel: authViewModel)
-            } else {
-                LoginView(viewModel: authViewModel)
-            }
+        if authViewModel.isAuthenticated {
+            MainTabView(authViewModel: authViewModel)
+        } else if authViewModel.needsUnlock {
+            UnlockView(viewModel: authViewModel)
+        } else {
+            LoginView(viewModel: authViewModel)
         }
     }
 }

@@ -1,29 +1,40 @@
-import SwiftUI
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import LocalAuthentication
+import SwiftUI
 
 struct UnlockView: View {
-    @ObservedObject var viewModel: AuthViewModel
-    @State private var password = ""
-    
-    @State private var isFaceIDAvailable = false
-    
+    @ObservedObject
+    var viewModel: AuthViewModel
+    @State
+    private var password = ""
+
+    @State
+    private var isFaceIDAvailable = false
+
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
                 Spacer()
-                
+
                 let username = UserDefaults.standard.string(forKey: "username") ?? "Utente"
                 Text("CIAO, \(username.uppercased())")
                     .font(.montserrat(size: 28, weight: .bold))
                     .tracking(2)
                     .foregroundColor(AppTheme.Colors.primary)
-                
+
                 Text("Sblocca per accedere ai tuoi dati")
                     .font(.montserrat(size: 15))
                     .foregroundColor(AppTheme.Colors.textLight)
-                
+
                 Spacer().frame(height: 20)
-                
+
                 if isFaceIDAvailable {
                     Button(action: {
                         viewModel.unlockWithBiometrics()
@@ -39,15 +50,15 @@ struct UnlockView: View {
                         }
                     }
                     .padding()
-                    
+
                     Spacer().frame(height: 20)
-                    
+
                     Text("Oppure usa la password")
                         .font(.montserrat(size: 12))
                         .foregroundColor(AppTheme.Colors.textLight)
                         .textCase(.uppercase)
                 }
-                
+
                 SecureField("Password", text: $password)
                     .padding()
                     .background(AppTheme.Colors.cardBackground)
@@ -57,12 +68,12 @@ struct UnlockView: View {
                             .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
                     )
                     .padding(.horizontal)
-                
+
                 if let errorMessage = viewModel.errorMessage {
                     ErrorBanner(message: errorMessage)
                         .padding(.horizontal)
                 }
-                
+
                 Button(action: {
                     viewModel.unlockWithPassword(password)
                 }) {
@@ -84,9 +95,9 @@ struct UnlockView: View {
                 }
                 .padding(.horizontal)
                 .disabled(viewModel.isLoading || password.isEmpty)
-                
+
                 Spacer()
-                
+
                 Button(action: {
                     viewModel.logout()
                 }) {
@@ -104,11 +115,11 @@ struct UnlockView: View {
             }
         }
     }
-    
+
     func checkBiometrics() {
         let context = LAContext()
         var error: NSError?
-        
+
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
             isFaceIDAvailable = (context.biometryType == .faceID)
         } else {

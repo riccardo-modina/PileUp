@@ -1,27 +1,39 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Reusable interactive period selector chip component that displays the current DataPeriod
 /// and presents the WheelYearMonthPickerModal bottom sheet on tap.
 struct PeriodSelectorChip: View {
-    @Binding var selectedPeriod: DataPeriod
-    var onPeriodChanged: ((DataPeriod) -> Void)? = nil
-    
-    @State private var showPickerModal: Bool = false
-    
+    @Binding
+    var selectedPeriod: DataPeriod
+    var onPeriodChanged: ((DataPeriod) -> Void)?
+
+    @State
+    private var showPickerModal: Bool = false
+
     private let monthNamesShort = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
-    
+
     private var periodChipTitle: String {
         switch selectedPeriod {
-        case .monthYear(let m, let y):
+        case let .monthYear(m, y):
             let mName = monthNamesShort[max(0, min(m - 1, 11))]
             return "\(mName) \(y)"
-        case .year(let y):
+
+        case let .year(y):
             return "\(y)"
+
         case .total:
             return "Totale"
         }
     }
-    
+
     var body: some View {
         Button(action: {
             HapticHelper.light()

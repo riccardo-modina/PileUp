@@ -1,60 +1,76 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 struct WheelYearMonthPickerModal: View {
-    @Binding var selectedPeriod: DataPeriod
-    @Environment(\.dismiss) var dismiss
-    
-    @State private var mode: SelectionMode
-    @State private var tempYear: Int
-    @State private var tempMonth: Int
-    
+    @Binding
+    var selectedPeriod: DataPeriod
+    @Environment(\.dismiss)
+    var dismiss
+
+    @State
+    private var mode: SelectionMode
+    @State
+    private var tempYear: Int
+    @State
+    private var tempMonth: Int
+
     let currentYear = Calendar.current.component(.year, from: Date())
     let currentMonth = Calendar.current.component(.month, from: Date())
-    
+
     enum SelectionMode {
-        case year, monthYear
+        case year
+        case monthYear
     }
-    
-    let monthsNames = Calendar.current.standaloneMonthSymbols.map { $0.capitalized }
-    
+
+    let monthsNames = Calendar.current.standaloneMonthSymbols.map(\.capitalized)
+
     var yearsList: [Int] {
-        Array((currentYear - 10)...currentYear).reversed()
+        Array((currentYear - 10) ... currentYear).reversed()
     }
-    
+
     var monthsList: [Int] {
         if tempYear == currentYear {
-            return Array(1...currentMonth)
+            return Array(1 ... currentMonth)
         }
-        return Array(1...12)
+        return Array(1 ... 12)
     }
-    
+
     init(selectedPeriod: Binding<DataPeriod>) {
         self._selectedPeriod = selectedPeriod
-        
+
         let initialYear: Int
         let initialMonth: Int
         var initialMode: SelectionMode = .monthYear
-        
+
         switch selectedPeriod.wrappedValue {
-        case .monthYear(let m, let y):
+        case let .monthYear(m, y):
             initialMonth = m
             initialYear = y
             initialMode = .monthYear
-        case .year(let y):
+
+        case let .year(y):
             initialMonth = Calendar.current.component(.month, from: Date())
             initialYear = y
             initialMode = .year
+
         case .total:
             initialMonth = Calendar.current.component(.month, from: Date())
             initialYear = Calendar.current.component(.year, from: Date())
             initialMode = .monthYear
         }
-        
+
         self._tempYear = State(initialValue: initialYear)
         self._tempMonth = State(initialValue: initialMonth)
         self._mode = State(initialValue: initialMode)
     }
-    
+
     var body: some View {
         VStack(spacing: 20) {
             // Mode Switcher
@@ -65,14 +81,14 @@ struct WheelYearMonthPickerModal: View {
             .pickerStyle(.segmented)
             .padding(.horizontal, 24)
             .padding(.top, 24)
-            
+
             // Title
             VStack(spacing: 4) {
                 Text("SELEZIONA PERIODO")
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(AppTheme.Colors.textLight)
-                
+
                 if mode == .monthYear {
                     Text("\(monthsNames[tempMonth - 1]) \(String(tempYear))")
                         .font(.title2)
@@ -85,7 +101,7 @@ struct WheelYearMonthPickerModal: View {
                         .foregroundColor(AppTheme.Colors.text)
                 }
             }
-            
+
             // Wheels
             HStack(spacing: 0) {
                 if mode == .monthYear {
@@ -97,7 +113,7 @@ struct WheelYearMonthPickerModal: View {
                     .pickerStyle(.wheel)
                     .frame(maxWidth: .infinity)
                 }
-                
+
                 Picker("Anno", selection: $tempYear) {
                     ForEach(yearsList, id: \.self) { year in
                         Text(String(year)).tag(year)
@@ -114,7 +130,7 @@ struct WheelYearMonthPickerModal: View {
                     tempMonth = currentMonth
                 }
             }
-            
+
             // Bottom Buttons
             HStack {
                 Button(action: {
@@ -130,9 +146,9 @@ struct WheelYearMonthPickerModal: View {
                         .cornerRadius(12)
                         .foregroundColor(AppTheme.Colors.text)
                 }
-                
+
                 Spacer()
-                
+
                 Button(action: {
                     dismiss()
                 }) {
@@ -141,9 +157,9 @@ struct WheelYearMonthPickerModal: View {
                         .fontWeight(.medium)
                         .foregroundColor(AppTheme.Colors.textLight)
                 }
-                
+
                 Spacer()
-                
+
                 Button(action: {
                     if mode == .year {
                         selectedPeriod = .year(tempYear)

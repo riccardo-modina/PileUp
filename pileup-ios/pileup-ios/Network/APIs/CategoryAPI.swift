@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import Foundation
 
 protocol CategoryAPIProtocol: Sendable {
@@ -17,19 +25,19 @@ private struct CreateCategoryPayload: Codable, Sendable {
 final class CategoryAPI: CategoryAPIProtocol, @unchecked Sendable {
     nonisolated static let shared = CategoryAPI()
     private let network: NetworkManager
-    
+
     init(network: NetworkManager = .shared) {
         self.network = network
     }
-    
+
     func getAllCategories() async throws -> [CategoryItem] {
-        return try await network.request(
+        try await network.request(
             endpoint: "categorie/",
             method: "GET",
             queryItems: [URLQueryItem(name: "page_size", value: "all")]
         )
     }
-    
+
     func getCategories(page: Int = 1, pageSize: Int = 10) async throws -> [CategoryItem] {
         let queryItems = [
             URLQueryItem(name: "page", value: "\(page)"),
@@ -50,7 +58,7 @@ final class CategoryAPI: CategoryAPIProtocol, @unchecked Sendable {
             )
         }
     }
-    
+
     func createCategory(nome: String, tipo: String, color: String) async throws -> CategoryItem {
         let payload = CreateCategoryPayload(nome: nome, tipo: tipo, color: color)
         let body = try JSONEncoder().encode(payload)
@@ -60,7 +68,7 @@ final class CategoryAPI: CategoryAPIProtocol, @unchecked Sendable {
             body: body
         )
     }
-    
+
     func updateCategory(id: Int, nome: String, tipo: String, color: String) async throws -> CategoryItem {
         let payload = CreateCategoryPayload(nome: nome, tipo: tipo, color: color)
         let body = try JSONEncoder().encode(payload)
@@ -70,7 +78,7 @@ final class CategoryAPI: CategoryAPIProtocol, @unchecked Sendable {
             body: body
         )
     }
-    
+
     func deleteCategory(id: Int) async throws {
         try await network.request(
             endpoint: "categorie/\(id)/",
@@ -78,4 +86,3 @@ final class CategoryAPI: CategoryAPIProtocol, @unchecked Sendable {
         )
     }
 }
-

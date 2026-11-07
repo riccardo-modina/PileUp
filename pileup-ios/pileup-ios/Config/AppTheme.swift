@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 import UIKit
 
@@ -10,10 +18,13 @@ extension UIColor {
         switch hex.count {
         case 3: // RGB (12-bit)
             (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+
         case 6: // RGB (24-bit)
             (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+
         case 8: // ARGB (32-bit)
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+
         default:
             (a, r, g, b) = (255, 0, 0, 0)
         }
@@ -33,11 +44,14 @@ extension Color {
 }
 
 /// Shared App Theme matching the official design palette.
-struct AppTheme {
-    struct Colors {
+enum AppTheme {
+    enum Colors {
         // Core Palette Tokens
         static let baseWillowGreen = Color(hex: "#6ecc3b")
-        static var willowGreen: Color { dynamicGreen }
+        static var willowGreen: Color {
+            dynamicGreen
+        }
+
         static let brightSnow = Color(hex: "#f8fafc")
         static let prussianBlue = Color(hex: "#0f172a")
         static let prussianBlueDark = Color(hex: "#1e2638")
@@ -46,57 +60,57 @@ struct AppTheme {
         static let platinum = Color(hex: "#f1f5f9")
         static let negative = Color(hex: "#ef4444")
         static let iceBlue = Color(hex: "#60a5fa")
-        
+
         // Dynamic adaptive green token (vibrant in Dark mode, softer and less glaring in Light mode)
         static var dynamicGreen: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#6ecc3b") : UIColor(hex: "#72cb3e")
             })
         }
-        
+
         // Dynamic adaptive colors (Light / Dark Mode)
         static var dynamicPrimary: Color {
             dynamicGreen
         }
-        
+
         static var dynamicPrimaryButtonText: Color {
             prussianBlue
         }
-        
+
         static var dynamicMoneyIn: Color {
             dynamicGreen
         }
-        
+
         static var dynamicMoneyOut: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#70b5ff") : UIColor(hex: "#60a5fa")
             })
         }
-        
+
         static var dynamicBackground: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#0d1117") : UIColor(hex: "#f8fafc")
             })
         }
-        
+
         static var dynamicCardBackground: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#161b22") : UIColor.white
             })
         }
-        
+
         static var dynamicText: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#f8fafc") : UIColor(hex: "#0f172a")
             })
         }
-        
+
         static var dynamicSubtext: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#94a3b8") : UIColor(hex: "#64748b")
             })
         }
-        
+
         static var dynamicBorder: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#30363d") : UIColor(hex: "#e2e8f0")
@@ -107,25 +121,25 @@ struct AppTheme {
         static var formBackground: Color {
             dynamicBackground
         }
-        
+
         static var formCardActive: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#21262d") : UIColor(hex: "#e2e8f0")
             })
         }
-        
+
         static var buttonActiveBackground: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#f8fafc") : UIColor(hex: "#0f172a")
             })
         }
-        
+
         static var buttonActiveText: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#0f172a") : UIColor(hex: "#f8fafc")
             })
         }
-        
+
         static var buttonDisabledBackground: Color {
             Color(uiColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark ? UIColor(hex: "#1c2128") : UIColor(hex: "#e2e8f0")
@@ -133,25 +147,51 @@ struct AppTheme {
         }
 
         // Palette-bound app aliases
-        static var primary: Color { dynamicPrimary }
-        static var primaryButtonText: Color { dynamicPrimaryButtonText }
-        static var moneyIn: Color { dynamicMoneyIn }
-        static var moneyOut: Color { dynamicMoneyOut }
-        static var background: Color { dynamicBackground }
-        static var cardBackground: Color { dynamicCardBackground }
-        static var text: Color { dynamicText }
-        static var textLight: Color { dynamicSubtext }
-        static var neutral: Color { dynamicSubtext }
+        static var primary: Color {
+            dynamicPrimary
+        }
+
+        static var primaryButtonText: Color {
+            dynamicPrimaryButtonText
+        }
+
+        static var moneyIn: Color {
+            dynamicMoneyIn
+        }
+
+        static var moneyOut: Color {
+            dynamicMoneyOut
+        }
+
+        static var background: Color {
+            dynamicBackground
+        }
+
+        static var cardBackground: Color {
+            dynamicCardBackground
+        }
+
+        static var text: Color {
+            dynamicText
+        }
+
+        static var textLight: Color {
+            dynamicSubtext
+        }
+
+        static var neutral: Color {
+            dynamicSubtext
+        }
     }
-    
-    struct Palette {
+
+    enum Palette {
         /// Curated presets for Categories, Accounts, and tags across the app
         static let presets: [String] = [
             "#1FBC9C", "#2ECC71", "#3498DB", "#9B59B6", "#34495E",
             "#F1C40F", "#E67E22", "#E74C3C", "#95A5A6", "#3B82F6",
             "#8B5CF6", "#EC4899", "#10B981", "#64748B"
         ]
-        
+
         static let defaultCategoryColor = "#1FBC9C"
         static let defaultAccountColor = "#3498DB"
     }

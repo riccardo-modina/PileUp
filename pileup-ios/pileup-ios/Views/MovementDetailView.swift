@@ -1,40 +1,66 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Comprehensive modal detail and edit view for a financial transaction.
 /// Supports inspecting details, updating/modifying data (with E2EE encryption),
 /// and deleting the movement with confirmation.
 struct MovementDetailView: View {
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.presentationMode)
+    var presentationMode
     let movement: MovementItem
-    var onUpdated: (() -> Void)? = nil
-    var onDeleted: (() -> Void)? = nil
-    
+    var onUpdated: (() -> Void)?
+    var onDeleted: (() -> Void)?
+
     // MARK: - State
-    @State private var isEditing: Bool = false
-    @State private var showDeleteConfirmation: Bool = false
-    @State private var showDiscardAlert: Bool = false
-    @State private var isDeleting: Bool = false
-    @State private var isSaving: Bool = false
-    @State private var errorMessage: String? = nil
-    
+
+    @State
+    private var isEditing: Bool = false
+    @State
+    private var showDeleteConfirmation: Bool = false
+    @State
+    private var showDiscardAlert: Bool = false
+    @State
+    private var isDeleting: Bool = false
+    @State
+    private var isSaving: Bool = false
+    @State
+    private var errorMessage: String? = nil
+
     // Edit Form State
-    @State private var editType: MovementType = .expense
-    @State private var editAmountString: String = ""
-    @State private var editTitle: String = ""
-    @State private var editDate: Date = Date()
-    @State private var editNotes: String = ""
-    @State private var selectedCategory: CategoryItem? = nil
-    @State private var selectedAccount: AccountItem? = nil
-    
+    @State
+    private var editType: MovementType = .expense
+    @State
+    private var editAmountString: String = ""
+    @State
+    private var editTitle: String = ""
+    @State
+    private var editDate: Date = Date()
+    @State
+    private var editNotes: String = ""
+    @State
+    private var selectedCategory: CategoryItem? = nil
+    @State
+    private var selectedAccount: AccountItem? = nil
+
     // Lists for pickers
-    @State private var categories: [CategoryItem] = []
-    @State private var accounts: [AccountItem] = []
-    @State private var isLoadingData: Bool = false
-    
+    @State
+    private var categories: [CategoryItem] = []
+    @State
+    private var accounts: [AccountItem] = []
+    @State
+    private var isLoadingData: Bool = false
+
     private let transactionAPI: TransactionAPIProtocol = TransactionAPI.shared
     private let categoryAPI: CategoryAPIProtocol = CategoryAPI.shared
     private let accountAPI: AccountAPIProtocol = AccountAPI.shared
-    
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -44,13 +70,13 @@ struct MovementDetailView: View {
                     .onTapGesture {
                         hideKeyboard()
                     }
-                
+
                 if isEditing {
                     editContent
                 } else {
                     detailContent
                 }
-                
+
                 // Custom confirmation sheet for delete
                 if showDeleteConfirmation {
                     ConfirmationBottomSheet(
@@ -73,7 +99,7 @@ struct MovementDetailView: View {
                         }
                     )
                 }
-                
+
                 // Custom confirmation sheet for exit when editing
                 if showDiscardAlert {
                     ConfirmationBottomSheet(
@@ -127,13 +153,13 @@ struct MovementDetailView: View {
                         }
                     }
                 }
-                
+
                 ToolbarItem(placement: .principal) {
                     Text(isEditing ? "Modifica Movimento" : "Dettaglio Movimento")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(AppTheme.Colors.dynamicText)
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if isEditing {
                         Button(action: saveChanges) {
@@ -171,9 +197,9 @@ struct MovementDetailView: View {
             }
         }
     }
-    
+
     // MARK: - Read-Only Detail View
-    
+
     private var detailContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 24) {
@@ -184,12 +210,12 @@ struct MovementDetailView: View {
                         Text(movement.isIncome ? "Entrata" : "Spesa")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(movement.isIncome ? AppTheme.Colors.moneyIn : AppTheme.Colors.moneyOut)
-                        
+
                         Text("\(movement.isIncome ? "+" : "-") \(movement.formattedAmount)")
                             .font(.system(size: 34, weight: .bold, design: .rounded))
                             .foregroundColor(movement.isIncome ? AppTheme.Colors.moneyIn : AppTheme.Colors.dynamicText)
                     }
-                    
+
                     // Title Display
                     Text(movement.titolo.isEmpty ? movement.categoryName : movement.titolo)
                         .font(.system(size: 17, weight: .medium))
@@ -208,12 +234,12 @@ struct MovementDetailView: View {
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
                 )
-                
+
                 // Detailed Breakdown List
                 VStack(spacing: 0) {
                     infoRow(icon: "calendar", label: "Data", value: formatFullDate(movement.data))
                     Divider().background(AppTheme.Colors.dynamicBorder.opacity(0.5)).padding(.leading, 44)
-                    
+
                     infoRow(
                         icon: "tag.fill",
                         label: "Categoria",
@@ -221,9 +247,9 @@ struct MovementDetailView: View {
                         badgeColor: movement.categoryDisplayColor
                     )
                     Divider().background(AppTheme.Colors.dynamicBorder.opacity(0.5)).padding(.leading, 44)
-                    
+
                     infoRow(icon: "creditcard.fill", label: "Conto", value: movement.accountName)
-                    
+
                     if let desc = movement.descrizione, !desc.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         Divider().background(AppTheme.Colors.dynamicBorder.opacity(0.5)).padding(.leading, 44)
                         infoRow(icon: "note.text", label: "Note", value: desc)
@@ -238,7 +264,7 @@ struct MovementDetailView: View {
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
                 )
-                
+
                 // Action Buttons
                 VStack(spacing: 12) {
                     // Edit button
@@ -266,7 +292,7 @@ struct MovementDetailView: View {
                         )
                         .foregroundColor(AppTheme.Colors.dynamicText)
                     }
-                    
+
                     // Delete button
                     Button(action: {
                         HapticHelper.warning()
@@ -300,7 +326,7 @@ struct MovementDetailView: View {
                     .disabled(isDeleting)
                 }
                 .padding(.top, 8)
-                
+
                 if let err = errorMessage {
                     Text(err)
                         .font(.system(size: 13, weight: .medium))
@@ -314,20 +340,20 @@ struct MovementDetailView: View {
             .padding(.bottom, 32)
         }
     }
-    
+
     private func infoRow(icon: String, label: String, value: String, badgeColor: Color? = nil) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16))
                 .foregroundColor(AppTheme.Colors.dynamicSubtext)
                 .frame(width: 24, height: 24)
-            
+
             Text(label)
                 .font(.system(size: 15, weight: .regular))
                 .foregroundColor(AppTheme.Colors.dynamicSubtext)
-            
+
             Spacer()
-            
+
             HStack(spacing: 8) {
                 if let color = badgeColor {
                     Circle()
@@ -343,9 +369,9 @@ struct MovementDetailView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
     }
-    
+
     // MARK: - Edit Form View
-    
+
     private var editContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
@@ -363,7 +389,7 @@ struct MovementDetailView: View {
                     }
                 }
                 .padding(.top, 8)
-                
+
                 // Form Fields Group
                 VStack(spacing: 16) {
                     // Amount Field
@@ -371,12 +397,12 @@ struct MovementDetailView: View {
                         Text("Importo (€)")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        
+
                         HStack {
                             Text("€")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                            
+
                             TextField("0,00", text: $editAmountString)
                                 .font(.system(size: 22, weight: .bold, design: .rounded))
                                 .foregroundColor(AppTheme.Colors.dynamicText)
@@ -393,13 +419,13 @@ struct MovementDetailView: View {
                                 .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
                         )
                     }
-                    
+
                     // Title Field
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Titolo / Descrizione breve")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        
+
                         TextField("Es. Spesa al supermercato", text: $editTitle)
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(AppTheme.Colors.dynamicText)
@@ -414,23 +440,23 @@ struct MovementDetailView: View {
                                     .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
                             )
                     }
-                    
+
                     // Date Field
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Data")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        
+
                         ZStack(alignment: .leading) {
                             HStack(spacing: 12) {
                                 Image(systemName: "calendar")
                                     .font(.system(size: 16))
                                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                                
+
                                 Text(formatDisplayDate(editDate))
                                     .font(.system(size: 15, weight: .regular))
                                     .foregroundColor(AppTheme.Colors.dynamicText)
-                                
+
                                 Spacer()
                             }
                             .padding(.horizontal, 14)
@@ -443,7 +469,7 @@ struct MovementDetailView: View {
                                 RoundedRectangle(cornerRadius: 12)
                                     .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
                             )
-                            
+
                             // Native DatePicker overlay (invisible pill, responsive to taps)
                             DatePicker(
                                 "",
@@ -459,13 +485,13 @@ struct MovementDetailView: View {
                             .padding(.leading, 14)
                         }
                     }
-                    
+
                     // Category Picker
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Categoria")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        
+
                         CustomPickerField(
                             title: nil,
                             placeholder: "Seleziona categoria",
@@ -475,7 +501,7 @@ struct MovementDetailView: View {
                             selectedId: Binding(
                                 get: { selectedCategory?.id },
                                 set: { newId in
-                                    if let newId = newId {
+                                    if let newId {
                                         selectedCategory = filteredCategories.first(where: { $0.id == newId })
                                     } else {
                                         selectedCategory = nil
@@ -489,13 +515,13 @@ struct MovementDetailView: View {
                             }
                         )
                     }
-                    
+
                     // Account Picker
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Conto")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        
+
                         CustomPickerField(
                             title: nil,
                             placeholder: "Seleziona conto",
@@ -505,7 +531,7 @@ struct MovementDetailView: View {
                             selectedId: Binding(
                                 get: { selectedAccount?.id },
                                 set: { newId in
-                                    if let newId = newId {
+                                    if let newId {
                                         selectedAccount = availableAccounts.first(where: { $0.id == newId })
                                     } else {
                                         selectedAccount = nil
@@ -519,15 +545,15 @@ struct MovementDetailView: View {
                             }
                         )
                     }
-                    
+
                     // Notes Field
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Note (opzionali)")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        
+
                         TextField("Aggiungi eventuali dettagli...", text: $editNotes, axis: .vertical)
-                            .lineLimit(3...5)
+                            .lineLimit(3 ... 5)
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(AppTheme.Colors.dynamicText)
                             .padding(.horizontal, 14)
@@ -542,7 +568,7 @@ struct MovementDetailView: View {
                             )
                     }
                 }
-                
+
                 if let err = errorMessage {
                     Text(err)
                         .font(.system(size: 13, weight: .medium))
@@ -572,41 +598,43 @@ struct MovementDetailView: View {
                 }
         )
     }
-    
+
     // MARK: - Validation & Helpers
-    
+
     private var filteredCategories: [CategoryItem] {
         categories.filter { $0.tipo == editType.rawValue && !$0.isSystem }
     }
-    
+
     private var availableAccounts: [AccountItem] {
         accounts.filter { !$0.isSystem }
     }
-    
+
     private var parsedAmount: Double {
         let clean = editAmountString
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: ",", with: ".")
+            .replacing(" ", with: "")
+            .replacing(",", with: ".")
         return Double(clean) ?? 0.0
     }
-    
+
     private var isFormValid: Bool {
         parsedAmount > 0 && selectedCategory != nil && selectedAccount != nil
     }
-    
+
     private var hasUnsavedChanges: Bool {
         let originalType = MovementType(rawValue: movement.tipo) ?? .expense
-        if editType != originalType { return true }
-        
-        let originalAmountStr = String(format: "%.2f", movement.importo).replacingOccurrences(of: ".", with: ",")
+        if editType != originalType {
+            return true
+        }
+
+        let originalAmountStr = String(format: "%.2f", movement.importo).replacing(".", with: ",")
         if editAmountString.trimmingCharacters(in: .whitespaces) != originalAmountStr && abs(parsedAmount - movement.importo) > 0.001 {
             return true
         }
-        
+
         if editTitle.trimmingCharacters(in: .whitespacesAndNewlines) != movement.titolo.trimmingCharacters(in: .whitespacesAndNewlines) {
             return true
         }
-        
+
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -614,37 +642,37 @@ struct MovementDetailView: View {
         if editDateStr != movement.data {
             return true
         }
-        
+
         if selectedCategory?.id != movement.categoria?.id {
             return true
         }
-        
+
         if selectedAccount?.id != movement.conto?.id {
             return true
         }
-        
+
         let currentNotes = editNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         let origNotes = movement.descrizione?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if currentNotes != origNotes {
             return true
         }
-        
+
         return false
     }
-    
+
     private func initializeData() {
         resetEditFields()
         fetchCategoriesAndAccounts()
     }
-    
+
     private func resetEditFields() {
         editType = movement.isIncome ? .income : .expense
-        editAmountString = String(format: "%.2f", movement.importo).replacingOccurrences(of: ".", with: ",")
+        editAmountString = String(format: "%.2f", movement.importo).replacing(".", with: ",")
         editTitle = movement.titolo
         editNotes = movement.descrizione ?? ""
         selectedCategory = movement.categoria
         selectedAccount = movement.conto
-        
+
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -654,7 +682,7 @@ struct MovementDetailView: View {
             editDate = Date()
         }
     }
-    
+
     private func fetchCategoriesAndAccounts() {
         isLoadingData = true
         Task {
@@ -662,19 +690,21 @@ struct MovementDetailView: View {
                 async let catTask = categoryAPI.getAllCategories()
                 async let accTask = accountAPI.getAllAccounts()
                 let (cats, accs) = try await (catTask, accTask)
-                
+
                 await MainActor.run {
                     self.categories = cats
                     self.accounts = accs
                     self.isLoadingData = false
-                    
+
                     // Match selected category and account to fetched objects by id
                     if let curCatId = movement.categoria?.id,
-                       let matchedCat = cats.first(where: { $0.id == curCatId }) {
+                       let matchedCat = cats.first(where: { $0.id == curCatId })
+                    {
                         self.selectedCategory = matchedCat
                     }
                     if let curAccId = movement.conto?.id,
-                       let matchedAcc = accs.first(where: { $0.id == curAccId }) {
+                       let matchedAcc = accs.first(where: { $0.id == curAccId })
+                    {
                         self.selectedAccount = matchedAcc
                     }
                 }
@@ -685,33 +715,32 @@ struct MovementDetailView: View {
             }
         }
     }
-    
+
     // MARK: - Actions
-    
+
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
-    
+
     private func saveChanges() {
         hideKeyboard()
-        guard isFormValid else { return }
-        guard let cat = selectedCategory, let acc = selectedAccount else { return }
-        
+        guard isFormValid, let cat = selectedCategory, let acc = selectedAccount else { return }
+
         isSaving = true
         errorMessage = nil
-        
+
         let dateForm = DateFormatter()
         dateForm.dateFormat = "yyyy-MM-dd"
         dateForm.locale = Locale(identifier: "en_US_POSIX")
         let dateStr = dateForm.string(from: editDate)
-        
+
         var effectiveTitle = editTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         if effectiveTitle.isEmpty {
             effectiveTitle = cat.nome
         }
-        
+
         var effectiveDesc: String? = editNotes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : editNotes
-        
+
         // E2EE Encryption
         if let key = KeychainManager.shared.getMasterKey(), !key.isEmpty {
             if let encT = CryptoHelper.encryptData(effectiveTitle, key: key) {
@@ -721,7 +750,7 @@ struct MovementDetailView: View {
                 effectiveDesc = encD
             }
         }
-        
+
         let payload = MovementPayload(
             titolo: effectiveTitle,
             importo: parsedAmount,
@@ -730,11 +759,11 @@ struct MovementDetailView: View {
             conto: acc.id,
             descrizione: effectiveDesc
         )
-        
+
         Task {
             do {
                 let _ = try await transactionAPI.updateMovement(id: movement.id, payload: payload)
-                
+
                 await MainActor.run {
                     isSaving = false
                     HapticHelper.success()
@@ -751,15 +780,15 @@ struct MovementDetailView: View {
             }
         }
     }
-    
+
     private func deleteTransaction() {
         isDeleting = true
         errorMessage = nil
-        
+
         Task {
             do {
                 try await transactionAPI.deleteMovement(id: movement.id)
-                
+
                 await MainActor.run {
                     isDeleting = false
                     HapticHelper.success()
@@ -776,19 +805,19 @@ struct MovementDetailView: View {
             }
         }
     }
-    
+
     private func formatFullDate(_ raw: String) -> String {
         let inFormatter = DateFormatter()
         inFormatter.dateFormat = "yyyy-MM-dd"
         inFormatter.locale = Locale(identifier: "en_US_POSIX")
         guard let date = inFormatter.date(from: raw) else { return raw }
-        
+
         let outFormatter = DateFormatter()
         outFormatter.locale = Locale(identifier: "it_IT")
         outFormatter.dateFormat = "EEEE d MMMM yyyy"
         return outFormatter.string(from: date).capitalized
     }
-    
+
     private func formatDisplayDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "it_IT")

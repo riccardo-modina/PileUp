@@ -1,18 +1,33 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Native detail screen for Income/Expense with built-in Swift Charts donut,
 /// category quick-filters, and the list of decrypted movements.
 struct CashFlowDetailView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @Binding var period: DataPeriod
-    @StateObject var viewModel: CashFlowDetailViewModel
-    var onBack: (() -> Void)? = nil
-    
-    @State private var itemToDelete: MovementItem? = nil
-    @State private var showDeleteConfirmation: Bool = false
-    @State private var selectedMovementForDetail: MovementItem? = nil
-    @State private var dragOffset: CGFloat = 0
-    
+    @Environment(\.presentationMode)
+    var presentationMode
+    @Binding
+    var period: DataPeriod
+    @StateObject
+    var viewModel: CashFlowDetailViewModel
+    var onBack: (() -> Void)?
+
+    @State
+    private var itemToDelete: MovementItem? = nil
+    @State
+    private var showDeleteConfirmation: Bool = false
+    @State
+    private var selectedMovementForDetail: MovementItem? = nil
+    @State
+    private var dragOffset: CGFloat = 0
+
     init(
         movementType: MovementType,
         period: Binding<DataPeriod>,
@@ -20,7 +35,7 @@ struct CashFlowDetailView: View {
     ) {
         self._period = period
         self.onBack = onBack
-        
+
         let initialPeriod = period.wrappedValue
         _viewModel = StateObject(
             wrappedValue: CashFlowDetailViewModel(
@@ -32,34 +47,34 @@ struct CashFlowDetailView: View {
             )
         )
     }
-    
+
     var body: some View {
         ZStack {
             AppTheme.Colors.dynamicBackground
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 headerBar
-                
+
                 if let err = viewModel.errorMessage {
                     ErrorBanner(message: err)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
                 }
-                
+
                 if viewModel.isLoading && viewModel.movements.isEmpty {
                     loadingView
                 } else {
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: 16) {
                             chartAndPeriodSection
-                            
+
                             if !viewModel.pieSlices.isEmpty {
                                 categoryDropdownSection
                             }
-                            
+
                             movementsSection
-                            
+
                             Spacer(minLength: 120)
                         }
                         .padding(.top, 6)
@@ -69,7 +84,7 @@ struct CashFlowDetailView: View {
                     }
                 }
             }
-            
+
             // Custom confirmation sheet for delete
             if showDeleteConfirmation, let item = itemToDelete {
                 ConfirmationBottomSheet(
@@ -102,7 +117,7 @@ struct CashFlowDetailView: View {
                     // Screen dismissal on swipe from left to right (sx -> dx)
                     if (value.startLocation.x < 70 && value.translation.width > 45) && abs(value.translation.height) < 90 {
                         HapticHelper.light()
-                        if let onBack = onBack {
+                        if let onBack {
                             onBack()
                         } else {
                             presentationMode.wrappedValue.dismiss()
@@ -133,14 +148,14 @@ struct CashFlowDetailView: View {
             viewModel.loadData(reset: true)
         }
     }
-    
+
     // MARK: - Header Bar
-    
+
     private var headerBar: some View {
         HStack {
             Button(action: {
                 HapticHelper.light()
-                if let onBack = onBack {
+                if let onBack {
                     onBack()
                 } else {
                     presentationMode.wrappedValue.dismiss()
@@ -150,28 +165,33 @@ struct CashFlowDetailView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(AppTheme.Colors.dynamicText)
                     .frame(width: 38, height: 38)
-                    .background(Circle().fill(AppTheme.Colors.dynamicCardBackground).shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2))
+                    .background(Circle().fill(AppTheme.Colors.dynamicCardBackground).shadow(
+                        color: Color.black.opacity(0.04),
+                        radius: 4,
+                        x: 0,
+                        y: 2
+                    ))
                     .overlay(Circle().stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1))
             }
             .buttonStyle(.plain)
-            
+
             Spacer()
-            
+
             Text(viewModel.viewTitle)
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(AppTheme.Colors.dynamicText)
-            
+
             Spacer()
-            
+
             PeriodSelectorChip(selectedPeriod: $viewModel.period)
         }
         .padding(.horizontal, 20)
         .padding(.top, 16)
         .padding(.bottom, 12)
     }
-    
+
     // MARK: - Chart & Period Section (Directly on background)
-    
+
     private var chartAndPeriodSection: some View {
         VStack(spacing: 12) {
             // Period Navigation (< SET 2026 >)
@@ -197,16 +217,16 @@ struct CashFlowDetailView: View {
                 .buttonStyle(.plain)
                 .disabled(viewModel.period.isTotal)
                 .opacity(viewModel.period.isTotal ? 0.3 : 1)
-                
+
                 Spacer()
-                
+
                 Text(viewModel.periodFormattedString.uppercased())
                     .font(.system(size: 14, weight: .bold))
                     .tracking(1.5)
                     .foregroundColor(AppTheme.Colors.dynamicText)
-                
+
                 Spacer()
-                
+
                 Button(action: {
                     HapticHelper.light()
                     withAnimation(.easeInOut(duration: 0.25)) { viewModel.nextPeriod() }
@@ -230,7 +250,7 @@ struct CashFlowDetailView: View {
                 .opacity(!viewModel.period.canMoveForward() ? 0.3 : 1)
             }
             .padding(.horizontal, 20)
-            
+
             // Enlarged Pie Chart directly on background with swipe animation
             CategoryPieChart(
                 slices: viewModel.pieSlices,
@@ -260,7 +280,7 @@ struct CashFlowDetailView: View {
                 .onEnded { value in
                     let translation = value.translation.width
                     let isHorizontal = abs(translation) > abs(value.translation.height)
-                    
+
                     if isHorizontal && translation < -35 && viewModel.period.canMoveForward() {
                         // Swipe Left -> Next Period
                         HapticHelper.light()
@@ -283,11 +303,9 @@ struct CashFlowDetailView: View {
                 }
         )
     }
-    
 
-    
     // MARK: - Category Dropdown Section (Reusable Component)
-    
+
     private var categoryDropdownSection: some View {
         CustomPickerField(
             title: "Filtra per categoria",
@@ -299,9 +317,9 @@ struct CashFlowDetailView: View {
         .id(viewModel.periodFormattedString)
         .padding(.horizontal, 20)
     }
-    
+
     // MARK: - Movements Section
-    
+
     private var movementsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -309,9 +327,9 @@ struct CashFlowDetailView: View {
                     .font(.system(size: 12, weight: .bold))
                     .tracking(1.2)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                
+
                 Spacer()
-                
+
                 if viewModel.selectedCategoryId != nil {
                     Button(action: {
                         withAnimation { viewModel.selectedCategoryId = nil }
@@ -323,7 +341,7 @@ struct CashFlowDetailView: View {
                 }
             }
             .padding(.horizontal, 22)
-            
+
             if viewModel.filteredMovements.isEmpty {
                 VStack(spacing: 12) {
                     Image(systemName: "tray")
@@ -347,7 +365,7 @@ struct CashFlowDetailView: View {
                                             viewModel.loadMoreMovements()
                                         }
                                     }
-                                
+
                                 if index < viewModel.filteredMovements.count - 1 {
                                     Divider()
                                         .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
@@ -355,7 +373,7 @@ struct CashFlowDetailView: View {
                                 }
                             }
                         }
-                        
+
                         if viewModel.isLoadingMore {
                             HStack {
                                 Spacer()
@@ -381,9 +399,9 @@ struct CashFlowDetailView: View {
             }
         }
     }
-    
+
     // MARK: - Movement Row
-    
+
     private func movementSubtitle(for item: MovementItem) -> String {
         let account = item.conto?.nome ?? "Conto"
         if let desc = item.descrizione?.trimmingCharacters(in: .whitespacesAndNewlines), !desc.isEmpty {
@@ -391,7 +409,7 @@ struct CashFlowDetailView: View {
         }
         return account
     }
-    
+
     private func movementRow(_ item: MovementItem) -> some View {
         Button(action: {
             HapticHelper.light()
@@ -403,35 +421,35 @@ struct CashFlowDetailView: View {
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(AppTheme.Colors.dynamicText)
                     .lineLimit(1)
-                
+
                 // Line 2: Subtitle (Account • Description)
                 Text(movementSubtitle(for: item))
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     .lineLimit(1)
-                
+
                 // Line 3: Category dot + Category name · Date on Left, Amount on Right
                 HStack(alignment: .center, spacing: 6) {
                     Circle()
                         .fill(item.categoryDisplayColor)
                         .frame(width: 8, height: 8)
-                    
+
                     Text(item.categoryName)
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(AppTheme.Colors.dynamicText.opacity(0.85))
                         .lineLimit(1)
-                    
+
                     Text("·")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.6))
-                    
+
                     Text(formatMovementDate(item.data))
                         .font(.system(size: 12, weight: .regular))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
                         .lineLimit(1)
-                    
+
                     Spacer()
-                    
+
                     Text("\(item.isIncome ? "+" : "-") \(item.formattedAmount)")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(item.isIncome ? AppTheme.Colors.moneyIn : AppTheme.Colors.dynamicText)
@@ -453,7 +471,7 @@ struct CashFlowDetailView: View {
             }
         }
     }
-    
+
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView().scaleEffect(1.2)
@@ -463,19 +481,19 @@ struct CashFlowDetailView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
     private func formatMovementDate(_ raw: String) -> String {
         let inFormatter = DateFormatter()
         inFormatter.dateFormat = "yyyy-MM-dd"
         inFormatter.locale = Locale(identifier: "en_US_POSIX")
         guard let date = inFormatter.date(from: raw) else { return raw }
-        
+
         let outFormatter = DateFormatter()
         outFormatter.locale = Locale(identifier: "it_IT")
         outFormatter.dateFormat = "d MMM yyyy"
         return outFormatter.string(from: date)
     }
-    
+
     private func formatCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -493,4 +511,3 @@ struct MovementRowButtonStyle: ButtonStyle {
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
-

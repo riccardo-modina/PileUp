@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import Foundation
 
 /// Represents a transaction intercepted from Apple Wallet pending user review/approval.
@@ -10,7 +18,7 @@ struct PendingWalletTransactionModel: Identifiable, Codable, Sendable, Equatable
     var accountId: Int?
     var categoryId: Int?
     var notes: String?
-    
+
     init(
         id: UUID = UUID(),
         title: String,

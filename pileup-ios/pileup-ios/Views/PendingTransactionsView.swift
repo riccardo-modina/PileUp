@@ -1,27 +1,39 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// View to review, confirm, or discard transactions received from Apple Wallet and Bank Shortcuts.
 struct PendingTransactionsView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @ObservedObject private var store = PendingTransactionsStore.shared
-    
+    @Environment(\.presentationMode)
+    var presentationMode
+    @ObservedObject
+    private var store = PendingTransactionsStore.shared
+
     // Callback to populate the AddTransactionView form with a selected pending transaction
-    var onSelectTransaction: ((PendingWalletTransactionModel) -> Void)? = nil
-    
-    @State private var showClearConfirmation: Bool = false
-    @State private var transactionToDelete: PendingWalletTransactionModel? = nil
-    
+    var onSelectTransaction: ((PendingWalletTransactionModel) -> Void)?
+
+    @State
+    private var showClearConfirmation: Bool = false
+    @State
+    private var transactionToDelete: PendingWalletTransactionModel? = nil
+
     var body: some View {
         NavigationView {
             ZStack {
                 AppTheme.Colors.dynamicBackground
                     .ignoresSafeArea()
-                
+
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 20) {
                         // 1. Info / Status Header
                         headerInfoCard
-                        
+
                         // 2. Pending Transactions List
                         pendingTransactionsSection
                     }
@@ -43,7 +55,7 @@ struct PendingTransactionsView: View {
                         .font(.system(size: 14, weight: .medium))
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Chiudi") {
                         presentationMode.wrappedValue.dismiss()
@@ -76,9 +88,9 @@ struct PendingTransactionsView: View {
             }
         }
     }
-    
+
     // MARK: - 1. Info Header
-    
+
     private var headerInfoCard: some View {
         HStack(spacing: 14) {
             Image(systemName: "tray.full.fill")
@@ -93,13 +105,13 @@ struct PendingTransactionsView: View {
                                 .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
                         )
                 )
-            
+
             VStack(alignment: .leading, spacing: 3) {
                 Text("\(store.pendingTransactions.count) movimenti in coda")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(AppTheme.Colors.dynamicText)
             }
-            
+
             Spacer()
         }
         .padding(16)
@@ -112,22 +124,22 @@ struct PendingTransactionsView: View {
                 .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
         )
     }
-    
+
     // MARK: - 2. Pending List
-    
+
     private var pendingTransactionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("LISTA MOVIMENTI CATTURATI")
                 .font(.system(size: 11, weight: .bold))
                 .tracking(1.5)
                 .foregroundColor(AppTheme.Colors.dynamicSubtext)
-            
+
             if store.pendingTransactions.isEmpty {
                 VStack(spacing: 14) {
                     Image(systemName: "tray")
                         .font(.system(size: 42))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.5))
-                    
+
                     Text("Nessun movimento in sospeso")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(AppTheme.Colors.dynamicText)
@@ -147,7 +159,7 @@ struct PendingTransactionsView: View {
                     ForEach(Array(store.pendingTransactions.enumerated()), id: \.element.id) { index, tx in
                         VStack(spacing: 0) {
                             transactionCard(tx)
-                            
+
                             if index < store.pendingTransactions.count - 1 {
                                 Divider()
                                     .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
@@ -168,7 +180,7 @@ struct PendingTransactionsView: View {
             }
         }
     }
-    
+
     private func transactionCard(_ tx: PendingWalletTransactionModel) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             // Line 1: Title (Bold)
@@ -176,7 +188,7 @@ struct PendingTransactionsView: View {
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(AppTheme.Colors.dynamicText)
                 .lineLimit(1)
-            
+
             // Line 2: Account or Subtitle (Subtext)
             HStack(spacing: 4) {
                 if let accId = tx.accountId {
@@ -191,21 +203,21 @@ struct PendingTransactionsView: View {
             }
             .foregroundColor(AppTheme.Colors.dynamicSubtext)
             .lineLimit(1)
-            
+
             // Line 3: Date & Amount on left, Actions lowered and widened on right
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(formattedDate(tx.date))
                         .font(.system(size: 12, weight: .regular))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                    
+
                     Text(String(format: "%.2f €", tx.amount))
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundColor(AppTheme.Colors.dynamicPrimary)
                 }
-                
+
                 Spacer()
-                
+
                 // Actions (Trash + Conferma)
                 HStack(spacing: 10) {
                     // Discard with confirmation
@@ -220,7 +232,7 @@ struct PendingTransactionsView: View {
                             .background(Circle().fill(AppTheme.Colors.negative.opacity(0.12)))
                     }
                     .buttonStyle(.plain)
-                    
+
                     // Confirm & Apply (stessa altezza di 36pt del cestino e testo forzato su singola riga)
                     Button(action: {
                         HapticHelper.success()
@@ -255,7 +267,7 @@ struct PendingTransactionsView: View {
             presentationMode.wrappedValue.dismiss()
         }
     }
-    
+
     private func formattedDate(_ d: Date) -> String {
         let f = DateFormatter()
         f.locale = Locale(identifier: "it_IT")

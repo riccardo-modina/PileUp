@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// View for the Budget tab matching the Pileup theme.
@@ -5,7 +13,7 @@ struct BudgetView: View {
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
-            
+
             ZStack {
                 Circle()
                     .fill(AppTheme.Colors.dynamicCardBackground)
@@ -14,24 +22,24 @@ struct BudgetView: View {
                         Circle()
                             .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
                     )
-                
+
                 Image(systemName: "wallet.pass.fill")
                     .font(.system(size: 40))
                     .foregroundColor(AppTheme.Colors.primary)
             }
-            
+
             VStack(spacing: 8) {
                 Text("Budget")
                     .font(.montserrat(size: 22, weight: .bold))
                     .foregroundColor(AppTheme.Colors.text)
-                
+
                 Text("Imposta limiti di spesa e pianifica i tuoi risparmi mensili.")
                     .font(.montserrat(size: 14, weight: .regular))
                     .foregroundColor(AppTheme.Colors.textLight)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
             }
-            
+
             Text("FUNZIONALITÀ IN ARRIVO")
                 .font(.montserrat(size: 11, weight: .bold))
                 .tracking(2)
@@ -44,7 +52,7 @@ struct BudgetView: View {
                         .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
                 )
                 .clipShape(Capsule())
-            
+
             Spacer()
             Spacer()
         }

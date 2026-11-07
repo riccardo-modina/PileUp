@@ -1,15 +1,28 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import UIKit
 
 /// Centralized haptic feedback helper for tactile touch interactions across the app.
 /// Keeps strong references to generators to prevent premature deallocation before the Taptic Engine fires.
 enum HapticHelper {
-    
-    @MainActor private static let lightGenerator = UIImpactFeedbackGenerator(style: .light)
-    @MainActor private static let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
-    @MainActor private static let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
-    @MainActor private static let selectionGenerator = UISelectionFeedbackGenerator()
-    @MainActor private static let notificationGenerator = UINotificationFeedbackGenerator()
-    
+
+    @MainActor
+    private static let lightGenerator = UIImpactFeedbackGenerator(style: .light)
+    @MainActor
+    private static let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
+    @MainActor
+    private static let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
+    @MainActor
+    private static let selectionGenerator = UISelectionFeedbackGenerator()
+    @MainActor
+    private static let notificationGenerator = UINotificationFeedbackGenerator()
+
     /// Light impact feedback for secondary buttons, pills, and navigation.
     static func light() {
         runOnMain {
@@ -17,7 +30,7 @@ enum HapticHelper {
             lightGenerator.impactOccurred()
         }
     }
-    
+
     /// Medium impact feedback for primary action buttons and step advancements.
     static func medium() {
         runOnMain {
@@ -25,7 +38,7 @@ enum HapticHelper {
             mediumGenerator.impactOccurred()
         }
     }
-    
+
     /// Heavy impact feedback for critical or high-emphasis actions.
     static func heavy() {
         runOnMain {
@@ -33,7 +46,7 @@ enum HapticHelper {
             heavyGenerator.impactOccurred()
         }
     }
-    
+
     /// Selection change feedback for picker rows, segmented tabs, and radio-style selections.
     static func selection() {
         runOnMain {
@@ -41,7 +54,7 @@ enum HapticHelper {
             selectionGenerator.selectionChanged()
         }
     }
-    
+
     /// Success notification feedback for completed operations (e.g. transaction saved).
     static func success() {
         runOnMain {
@@ -49,7 +62,7 @@ enum HapticHelper {
             notificationGenerator.notificationOccurred(.success)
         }
     }
-    
+
     /// Warning notification feedback for threshold alerts or input limits.
     static func warning() {
         runOnMain {
@@ -57,7 +70,7 @@ enum HapticHelper {
             notificationGenerator.notificationOccurred(.warning)
         }
     }
-    
+
     /// Error notification feedback for validation failures or server errors.
     static func error() {
         runOnMain {
@@ -65,7 +78,7 @@ enum HapticHelper {
             notificationGenerator.notificationOccurred(.error)
         }
     }
-    
+
     private static func runOnMain(_ block: @escaping @MainActor () -> Void) {
         if Thread.isMainThread {
             MainActor.assumeIsolated {

@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// View for the Investimenti tab matching the Pileup theme.
@@ -6,7 +14,7 @@ struct InvestmentsView: View {
         NavigationView {
             VStack(spacing: 24) {
                 Spacer()
-                
+
                 ZStack {
                     Circle()
                         .fill(AppTheme.Colors.dynamicCardBackground)
@@ -15,24 +23,24 @@ struct InvestmentsView: View {
                             Circle()
                                 .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
                         )
-                    
+
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 40))
                         .foregroundColor(AppTheme.Colors.primary)
                 }
-                
+
                 VStack(spacing: 8) {
                     Text("Investimenti")
                         .font(.montserrat(size: 22, weight: .bold))
                         .foregroundColor(AppTheme.Colors.text)
-                    
+
                     Text("Monitora il tuo portafoglio, azioni e rendimenti.")
                         .font(.montserrat(size: 14, weight: .regular))
                         .foregroundColor(AppTheme.Colors.textLight)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                 }
-                
+
                 Text("FUNZIONALITÀ IN ARRIVO")
                     .font(.montserrat(size: 11, weight: .bold))
                     .tracking(2)
@@ -45,7 +53,7 @@ struct InvestmentsView: View {
                             .stroke(AppTheme.Colors.dynamicBorder, lineWidth: 1)
                     )
                     .clipShape(Capsule())
-                
+
                 Spacer()
                 Spacer()
             }

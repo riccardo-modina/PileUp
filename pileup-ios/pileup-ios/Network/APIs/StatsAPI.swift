@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import Foundation
 
 protocol StatsAPIProtocol: Sendable {
@@ -14,29 +22,29 @@ extension StatsAPIProtocol {
 final class StatsAPI: StatsAPIProtocol, @unchecked Sendable {
     nonisolated static let shared = StatsAPI()
     private let network: NetworkManager
-    
+
     init(network: NetworkManager = .shared) {
         self.network = network
     }
-    
+
     func getMonthlyStats(year: String, month: String? = nil, months: [String]? = nil) async throws -> MonthlyStatsResponse {
         var queryItems = [URLQueryItem(name: "year", value: year)]
-        if let month = month {
+        if let month {
             queryItems.append(URLQueryItem(name: "month", value: month))
         }
-        if let months = months, !months.isEmpty {
+        if let months, !months.isEmpty {
             queryItems.append(URLQueryItem(name: "months", value: months.joined(separator: ",")))
         }
-        
+
         return try await network.request(
             endpoint: "stats/monthly/",
             method: "GET",
             queryItems: queryItems
         )
     }
-    
+
     func getAllYearsTotals() async throws -> MonthlyStatsResponse {
-        return try await network.request(
+        try await network.request(
             endpoint: "stats/monthly/",
             method: "GET",
             queryItems: [URLQueryItem(name: "year", value: "Totale")]

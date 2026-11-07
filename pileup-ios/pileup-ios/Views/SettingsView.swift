@@ -1,14 +1,25 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var authViewModel: AuthViewModel
-    @State private var showLogoutConfirmation = false
-    
+    @ObservedObject
+    var authViewModel: AuthViewModel
+    @State
+    private var showLogoutConfirmation = false
+
     var body: some View {
         Form {
             Section(header: Text("Account")
                 .font(.montserrat(size: 12, weight: .semibold))
-                .foregroundColor(AppTheme.Colors.textLight)) {
+                .foregroundColor(AppTheme.Colors.textLight))
+            {
                 Button(action: {
                     showLogoutConfirmation = true
                 }) {
@@ -22,7 +33,7 @@ struct SettingsView: View {
                 }
                 .listRowBackground(AppTheme.Colors.cardBackground)
             }
-            
+
             // Qui potrai aggiungere in futuro altre impostazioni
             // come cambio tema, notifiche, lingua, ecc.
         }
@@ -32,7 +43,7 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarHidden(false) // Assicura che la barra di navigazione torni visibile
         .alert("Conferma Uscita", isPresented: $showLogoutConfirmation) {
-            Button("Annulla", role: .cancel) { }
+            Button("Annulla", role: .cancel) {}
             Button("Esci", role: .destructive) {
                 authViewModel.logout()
             }

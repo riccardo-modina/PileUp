@@ -1,18 +1,32 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 struct ServerSettingsView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @State private var customURL: String = ""
-    
+    @Environment(\.presentationMode)
+    var presentationMode
+    @State
+    private var customURL: String = ""
+
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Configurazione Server")
-                    .font(.montserrat(size: 12, weight: .semibold))
-                    .foregroundColor(AppTheme.Colors.textLight),
-                        footer: Text("Lascia vuoto per utilizzare il server cloud. Assicurati di includere http:// o https:// e terminare con /api/ se utilizzi un server locale/personalizzato.")
+                Section(
+                    header: Text("Configurazione Server")
+                        .font(.montserrat(size: 12, weight: .semibold))
+                        .foregroundColor(AppTheme.Colors.textLight),
+                    footer: Text(
+                        "Lascia vuoto per utilizzare il server cloud. Assicurati di includere http:// o https:// e terminare con /api/ se utilizzi un server locale/personalizzato."
+                    )
                     .font(.montserrat(size: 12))
-                    .foregroundColor(AppTheme.Colors.textLight)) {
+                    .foregroundColor(AppTheme.Colors.textLight)
+                ) {
                     TextField("Es. http://192.168.1.100:8080/api/", text: $customURL)
                         .font(.montserrat(size: 15))
                         .foregroundColor(AppTheme.Colors.text)
@@ -21,7 +35,7 @@ struct ServerSettingsView: View {
                         .disableAutocorrection(true)
                 }
                 .listRowBackground(AppTheme.Colors.cardBackground)
-                
+
                 Section {
                     Button(action: {
                         customURL = ""
@@ -53,7 +67,7 @@ struct ServerSettingsView: View {
             }
         }
     }
-    
+
     private func saveURL() {
         let trimmed = customURL.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {

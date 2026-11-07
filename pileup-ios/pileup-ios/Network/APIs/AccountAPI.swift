@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import Foundation
 
 protocol AccountAPIProtocol: Sendable {
@@ -17,20 +25,20 @@ private struct CreateAccountPayload: Codable, Sendable {
 final class AccountAPI: AccountAPIProtocol, @unchecked Sendable {
     nonisolated static let shared = AccountAPI()
     private let network: NetworkManager
-    
+
     init(network: NetworkManager = .shared) {
         self.network = network
     }
-    
+
     /// Fetches all user accounts.
     func getAllAccounts() async throws -> [AccountItem] {
-        return try await network.request(
+        try await network.request(
             endpoint: "conti/",
             method: "GET",
             queryItems: [URLQueryItem(name: "page_size", value: "all")]
         )
     }
-    
+
     func getAccounts(page: Int = 1, pageSize: Int = 10) async throws -> [AccountItem] {
         let queryItems = [
             URLQueryItem(name: "page", value: "\(page)"),
@@ -51,7 +59,7 @@ final class AccountAPI: AccountAPIProtocol, @unchecked Sendable {
             )
         }
     }
-    
+
     func createAccount(nome: String, tipo: String, color: String) async throws -> AccountItem {
         let payload = CreateAccountPayload(nome: nome, tipo: tipo, color: color)
         let body = try JSONEncoder().encode(payload)
@@ -67,7 +75,7 @@ final class AccountAPI: AccountAPIProtocol, @unchecked Sendable {
         }
         return created
     }
-    
+
     func updateAccount(id: Int, nome: String, tipo: String, color: String) async throws -> AccountItem {
         let payload = CreateAccountPayload(nome: nome, tipo: tipo, color: color)
         let body = try JSONEncoder().encode(payload)
@@ -83,7 +91,7 @@ final class AccountAPI: AccountAPIProtocol, @unchecked Sendable {
         }
         return updated
     }
-    
+
     func deleteAccount(id: Int) async throws {
         try await network.request(
             endpoint: "conti/\(id)/",

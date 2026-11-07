@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Interactive Donut/Pie Chart component for category distribution.
@@ -6,16 +14,18 @@ struct CategoryPieChart: View {
     let slices: [CategoryPieSlice]
     let totalAmount: Double
     let title: String
-    @Binding var selectedCategoryId: Int?
-    
+    @Binding
+    var selectedCategoryId: Int?
+
     private let chartDiameter: CGFloat = 250
     private let ringThickness: CGFloat = 36
-    
+
     private var activeSlice: CategoryPieSlice? {
         guard let id = selectedCategoryId else { return nil }
+
         return slices.first(where: { $0.categoryId == id })
     }
-    
+
     var body: some View {
         ZStack {
             // Tap area covering the entire region around and outside the donut to clear category filter
@@ -29,7 +39,7 @@ struct CategoryPieChart: View {
                         }
                     }
                 }
-            
+
             if slices.isEmpty {
                 emptyDonutPlaceholder
             } else {
@@ -43,9 +53,9 @@ struct CategoryPieChart: View {
         .frame(height: chartDiameter + 24)
         .frame(maxWidth: .infinity)
     }
-    
+
     // MARK: - Donut Graphic
-    
+
     private var donutGraphic: some View {
         GeometryReader { _ in
             ZStack {
@@ -53,7 +63,7 @@ struct CategoryPieChart: View {
                     let isSelected = selectedCategoryId != nil && selectedCategoryId == item.slice.categoryId
                     let sliceOpacity: Double = (selectedCategoryId == nil || isSelected) ? 1.0 : 0.3
                     let scaleValue: CGFloat = isSelected ? 1.04 : 1.0
-                    
+
                     DonutSliceShape(
                         startAngle: item.startAngle,
                         endAngle: item.endAngle,
@@ -85,9 +95,9 @@ struct CategoryPieChart: View {
             .animation(.spring(response: 0.45, dampingFraction: 0.8), value: sliceAngles.map(\.slice.amount))
         }
     }
-    
+
     // MARK: - Center Overlay
-    
+
     private var centerOverlay: some View {
         VStack(spacing: 3) {
             if let slice = activeSlice {
@@ -98,7 +108,7 @@ struct CategoryPieChart: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.65)
                     .padding(.horizontal, 14)
-                
+
                 CurrencyAmountText(
                     formatCurrency(slice.amount),
                     size: 26,
@@ -111,7 +121,7 @@ struct CategoryPieChart: View {
                 .padding(.horizontal, 8)
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.25), value: slice.amount)
-                
+
                 Text(String(format: "%.1f%%", slice.percentage * 100))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundColor(slice.color)
@@ -121,7 +131,7 @@ struct CategoryPieChart: View {
                     .tracking(1.2)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     .padding(.horizontal, 14)
-                
+
                 CurrencyAmountText(
                     formatCurrency(totalAmount),
                     size: 28,
@@ -147,21 +157,21 @@ struct CategoryPieChart: View {
             }
         }
     }
-    
+
     // MARK: - Empty State Placeholder
-    
+
     private var emptyDonutPlaceholder: some View {
         ZStack {
             Circle()
                 .stroke(AppTheme.Colors.dynamicBorder.opacity(0.4), lineWidth: ringThickness)
                 .frame(width: chartDiameter - ringThickness, height: chartDiameter - ringThickness)
-            
+
             VStack(spacing: 4) {
                 Text(title.uppercased())
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.2)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                
+
                 CurrencyAmountText(
                     formatCurrency(0.0),
                     size: 28,
@@ -172,21 +182,21 @@ struct CategoryPieChart: View {
             }
         }
     }
-    
+
     // MARK: - Calculations
-    
+
     private struct SliceAngleItem: Equatable {
         let slice: CategoryPieSlice
         let startAngle: Angle
         let endAngle: Angle
     }
-    
+
     private var sliceAngles: [SliceAngleItem] {
         var items: [SliceAngleItem] = []
         var currentDegrees: Double = -90.0
         let gapDegrees: Double = slices.count > 1 ? 2.0 : 0.0
         let totalUsableDegrees = 360.0 - (Double(slices.count) * gapDegrees)
-        
+
         for slice in slices {
             let sliceSpan = max(1.0, slice.percentage * totalUsableDegrees)
             let start = Angle(degrees: currentDegrees + (gapDegrees / 2))
@@ -196,7 +206,7 @@ struct CategoryPieChart: View {
         }
         return items
     }
-    
+
     private func formatCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -211,7 +221,7 @@ struct DonutSliceShape: Shape {
     var startAngle: Angle
     var endAngle: Angle
     var innerRadiusRatio: CGFloat = 0.70
-    
+
     var animatableData: AnimatablePair<Double, Double> {
         get {
             AnimatablePair(startAngle.degrees, endAngle.degrees)
@@ -221,12 +231,12 @@ struct DonutSliceShape: Shape {
             endAngle = Angle(degrees: newValue.second)
         }
     }
-    
+
     func path(in rect: CGRect) -> Path {
         let center = CGPoint(x: rect.midX, y: rect.midY)
         let outerRadius = min(rect.width, rect.height) / 2
         let innerRadius = outerRadius * innerRadiusRatio
-        
+
         var path = Path()
         path.addArc(
             center: center,

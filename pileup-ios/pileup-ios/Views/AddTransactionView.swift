@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Fast guided wizard view for recording expenses and incomes.
@@ -5,65 +13,79 @@ import SwiftUI
 /// Fully responsive in both Dark and Light mode using AppTheme.Colors tokens.
 /// Strictly NO strange colored focus or selection borders.
 struct AddTransactionView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @StateObject private var viewModel: AddTransactionViewModel
-    
+    @Environment(\.presentationMode)
+    var presentationMode
+    @StateObject
+    private var viewModel: AddTransactionViewModel
+
     // Discard confirmation alert for unsaved changes
-    @State private var showDiscardAlert: Bool = false
+    @State
+    private var showDiscardAlert: Bool = false
     // Automatic focus on amount field in Step 1
-    @FocusState private var isAmountFocused: Bool
+    @FocusState
+    private var isAmountFocused: Bool
     // Toggles inline calendar picker if user chooses a custom date
-    @State private var showCustomDatePicker: Bool = false
-    
+    @State
+    private var showCustomDatePicker: Bool = false
+
     // Optional ID of a pending transaction being approved
     private let pendingTransactionId: UUID?
 
     // Success animation overlay states
-    @State private var showSuccessOverlay: Bool = false
-    @State private var checkmarkScale: CGFloat = 0.2
-    @State private var pulseRingScale: CGFloat = 0.8
-    @State private var pulseRingOpacity: Double = 0.7
+    @State
+    private var showSuccessOverlay: Bool = false
+    @State
+    private var checkmarkScale: CGFloat = 0.2
+    @State
+    private var pulseRingScale: CGFloat = 0.8
+    @State
+    private var pulseRingOpacity: Double = 0.7
     // Tracks navigation direction for natural animated transitions (forward vs back swipe)
-    @State private var isGoingBack: Bool = false
-    
+    @State
+    private var isGoingBack: Bool = false
+
     init(masterKey: String? = nil, initialPendingTransaction: PendingWalletTransactionModel? = nil) {
         self.pendingTransactionId = initialPendingTransaction?.id
-        _viewModel = StateObject(wrappedValue: AddTransactionViewModel(masterKey: masterKey, initialPendingTransaction: initialPendingTransaction))
+        _viewModel = StateObject(wrappedValue: AddTransactionViewModel(
+            masterKey: masterKey,
+            initialPendingTransaction: initialPendingTransaction
+        ))
     }
-    
+
     private var stepTransition: AnyTransition {
         .asymmetric(
             insertion: .move(edge: isGoingBack ? .leading : .trailing).combined(with: .opacity),
             removal: .move(edge: isGoingBack ? .trailing : .leading).combined(with: .opacity)
         )
     }
-    
+
     private func handleBack() {
         guard viewModel.currentStep > 1 else { return }
+
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         HapticHelper.light()
         isGoingBack = true
         viewModel.previousStep()
     }
-    
+
     private func handleNext() {
         isGoingBack = false
         viewModel.nextStep()
     }
-    
+
     var body: some View {
         NavigationView {
             ZStack {
                 AppTheme.Colors.formBackground
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
                     // 1. Top Navigation & Progress Header
                     headerSection
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
                         .padding(.bottom, 12)
-                    
+
                     // 2. Main Step Content with animated transitions
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: 20) {
@@ -74,12 +96,15 @@ struct AddTransactionView: View {
                                 case 1:
                                     step1CategoryAndAmount
                                         .transition(stepTransition)
+
                                 case 2:
                                     step2DateAndAccount
                                         .transition(stepTransition)
+
                                 case 3:
                                     step3DetailsAndConfirm
                                         .transition(stepTransition)
+
                                 default:
                                     EmptyView()
                                 }
@@ -89,7 +114,7 @@ struct AddTransactionView: View {
                         .padding(.top, 8)
                         .padding(.bottom, 100) // Spacing above sticky bottom action bar
                     }
-                    
+
                     Spacer(minLength: 0)
                 }
                 .simultaneousGesture(
@@ -103,7 +128,7 @@ struct AddTransactionView: View {
                             }
                         }
                 )
-                
+
                 // 3. Fixed Bottom Action Button
                 VStack {
                     Spacer()
@@ -123,7 +148,7 @@ struct AddTransactionView: View {
                             .ignoresSafeArea()
                         )
                 }
-                
+
                 // 4. Celebratory Success Overlay Animation
                 if showSuccessOverlay {
                     successAnimationOverlay
@@ -172,9 +197,9 @@ struct AddTransactionView: View {
             }
         }
     }
-    
+
     // MARK: - 1. Header & Progress Section
-    
+
     private var headerSection: some View {
         VStack(spacing: 14) {
             HStack(alignment: .center) {
@@ -195,18 +220,18 @@ struct AddTransactionView: View {
                     Color.clear
                         .frame(width: 32, height: 32)
                 }
-                
+
                 Spacer()
-                
+
                 // Step counter label
                 Text("Passo \(viewModel.currentStep) di 3")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                     .textCase(.uppercase)
                     .tracking(1.5)
-                
+
                 Spacer()
-                
+
                 // Dismiss button
                 Button(action: {
                     HapticHelper.light()
@@ -223,14 +248,14 @@ struct AddTransactionView: View {
                         .background(Circle().fill(AppTheme.Colors.dynamicBorder.opacity(0.4)))
                 }
             }
-            
+
             // Smooth progress indicator
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     Capsule()
                         .fill(AppTheme.Colors.dynamicBorder.opacity(0.5))
                         .frame(height: 4)
-                    
+
                     Capsule()
                         .fill(AppTheme.Colors.dynamicText)
                         .frame(width: geometry.size.width * CGFloat(viewModel.progress), height: 4)
@@ -240,9 +265,9 @@ struct AddTransactionView: View {
             .frame(height: 4)
         }
     }
-    
+
     // MARK: - 2. STEP 1: Type, Category & Amount
-    
+
     private var step1CategoryAndAmount: some View {
         VStack(alignment: .leading, spacing: 22) {
             // Screen Title & Subtitle (clean modern typography, adapting to light/dark)
@@ -250,14 +275,14 @@ struct AddTransactionView: View {
                 Text("Nuovo movimento")
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(AppTheme.Colors.dynamicText)
-                
+
                 Text("Seleziona la tipologia, inserisci l'importo e assegna una categoria.")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 4)
-            
+
             // A. Segmented Pill for Movement Type
             HStack(spacing: 8) {
                 ForEach(MovementType.allCases) { type in
@@ -285,14 +310,14 @@ struct AddTransactionView: View {
                     .buttonStyle(.plain)
                 }
             }
-            
+
             // B. Amount Input
             VStack(alignment: .leading, spacing: 6) {
                 Text("IMPORTO")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.5)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                
+
                 HStack(spacing: 10) {
                     // Currency badge
                     HStack(spacing: 6) {
@@ -313,7 +338,7 @@ struct AddTransactionView: View {
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                     )
-                    
+
                     // Amount TextField container (clean box, no strange colored border on focus)
                     HStack(spacing: 8) {
                         TextField("0,00", text: Binding(
@@ -325,7 +350,7 @@ struct AddTransactionView: View {
                         .keyboardType(.decimalPad)
                         .focused($isAmountFocused)
                         .multilineTextAlignment(.leading)
-                        
+
                         if !viewModel.amountString.isEmpty {
                             Button(action: {
                                 HapticHelper.light()
@@ -351,7 +376,7 @@ struct AddTransactionView: View {
                     )
                 }
                 .shake(animatableData: viewModel.shakeAmount ? 1 : 0)
-                
+
                 // Form input error messages
                 VStack(alignment: .leading, spacing: 4) {
                     if viewModel.showNumericError {
@@ -366,7 +391,7 @@ struct AddTransactionView: View {
                     if viewModel.showLimitError {
                         InputError(message: "Limite massimo di 10M superato!", type: .error)
                     }
-                    
+
                     Text("Massimo consentito: 10.000.000 €")
                         .font(.system(size: 11, weight: .regular))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.7))
@@ -375,7 +400,7 @@ struct AddTransactionView: View {
                 .padding(.horizontal, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             // C. Category Selection
             CustomPickerField(
                 title: "CATEGORIA",
@@ -384,7 +409,7 @@ struct AddTransactionView: View {
                 selectedId: Binding(
                     get: { viewModel.selectedCategory?.id },
                     set: { newId in
-                        if let newId = newId {
+                        if let newId {
                             viewModel.selectedCategory = viewModel.filteredCategories.first(where: { $0.id == newId })
                         } else {
                             viewModel.selectedCategory = nil
@@ -403,9 +428,9 @@ struct AddTransactionView: View {
             )
         }
     }
-    
+
     // MARK: - 3. STEP 2: Date & Account
-    
+
     private var step2DateAndAccount: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Screen Title & Subtitle
@@ -413,21 +438,21 @@ struct AddTransactionView: View {
                 Text("Quando e dove")
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(AppTheme.Colors.dynamicText)
-                
+
                 Text("Indica la data del movimento e il conto di riferimento.")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 4)
-            
+
             // A. Date
             VStack(alignment: .leading, spacing: 10) {
                 Text("QUANDO?")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.5)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                
+
                 HStack(spacing: 8) {
                     // Option 1: Today
                     let isToday = Calendar.current.isDateInToday(viewModel.date) && !showCustomDatePicker
@@ -457,7 +482,7 @@ struct AddTransactionView: View {
                         )
                     }
                     .buttonStyle(.plain)
-                    
+
                     // Option 2: Yesterday
                     let isYesterday = Calendar.current.isDateInYesterday(viewModel.date) && !showCustomDatePicker
                     Button(action: {
@@ -488,9 +513,10 @@ struct AddTransactionView: View {
                         )
                     }
                     .buttonStyle(.plain)
-                    
+
                     // Option 3: Other date
-                    let isOther = showCustomDatePicker || (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date))
+                    let isOther = showCustomDatePicker ||
+                        (!Calendar.current.isDateInToday(viewModel.date) && !Calendar.current.isDateInYesterday(viewModel.date))
                     Button(action: {
                         HapticHelper.selection()
                         withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
@@ -517,7 +543,7 @@ struct AddTransactionView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                
+
                 // Expanded graphical DatePicker when selected (adapts to light/dark automatically)
                 if showCustomDatePicker {
                     DatePicker(
@@ -537,20 +563,20 @@ struct AddTransactionView: View {
                             .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
                     )
                 }
-                
+
                 if viewModel.showFutureDateError {
                     InputError(message: "Non è possibile selezionare una data futura — impostata la data di oggi.", type: .error)
                         .padding(.horizontal, 4)
                 }
             }
-            
+
             // B. Account Selection
             VStack(alignment: .leading, spacing: 10) {
                 Text("DA QUALE CONTO?")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.5)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                
+
                 if viewModel.availableAccounts.isEmpty {
                     Text("Nessun conto disponibile.")
                         .font(.system(size: 13))
@@ -575,7 +601,7 @@ struct AddTransactionView: View {
                                                 .font(.system(size: 16))
                                                 .foregroundColor(acc.displayColor)
                                         }
-                                        
+
                                         VStack(alignment: .leading, spacing: 3) {
                                             Text(acc.nome)
                                                 .font(.system(size: 15, weight: .semibold))
@@ -584,9 +610,9 @@ struct AddTransactionView: View {
                                                 .font(.system(size: 12))
                                                 .foregroundColor(AppTheme.Colors.dynamicSubtext)
                                         }
-                                        
+
                                         Spacer()
-                                        
+
                                         if isSelected {
                                             Image(systemName: "checkmark.circle.fill")
                                                 .font(.system(size: 20))
@@ -599,7 +625,7 @@ struct AddTransactionView: View {
                                     .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
-                                
+
                                 if index < viewModel.availableAccounts.count - 1 {
                                     Divider()
                                         .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
@@ -619,7 +645,7 @@ struct AddTransactionView: View {
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
-                
+
                 if viewModel.showAccountError {
                     InputError(message: "Seleziona un conto", type: .error)
                         .padding(.horizontal, 4)
@@ -627,9 +653,9 @@ struct AddTransactionView: View {
             }
         }
     }
-    
+
     // MARK: - 4. STEP 3: Details & Confirmation
-    
+
     private var step3DetailsAndConfirm: some View {
         VStack(alignment: .leading, spacing: 22) {
             // Screen Title & Subtitle
@@ -637,14 +663,14 @@ struct AddTransactionView: View {
                 Text("Riepilogo e dettagli")
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(AppTheme.Colors.dynamicText)
-                
+
                 Text("Verifica i dati del movimento e aggiungi note opzionali.")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 4)
-            
+
             // A. Summary Mini Card
             VStack(spacing: 14) {
                 HStack {
@@ -653,14 +679,14 @@ struct AddTransactionView: View {
                             .font(.system(size: 11, weight: .bold))
                             .tracking(1.5)
                             .foregroundColor(viewModel.movementType.accentColor)
-                        
+
                         Text("€ " + String(format: "%.2f", viewModel.parsedAmount))
                             .font(.system(size: 30, weight: .bold, design: .rounded))
                             .foregroundColor(AppTheme.Colors.dynamicText)
                     }
-                    
+
                     Spacer()
-                    
+
                     if let cat = viewModel.selectedCategory {
                         HStack(spacing: 6) {
                             Circle()
@@ -679,10 +705,10 @@ struct AddTransactionView: View {
                         )
                     }
                 }
-                
+
                 Divider()
                     .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
-                
+
                 HStack {
                     if let acc = viewModel.selectedAccount {
                         HStack(spacing: 6) {
@@ -694,9 +720,9 @@ struct AddTransactionView: View {
                                 .foregroundColor(AppTheme.Colors.dynamicText)
                         }
                     }
-                    
+
                     Spacer()
-                    
+
                     HStack(spacing: 6) {
                         Image(systemName: "calendar")
                             .font(.system(size: 12))
@@ -716,7 +742,7 @@ struct AddTransactionView: View {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(AppTheme.Colors.dynamicBorder.opacity(0.5), lineWidth: 1)
             )
-            
+
             // B. Optional Title / Description
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -724,14 +750,14 @@ struct AddTransactionView: View {
                         .font(.system(size: 11, weight: .bold))
                         .tracking(1.5)
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                    
+
                     Spacer()
-                    
+
                     Text("\(viewModel.customTitle.count)/50")
                         .font(.system(size: 11))
                         .foregroundColor(viewModel.customTitle.count >= 50 ? AppTheme.Colors.negative : AppTheme.Colors.dynamicSubtext)
                 }
-                
+
                 TextField(viewModel.defaultTitle + " (da categoria)", text: $viewModel.customTitle)
                     .font(.system(size: 15))
                     .foregroundColor(AppTheme.Colors.dynamicText)
@@ -750,7 +776,7 @@ struct AddTransactionView: View {
                         }
                     }
             }
-            
+
             // C. Optional Notes
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -758,14 +784,14 @@ struct AddTransactionView: View {
                         .font(.system(size: 11, weight: .bold))
                         .tracking(1.5)
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                    
+
                     Spacer()
-                    
+
                     Text("\(viewModel.notes.count)/200")
                         .font(.system(size: 11))
                         .foregroundColor(viewModel.notes.count >= 200 ? AppTheme.Colors.negative : AppTheme.Colors.dynamicSubtext)
                 }
-                
+
                 TextEditor(text: $viewModel.notes)
                     .scrollContentBackground(.hidden)
                     .frame(height: 75)
@@ -786,16 +812,16 @@ struct AddTransactionView: View {
                         }
                     }
             }
-            
+
             // Server error message if present
             if let err = viewModel.errorMessage {
                 ErrorBanner(message: err)
             }
         }
     }
-    
+
     // MARK: - 5. Bottom Action Bar (matching the Revolut button, responsive to dark & light mode)
-    
+
     private var bottomActionBar: some View {
         VStack(spacing: 8) {
             Button(action: {
@@ -809,7 +835,8 @@ struct AddTransactionView: View {
                 HStack(spacing: 8) {
                     if viewModel.isSubmitting {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme.Colors.dynamicSubtext))
+                            .progressViewStyle(CircularProgressViewStyle(tint: isStepValid ? AppTheme.Colors.buttonActiveText : AppTheme
+                                    .Colors.dynamicSubtext))
                     } else if viewModel.currentStep < 3 {
                         Text("Continua")
                             .font(.system(size: 16, weight: .bold))
@@ -832,18 +859,18 @@ struct AddTransactionView: View {
             .buttonStyle(.plain)
         }
     }
-    
+
     // MARK: - Helpers
-    
+
     private var isStepValid: Bool {
         switch viewModel.currentStep {
-        case 1: return viewModel.isStep1Valid
-        case 2: return viewModel.isStep2Valid
-        case 3: return viewModel.canSubmit
-        default: return false
+        case 1: viewModel.isStep1Valid
+        case 2: viewModel.isStep2Valid
+        case 3: viewModel.canSubmit
+        default: false
         }
     }
-    
+
     private var loadingPlaceholder: some View {
         VStack(spacing: 16) {
             Spacer(minLength: 50)
@@ -856,28 +883,29 @@ struct AddTransactionView: View {
             Spacer()
         }
     }
-    
+
     private func formattedShortDate(_ d: Date) -> String {
         let f = DateFormatter()
         f.locale = Locale(identifier: "it_IT")
         f.dateFormat = "d MMM"
         return f.string(from: d)
     }
-    
+
     private func formattedFullDate(_ d: Date) -> String {
         let f = DateFormatter()
         f.locale = Locale(identifier: "it_IT")
         f.dateStyle = .medium
         return f.string(from: d)
     }
-    
+
     // MARK: - Success Overlay View
-    
+
     private var successAnimationOverlay: some View {
         ZStack {
-            AppTheme.Colors.dynamicBackground.opacity(0.85)
+            AppTheme.Colors.dynamicBackground
+                .opacity(0.85)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 20) {
                 // Animated checkmark badge
                 ZStack {
@@ -885,18 +913,18 @@ struct AddTransactionView: View {
                         .fill(AppTheme.Colors.willowGreen)
                         .frame(width: 88, height: 88)
                         .shadow(color: Color.black.opacity(0.18), radius: 12, x: 0, y: 6)
-                    
+
                     Image(systemName: "checkmark")
                         .font(.system(size: 40, weight: .bold))
                         .foregroundColor(AppTheme.Colors.inkBlack)
                         .scaleEffect(checkmarkScale)
                 }
-                
+
                 VStack(spacing: 8) {
                     Text("Movimento Registrato!")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundColor(AppTheme.Colors.dynamicText)
-                    
+
                     Text("€ \(String(format: "%.2f", viewModel.parsedAmount)) • \(viewModel.selectedCategory?.nome ?? "")")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)

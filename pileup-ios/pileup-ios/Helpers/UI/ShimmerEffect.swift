@@ -1,7 +1,16 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 struct ShimmerEffect: ViewModifier {
-    @State private var phase: CGFloat = 0
+    @State
+    private var phase: CGFloat = 0
 
     func body(content: Content) -> some View {
         content

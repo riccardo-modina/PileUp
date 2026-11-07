@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Custom iOS-styled bottom sheet confirmation modal.
@@ -15,18 +23,19 @@ struct ConfirmationBottomSheet: View {
     let onConfirm: () -> Void
     var cancelTitle: String = "Annulla"
     let onCancel: () -> Void
-    
+
     var body: some View {
         ZStack(alignment: .bottom) {
             // Dimmed backdrop
-            Color.black.opacity(0.4)
+            Color.black
+                .opacity(0.4)
                 .ignoresSafeArea()
                 .onTapGesture {
                     HapticHelper.light()
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     onCancel()
                 }
-            
+
             // Bottom Sheet Card
             VStack(spacing: 0) {
                 // Drag handle indicator
@@ -35,7 +44,7 @@ struct ConfirmationBottomSheet: View {
                     .frame(width: 36, height: 5)
                     .padding(.top, 12)
                     .padding(.bottom, 20)
-                
+
                 // Icon Header
                 ZStack {
                     Circle()
@@ -46,7 +55,7 @@ struct ConfirmationBottomSheet: View {
                         .foregroundColor(iconColor)
                 }
                 .padding(.bottom, 16)
-                
+
                 // Title
                 Text(title)
                     .font(.system(size: 20, weight: .bold))
@@ -54,7 +63,7 @@ struct ConfirmationBottomSheet: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 8)
-                
+
                 // Message
                 Text(message)
                     .font(.system(size: 15, weight: .regular))
@@ -63,7 +72,7 @@ struct ConfirmationBottomSheet: View {
                     .lineSpacing(3)
                     .padding(.horizontal, 24)
                     .padding(.bottom, 28)
-                
+
                 // Action Buttons
                 VStack(spacing: 10) {
                     // Confirm / Destructive Button
@@ -95,7 +104,7 @@ struct ConfirmationBottomSheet: View {
                         )
                     }
                     .disabled(isLoading)
-                    
+
                     // Cancel / Dismiss Button
                     Button(action: {
                         HapticHelper.light()

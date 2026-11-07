@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 enum AppTab: String, CaseIterable, Identifiable {
@@ -5,33 +13,35 @@ enum AppTab: String, CaseIterable, Identifiable {
     case cashflow
     case investments
     case menu
-    
-    var id: String { rawValue }
-    
+
+    var id: String {
+        rawValue
+    }
+
     var title: String {
         switch self {
-        case .home: return "Home"
-        case .cashflow: return "Movimenti"
-        case .investments: return "Investimenti"
-        case .menu: return "Menu"
+        case .home: "Home"
+        case .cashflow: "Movimenti"
+        case .investments: "Investimenti"
+        case .menu: "Menu"
         }
     }
-    
+
     var icon: String {
         switch self {
-        case .home: return "house"
-        case .cashflow: return "chart.bar"
-        case .investments: return "chart.line.uptrend.xyaxis"
-        case .menu: return "line.3.horizontal"
+        case .home: "house"
+        case .cashflow: "chart.bar"
+        case .investments: "chart.line.uptrend.xyaxis"
+        case .menu: "line.3.horizontal"
         }
     }
-    
+
     var selectedIcon: String {
         switch self {
-        case .home: return "house.fill"
-        case .cashflow: return "chart.bar.fill"
-        case .investments: return "chart.line.uptrend.xyaxis"
-        case .menu: return "line.3.horizontal"
+        case .home: "house.fill"
+        case .cashflow: "chart.bar.fill"
+        case .investments: "chart.line.uptrend.xyaxis"
+        case .menu: "line.3.horizontal"
         }
     }
 }
@@ -39,12 +49,14 @@ enum AppTab: String, CaseIterable, Identifiable {
 /// Floating bottom navigation bar matching the design system.
 /// Contains 4 tabs and an elevated center "+" button.
 struct BottomMenu: View {
-    @Environment(\.colorScheme) private var colorScheme
-    @Binding var selectedTab: AppTab
+    @Environment(\.colorScheme)
+    private var colorScheme
+    @Binding
+    var selectedTab: AppTab
     let onAddTapped: () -> Void
     let onMenuTapped: () -> Void
     var onTabReselected: ((AppTab) -> Void)?
-    
+
     init(
         selectedTab: Binding<AppTab>,
         onAddTapped: @escaping () -> Void,
@@ -56,7 +68,7 @@ struct BottomMenu: View {
         self.onMenuTapped = onMenuTapped
         self.onTabReselected = onTabReselected
     }
-    
+
     var body: some View {
         ZStack(alignment: .top) {
             // Navigation Bar Pill Container
@@ -67,11 +79,11 @@ struct BottomMenu: View {
                     tabButton(for: .cashflow)
                 }
                 .frame(maxWidth: .infinity)
-                
+
                 // Gap for the elevated center button
                 Spacer()
                     .frame(width: 64)
-                
+
                 // Right 2 items: Investimenti, Menu
                 HStack(spacing: 0) {
                     tabButton(for: .investments)
@@ -89,7 +101,7 @@ struct BottomMenu: View {
                             .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
                     )
             )
-            
+
             // Center "+" Button (lowered down)
             Button(action: {
                 HapticHelper.medium()
@@ -100,7 +112,7 @@ struct BottomMenu: View {
                         .fill(AppTheme.Colors.willowGreen)
                         .frame(width: 54, height: 54)
                         .shadow(color: Color.black.opacity(0.14), radius: 6, x: 0, y: 3)
-                    
+
                     Image(systemName: "plus")
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(AppTheme.Colors.prussianBlue)
@@ -109,13 +121,13 @@ struct BottomMenu: View {
             .offset(y: -10) // Lowered down
         }
     }
-    
+
     @ViewBuilder
     private func tabButton(for tab: AppTab) -> some View {
         let isSelected = selectedTab == tab
         let activeColor = AppTheme.Colors.dynamicText
         let inactiveColor = AppTheme.Colors.dynamicSubtext
-        
+
         Button(action: {
             HapticHelper.selection()
             if tab == .menu {
@@ -135,7 +147,7 @@ struct BottomMenu: View {
                     .font(.system(size: 19))
                     .foregroundColor(isSelected ? activeColor : inactiveColor)
                     .frame(height: 22)
-                
+
                 Text(tab.title)
                     .font(.montserrat(size: 8.5, weight: isSelected ? .semibold : .medium))
                     .textCase(.uppercase)
@@ -168,7 +180,7 @@ struct BottomMenu_Previews: PreviewProvider {
             }
             .preferredColorScheme(.light)
             .previewDisplayName("Light Mode")
-            
+
             ZStack {
                 AppTheme.Colors.dynamicBackground.ignoresSafeArea()
                 BottomMenu(

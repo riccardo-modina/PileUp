@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Semantic severity level for form messages.
@@ -5,15 +13,15 @@ enum InputErrorType {
     case error
     case warning
     case info
-    
+
     var color: Color {
         switch self {
         case .error:
-            return AppTheme.Colors.negative
+            AppTheme.Colors.negative
         case .warning:
-            return Color(red: 217/255, green: 119/255, blue: 6/255) // Amber-600
+            Color(red: 217 / 255, green: 119 / 255, blue: 6 / 255) // Amber-600
         case .info:
-            return AppTheme.Colors.primary
+            AppTheme.Colors.primary
         }
     }
 }
@@ -24,7 +32,7 @@ struct InputError: View {
     let message: String
     var type: InputErrorType = .error
     var animate: Bool = false
-    
+
     var body: some View {
         if !message.isEmpty {
             Text(message)

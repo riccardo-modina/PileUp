@@ -1,19 +1,32 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Main container view hosting the 4 tab screens and the floating CustomBottomBar.
 struct MainTabView: View {
-    @ObservedObject var authViewModel: AuthViewModel
-    
-    @State private var selectedTab: AppTab = .home
-    @State private var showAddTransaction: Bool = false
-    @State private var showMenuSheet: Bool = false
-    
+    @ObservedObject
+    var authViewModel: AuthViewModel
+
+    @State
+    private var selectedTab: AppTab = .home
+    @State
+    private var showAddTransaction: Bool = false
+    @State
+    private var showMenuSheet: Bool = false
+
     // Shared DashboardViewModel so all tabs share synchronized period & statistics
-    @StateObject private var dashboardViewModel = DashboardViewModel()
-    
+    @StateObject
+    private var dashboardViewModel = DashboardViewModel()
+
     // Adjust the bottom padding to not let the menu touch the safe area
     private let bottomMenuPadding: CGFloat = 22
-    
+
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
@@ -40,10 +53,11 @@ struct MainTabView: View {
                         }
                     }
                 }
-                
+
                 // Dimmed Backdrop when menu is open
                 if showMenuSheet {
-                    Color.black.opacity(0.35)
+                    Color.black
+                        .opacity(0.35)
                         .ignoresSafeArea()
                         .transition(.opacity)
                         .onTapGesture {
@@ -53,7 +67,7 @@ struct MainTabView: View {
                         }
                         .zIndex(15)
                 }
-                
+
                 // In-View Menu Drawer sliding up to 3/4 of the screen above bottom bar
                 if showMenuSheet {
                     MenuView(authViewModel: authViewModel, onClose: {
@@ -83,7 +97,7 @@ struct MainTabView: View {
                     )
                     .zIndex(25)
                 }
-                
+
                 // Floating Bottom Menu with 4 items and central "+" button
                 BottomMenu(
                     selectedTab: $selectedTab,

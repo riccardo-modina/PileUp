@@ -1,16 +1,31 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 struct RegisterView: View {
-    @ObservedObject var viewModel: AuthViewModel
-    @Environment(\.presentationMode) var presentationMode
-    
-    @State private var username = ""
-    @State private var email = ""
-    @State private var password = ""
-    @State private var inviteCode = ""
-    
-    @State private var recoveryKey: String? = nil
-    
+    @ObservedObject
+    var viewModel: AuthViewModel
+    @Environment(\.presentationMode)
+    var presentationMode
+
+    @State
+    private var username = ""
+    @State
+    private var email = ""
+    @State
+    private var password = ""
+    @State
+    private var inviteCode = ""
+
+    @State
+    private var recoveryKey: String? = nil
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -21,13 +36,15 @@ struct RegisterView: View {
                         .tracking(1)
                         .foregroundColor(AppTheme.Colors.primary)
                         .padding(.top, 40)
-                    
-                    Text("Questa è la tua Recovery Key. Salvala in un posto sicuro. Se perdi la password e questa chiave, perderai tutti i tuoi dati E2E.")
-                        .font(.montserrat(size: 14))
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    
+
+                    Text(
+                        "Questa è la tua Recovery Key. Salvala in un posto sicuro. Se perdi la password e questa chiave, perderai tutti i tuoi dati E2E."
+                    )
+                    .font(.montserrat(size: 14))
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
                     Text(key)
                         .font(.system(size: 16, design: .monospaced))
                         .foregroundColor(AppTheme.Colors.text)
@@ -40,7 +57,7 @@ struct RegisterView: View {
                         )
                         .textSelection(.enabled)
                         .padding(.horizontal)
-                    
+
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
@@ -55,7 +72,7 @@ struct RegisterView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top, 20)
-                    
+
                 } else {
                     // Registration Form State
                     Text("REGISTRATI")
@@ -63,7 +80,7 @@ struct RegisterView: View {
                         .tracking(4)
                         .foregroundColor(AppTheme.Colors.primary)
                         .padding(.top, 40)
-                    
+
                     VStack(spacing: 16) {
                         TextField("Username", text: $username)
                             .padding()
@@ -74,7 +91,7 @@ struct RegisterView: View {
                                     .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
                             )
                             .autocapitalization(.none)
-                        
+
                         TextField("Email", text: $email)
                             .keyboardType(.emailAddress)
                             .padding()
@@ -85,7 +102,7 @@ struct RegisterView: View {
                                     .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
                             )
                             .autocapitalization(.none)
-                        
+
                         SecureField("Password (questa cifrerà i dati)", text: $password)
                             .padding()
                             .background(AppTheme.Colors.cardBackground)
@@ -94,7 +111,7 @@ struct RegisterView: View {
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(AppTheme.Colors.dynamicBorder.opacity(0.8), lineWidth: 1)
                             )
-                        
+
                         if viewModel.globalSettings?.is_initialized == true {
                             TextField("Codice d'Invito", text: $inviteCode)
                                 .padding()
@@ -108,16 +125,21 @@ struct RegisterView: View {
                         }
                     }
                     .padding(.horizontal)
-                    
+
                     if let errorMessage = viewModel.errorMessage {
                         ErrorBanner(message: errorMessage)
                             .padding(.horizontal)
                     }
-                    
+
                     Button(action: {
                         Task {
                             do {
-                                if let key = try await viewModel.register(username: username, email: email, password: password, inviteCode: inviteCode) {
+                                if let key = try await viewModel.register(
+                                    username: username,
+                                    email: email,
+                                    password: password,
+                                    inviteCode: inviteCode
+                                ) {
                                     self.recoveryKey = key
                                 }
                             } catch {
@@ -142,7 +164,8 @@ struct RegisterView: View {
                         .cornerRadius(10)
                     }
                     .padding(.horizontal)
-                    .disabled(viewModel.isLoading || username.isEmpty || email.isEmpty || password.isEmpty || (viewModel.globalSettings?.is_initialized == true && inviteCode.isEmpty))
+                    .disabled(viewModel.isLoading || username.isEmpty || email.isEmpty || password
+                        .isEmpty || (viewModel.globalSettings?.is_initialized == true && inviteCode.isEmpty))
                 }
             }
             .padding()

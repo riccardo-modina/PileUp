@@ -1,22 +1,30 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Styled error banner component with an icon, themed background, and smooth presentation.
 struct ErrorBanner: View {
     let message: String
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(AppTheme.Colors.negative)
                 .padding(.top, 1)
-            
+
             Text(message)
                 .font(.montserrat(size: 13, weight: .medium))
                 .foregroundColor(AppTheme.Colors.negative)
                 .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
-            
+
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 14)

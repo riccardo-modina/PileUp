@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import Foundation
 import SwiftUI
 
@@ -6,33 +14,35 @@ enum MovementType: String, CaseIterable, Identifiable, Codable {
     case expense = "uscita"
     case income = "entrata"
     case transfer = "giroconto"
-    
-    var id: String { rawValue }
-    
+
+    var id: String {
+        rawValue
+    }
+
     var title: String {
         switch self {
-        case .expense: return "Spesa"
-        case .income: return "Entrata"
-        case .transfer: return "Giroconto"
+        case .expense: "Spesa"
+        case .income: "Entrata"
+        case .transfer: "Giroconto"
         }
     }
-    
+
     var iconName: String {
         switch self {
-        case .expense: return "arrow.up.right"
-        case .income: return "arrow.down.left"
-        case .transfer: return "arrow.triangle.2.circlepath"
+        case .expense: "arrow.up.right"
+        case .income: "arrow.down.left"
+        case .transfer: "arrow.triangle.2.circlepath"
         }
     }
-    
+
     var accentColor: Color {
         switch self {
-        case .expense: return AppTheme.Colors.negative
-        case .income: return AppTheme.Colors.moneyIn
-        case .transfer: return AppTheme.Colors.moneyOut
+        case .expense: AppTheme.Colors.negative
+        case .income: AppTheme.Colors.moneyIn
+        case .transfer: AppTheme.Colors.moneyOut
         }
     }
-    
+
     var backgroundColor: Color {
         accentColor.opacity(0.12)
     }
@@ -45,7 +55,7 @@ nonisolated struct CategoryItem: Identifiable, Codable, Hashable, Sendable {
     let tipo: String
     let color: String?
     let is_system: Bool?
-    
+
     @MainActor
     var displayColor: Color {
         if let hex = color, !hex.isEmpty {
@@ -53,7 +63,7 @@ nonisolated struct CategoryItem: Identifiable, Codable, Hashable, Sendable {
         }
         return AppTheme.Colors.primary
     }
-    
+
     var isSystem: Bool {
         is_system ?? false || nome.lowercased().contains("riassociare")
     }
@@ -67,7 +77,7 @@ nonisolated struct AccountItem: Identifiable, Codable, Hashable, Sendable {
     let valuta: String?
     let color: String?
     let is_system: Bool?
-    
+
     @MainActor
     var displayColor: Color {
         if let hex = color, !hex.isEmpty {
@@ -75,7 +85,7 @@ nonisolated struct AccountItem: Identifiable, Codable, Hashable, Sendable {
         }
         return AppTheme.Colors.moneyOut
     }
-    
+
     var isSystem: Bool {
         is_system ?? false || nome.lowercased().contains("riassociare")
     }
@@ -101,11 +111,18 @@ nonisolated struct MovementResponse: Codable, Sendable {
     let conto: Int?
     let tipo: String?
     let descrizione: String?
-    
+
     enum CodingKeys: String, CodingKey {
-        case id, titolo, importo, data, categoria, conto, tipo, descrizione
+        case id
+        case titolo
+        case importo
+        case data
+        case categoria
+        case conto
+        case tipo
+        case descrizione
     }
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try? container.decodeIfPresent(Int.self, forKey: .id)
@@ -113,7 +130,7 @@ nonisolated struct MovementResponse: Codable, Sendable {
         self.data = try? container.decodeIfPresent(String.self, forKey: .data)
         self.tipo = try? container.decodeIfPresent(String.self, forKey: .tipo)
         self.descrizione = try? container.decodeIfPresent(String.self, forKey: .descrizione)
-        
+
         // Flexible decoding for categoria: could be Int or CategoryItem object
         if let catId = try? container.decodeIfPresent(Int.self, forKey: .categoria) {
             self.categoria = catId
@@ -122,7 +139,7 @@ nonisolated struct MovementResponse: Codable, Sendable {
         } else {
             self.categoria = nil
         }
-        
+
         // Flexible decoding for conto: could be Int or AccountItem object
         if let accId = try? container.decodeIfPresent(Int.self, forKey: .conto) {
             self.conto = accId
@@ -131,7 +148,7 @@ nonisolated struct MovementResponse: Codable, Sendable {
         } else {
             self.conto = nil
         }
-        
+
         if let doubleVal = try? container.decodeIfPresent(Double.self, forKey: .importo) {
             self.importo = doubleVal
         } else if let stringVal = try? container.decodeIfPresent(String.self, forKey: .importo) {
@@ -152,11 +169,18 @@ nonisolated struct MovementItem: Identifiable, Codable, Sendable {
     let descrizione: String?
     let categoria: CategoryItem?
     let conto: AccountItem?
-    
+
     enum CodingKeys: String, CodingKey {
-        case id, titolo, importo, data, tipo, descrizione, categoria, conto
+        case id
+        case titolo
+        case importo
+        case data
+        case tipo
+        case descrizione
+        case categoria
+        case conto
     }
-    
+
     init(
         id: Int,
         titolo: String,
@@ -176,7 +200,7 @@ nonisolated struct MovementItem: Identifiable, Codable, Sendable {
         self.categoria = categoria
         self.conto = conto
     }
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(Int.self, forKey: .id)
@@ -184,7 +208,7 @@ nonisolated struct MovementItem: Identifiable, Codable, Sendable {
         self.data = (try? container.decode(String.self, forKey: .data)) ?? ""
         self.tipo = (try? container.decode(String.self, forKey: .tipo)) ?? "uscita"
         self.descrizione = try? container.decodeIfPresent(String.self, forKey: .descrizione)
-        
+
         // Handle amount as number or string
         if let doubleVal = try? container.decodeIfPresent(Double.self, forKey: .importo) {
             self.importo = doubleVal
@@ -193,14 +217,14 @@ nonisolated struct MovementItem: Identifiable, Codable, Sendable {
         } else {
             self.importo = 0.0
         }
-        
+
         // Flexible decoding for categoria
         if let catObj = try? container.decodeIfPresent(CategoryItem.self, forKey: .categoria) {
             self.categoria = catObj
         } else {
             self.categoria = nil
         }
-        
+
         // Flexible decoding for conto
         if let accObj = try? container.decodeIfPresent(AccountItem.self, forKey: .conto) {
             self.conto = accObj
@@ -208,15 +232,15 @@ nonisolated struct MovementItem: Identifiable, Codable, Sendable {
             self.conto = nil
         }
     }
-    
+
     var categoryName: String {
         categoria?.nome ?? "Senza Categoria"
     }
-    
+
     var categoryColorHex: String {
         categoria?.color ?? "#9E9E9E"
     }
-    
+
     @MainActor
     var categoryDisplayColor: Color {
         if let colorHex = categoria?.color, !colorHex.isEmpty {
@@ -224,11 +248,11 @@ nonisolated struct MovementItem: Identifiable, Codable, Sendable {
         }
         return AppTheme.Colors.primary
     }
-    
+
     var accountName: String {
         conto?.nome ?? "Conto"
     }
-    
+
     var formattedAmount: String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -236,11 +260,11 @@ nonisolated struct MovementItem: Identifiable, Codable, Sendable {
         formatter.locale = Locale(identifier: "it_IT")
         return formatter.string(from: NSNumber(value: importo)) ?? String(format: "€ %.2f", importo)
     }
-    
+
     var isExpense: Bool {
         tipo == "uscita"
     }
-    
+
     var isIncome: Bool {
         tipo == "entrata"
     }
@@ -256,7 +280,7 @@ struct CategoryPieSlice: Identifiable, Equatable {
     let color: Color
     let hexColor: String
     let count: Int
-    
+
     static func == (lhs: CategoryPieSlice, rhs: CategoryPieSlice) -> Bool {
         lhs.id == rhs.id && lhs.amount == rhs.amount && lhs.percentage == rhs.percentage
     }
@@ -268,18 +292,21 @@ nonisolated struct PaginatedListResponse<T: Codable & Sendable>: Codable, Sendab
     let next: String?
     let previous: String?
     let results: [T]
-    
+
     enum CodingKeys: String, CodingKey {
-        case count, next, previous, results
+        case count
+        case next
+        case previous
+        case results
     }
-    
+
     init(count: Int? = nil, next: String? = nil, previous: String? = nil, results: [T]) {
         self.count = count
         self.next = next
         self.previous = previous
         self.results = results
     }
-    
+
     init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: CodingKeys.self) {
             self.count = try container.decodeIfPresent(Int.self, forKey: .count)
@@ -295,7 +322,7 @@ nonisolated struct PaginatedListResponse<T: Codable & Sendable>: Codable, Sendab
             self.results = list
         }
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(count, forKey: .count)

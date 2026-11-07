@@ -1,8 +1,14 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import AppIntents
 
 /// Automatically registers and exposes PileUp shortcuts in iOS Shortcuts upon app installation.
-
-
 
 @available(iOS 16.0, *)
 public struct PileupShortcutsProvider: AppShortcutsProvider {

@@ -1,56 +1,72 @@
-import Foundation
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import Combine
+import Foundation
 
 enum DataPeriod: Equatable {
     case monthYear(month: Int, year: Int)
     case year(Int)
     case total
-    
+
     var description: String {
         switch self {
-        case .monthYear(let month, let year):
-            return String(format: "%02d/%d", month, year)
-        case .year(let year):
-            return "\(year)"
+        case let .monthYear(month, year):
+            String(format: "%02d/%d", month, year)
+        case let .year(year):
+            "\(year)"
         case .total:
-            return "Totale"
+            "Totale"
         }
     }
-    
+
     var isTotal: Bool {
-        if case .total = self { return true }
+        if case .total = self {
+            return true
+        }
         return false
     }
-    
+
     func canMoveForward() -> Bool {
         let calendar = Calendar.current
         let today = Date()
         let currentYear = calendar.component(.year, from: today)
         let currentMonth = calendar.component(.month, from: today)
-        
+
         switch self {
-        case .monthYear(let month, let year):
-            if year > currentYear { return false }
-            if year == currentYear && month >= currentMonth { return false }
+        case let .monthYear(month, year):
+            if year > currentYear {
+                return false
+            }
+            if year == currentYear && month >= currentMonth {
+                return false
+            }
             return true
-        case .year(let year):
+
+        case let .year(year):
             return year < currentYear
+
         case .total:
             return false
         }
     }
-    
+
     mutating func adjust(by offset: Int) {
         let calendar = Calendar.current
         let today = Date()
         let currentYear = calendar.component(.year, from: today)
         let currentMonth = calendar.component(.month, from: today)
-        
+
         switch self {
-        case .monthYear(let month, let year):
+        case let .monthYear(month, year):
             var newMonth = month + offset
             var newYear = year
-            
+
             while newMonth > 12 {
                 newMonth -= 12
                 newYear += 1
@@ -59,21 +75,21 @@ enum DataPeriod: Equatable {
                 newMonth += 12
                 newYear -= 1
             }
-            
+
             // Prevent future dates
             if newYear > currentYear || (newYear == currentYear && newMonth > currentMonth) {
                 return
             }
-            
+
             self = .monthYear(month: newMonth, year: newYear)
-            
-        case .year(let year):
+
+        case let .year(year):
             let newYear = year + offset
             if newYear > currentYear {
                 return
             }
             self = .year(newYear)
-            
+
         case .total:
             break
         }
@@ -81,14 +97,21 @@ enum DataPeriod: Equatable {
 }
 
 class DashboardViewModel: ObservableObject {
-    @Published var monthlyIncome: Double = 0.0
-    @Published var monthlyExpense: Double = 0.0
-    @Published var incomeMovements: [MonthlyStat] = []
-    @Published var expenseMovements: [MonthlyStat] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
-    
-    @Published var selectedPeriod: DataPeriod = {
+    @Published
+    var monthlyIncome: Double = 0.0
+    @Published
+    var monthlyExpense: Double = 0.0
+    @Published
+    var incomeMovements: [MonthlyStat] = []
+    @Published
+    var expenseMovements: [MonthlyStat] = []
+    @Published
+    var isLoading: Bool = false
+    @Published
+    var errorMessage: String? = nil
+
+    @Published
+    var selectedPeriod: DataPeriod = {
         let calendar = Calendar.current
         let today = Date()
         return .monthYear(
@@ -105,55 +128,63 @@ class DashboardViewModel: ObservableObject {
             }
         }
     }
-    
+
     private let monthSymbols = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
-    
+
     // Cache for storing monthly movements for each requested year
-    @Published var yearlyMovements: [Int: (income: [MonthlyStat], spending: [MonthlyStat])] = [:]
-    
+    @Published
+    var yearlyMovements: [Int: (income: [MonthlyStat], spending: [MonthlyStat])] = [:]
+
     // Cache for annual totals of each year (used in yearly bar chart)
-    @Published var yearlyTotals: [Int: (income: Double, expense: Double)] = [:]
-    
+    @Published
+    var yearlyTotals: [Int: (income: Double, expense: Double)] = [:]
+
     private let statsAPI: StatsAPIProtocol
-    
+
     init(statsAPI: StatsAPIProtocol = StatsAPI.shared) {
         self.statsAPI = statsAPI
         fetchAllYearsTotals()
         fetchMonthlyStats()
     }
-    
+
     private func syncCurrentMonthFiguresFromMovements() {
         switch selectedPeriod {
-        case .monthYear(let m, let y):
+        case let .monthYear(m, y):
             let currentSymbol = monthSymbols[max(0, min(m - 1, 11))]
             let m2 = String(format: "%02d", m)
             let m1 = "\(m)"
-            
+
             let incomeList = yearlyMovements[y]?.income ?? incomeMovements
             let expenseList = yearlyMovements[y]?.spending ?? expenseMovements
-            
-            if let incStat = incomeList.first(where: { $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1 }) {
+
+            if let incStat = incomeList
+                .first(where: { $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1 })
+            {
                 self.monthlyIncome = incStat.amount
             }
-            if let expStat = expenseList.first(where: { $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1 }) {
+            if let expStat = expenseList
+                .first(where: { $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1 })
+            {
                 self.monthlyExpense = expStat.amount
             }
-        case .year(let y):
+
+        case let .year(y):
             if let totals = yearlyTotals[y] {
                 self.monthlyIncome = totals.income
                 self.monthlyExpense = totals.expense
             }
+
         case .total:
             break
         }
     }
-    
+
     /// Computes the 4 visible months around the selected month
     func visibleMonths(for month: Int, year: Int) -> [(month: Int, year: Int)] {
         let startOffset = -2
-        
+
         var list: [(month: Int, year: Int)] = []
-        for offset in 0..<4 {
+        for offset in 0 ..< 4 {
             let relOffset = startOffset + offset
             var targetM = month + relOffset
             var targetY = year
@@ -169,7 +200,7 @@ class DashboardViewModel: ObservableObject {
         }
         return list
     }
-    
+
     func fetchVisibleMonths(year: Int, months: [String]) {
         Task { @MainActor in
             do {
@@ -195,7 +226,7 @@ class DashboardViewModel: ObservableObject {
             }
         }
     }
-    
+
     func fetchAllYearsTotals() {
         Task { @MainActor in
             do {
@@ -219,30 +250,30 @@ class DashboardViewModel: ObservableObject {
             }
         }
     }
-    
+
     func fetchMonthlyStats() {
         isLoading = true
         errorMessage = nil
-        
+
         let selectedYear: Int
         let fetchTask: Task<MonthlyStatsResponse, Error>
-        
+
         switch selectedPeriod {
-        case .monthYear(let month, let year):
+        case let .monthYear(month, year):
             selectedYear = year
             let visible = visibleMonths(for: month, year: year)
             let currentYearMonths = visible.filter { $0.year == year }.map { "\($0.month)" }
             let prevYearMonths = visible.filter { $0.year == year - 1 }.map { "\($0.month)" }
-            
+
             if !prevYearMonths.isEmpty {
                 fetchVisibleMonths(year: year - 1, months: prevYearMonths)
             }
-            
+
             fetchTask = Task {
                 try await self.statsAPI.getMonthlyStats(year: "\(year)", months: currentYearMonths.isEmpty ? nil : currentYearMonths)
             }
-            
-        case .year(let year):
+
+        case let .year(year):
             selectedYear = year
             if yearlyTotals.isEmpty {
                 fetchAllYearsTotals()
@@ -250,19 +281,19 @@ class DashboardViewModel: ObservableObject {
             fetchTask = Task {
                 try await self.statsAPI.getMonthlyStats(year: "\(year)", months: nil)
             }
-            
+
         case .total:
             selectedYear = Calendar.current.component(.year, from: Date())
             fetchTask = Task {
                 try await self.statsAPI.getAllYearsTotals()
             }
         }
-        
+
         Task { @MainActor in
             do {
                 let response = try await fetchTask.value
                 self.isLoading = false
-                
+
                 var existing = self.yearlyMovements[selectedYear] ?? (income: [], spending: [])
                 for inc in response.income {
                     if let idx = existing.income.firstIndex(where: { $0.month == inc.month }) {
@@ -281,26 +312,28 @@ class DashboardViewModel: ObservableObject {
                 self.yearlyMovements[selectedYear] = existing
                 self.incomeMovements = existing.income
                 self.expenseMovements = existing.spending
-                
+
                 switch self.selectedPeriod {
-                case .monthYear(let m, _):
+                case let .monthYear(m, _):
                     let currentSymbol = self.monthSymbols[max(0, min(m - 1, 11))]
                     let m2 = String(format: "%02d", m)
                     let m1 = "\(m)"
-                    
-                    self.monthlyIncome = response.income.first(where: {
-                        $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1
-                    })?.amount ?? 0.0
-                    
-                    self.monthlyExpense = response.spending.first(where: {
-                        $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1
-                    })?.amount ?? 0.0
-                    
-                case .year(let y):
+
+                    self.monthlyIncome = response.income
+                        .first(where: {
+                            $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1
+                        })?.amount ?? 0.0
+
+                    self.monthlyExpense = response.spending
+                        .first(where: {
+                            $0.month.caseInsensitiveCompare(currentSymbol) == .orderedSame || $0.month == m2 || $0.month == m1
+                        })?.amount ?? 0.0
+
+                case let .year(y):
                     self.monthlyIncome = response.monthlyIncome
                     self.monthlyExpense = response.monthlyExpense
                     self.yearlyTotals[y] = (income: response.monthlyIncome, expense: response.monthlyExpense)
-                    
+
                 case .total:
                     self.monthlyIncome = response.monthlyIncome
                     self.monthlyExpense = response.monthlyExpense
@@ -325,13 +358,13 @@ class DashboardViewModel: ObservableObject {
             }
         }
     }
-    
+
     func nextPeriod() {
         if selectedPeriod.canMoveForward() {
             selectedPeriod.adjust(by: 1)
         }
     }
-    
+
     func previousPeriod() {
         if !selectedPeriod.isTotal {
             selectedPeriod.adjust(by: -1)

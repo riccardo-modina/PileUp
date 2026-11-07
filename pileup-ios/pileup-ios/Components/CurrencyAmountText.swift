@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Reusable component that renders currency amounts with smaller decimal numbers.
@@ -9,7 +17,7 @@ struct CurrencyAmountText: View {
     var weight: Font.Weight = .semibold
     var design: Font.Design = .rounded
     var color: Color = AppTheme.Colors.dynamicText
-    
+
     init(
         _ text: String,
         size: CGFloat = 15,
@@ -23,7 +31,7 @@ struct CurrencyAmountText: View {
         self.design = design
         self.color = color
     }
-    
+
     init(
         value: Double,
         prefix: String = "",
@@ -43,7 +51,7 @@ struct CurrencyAmountText: View {
         self.design = design
         self.color = color
     }
-    
+
     private var parts: (integer: String, decimal: String) {
         if let commaIndex = text.lastIndex(of: ",") {
             return (String(text[..<commaIndex]), String(text[commaIndex...]))
@@ -52,34 +60,35 @@ struct CurrencyAmountText: View {
         }
         return (text, "")
     }
-    
+
     /// Scales decimal reduction:
     /// - Small fonts (<= 16pt): ~22% reduction (ratio 0.78, e.g. 15pt -> 12pt)
     /// - Medium fonts (17-22pt): ~28% reduction (ratio 0.72, e.g. 20pt -> 14pt)
     /// - Large fonts (23-28pt): ~34% reduction (ratio 0.66, e.g. 26pt -> 17pt, 28pt -> 18pt)
     /// - Extra large fonts (> 28pt): ~40% reduction (ratio 0.60, e.g. 36pt -> 22pt)
     private var decimalSize: CGFloat {
-        let ratio: CGFloat
-        if size <= 16 {
-            ratio = 0.78
+        let ratio: CGFloat = if size <= 16 {
+            0.78
         } else if size <= 22 {
-            ratio = 0.72
+            0.72
         } else if size <= 28 {
-            ratio = 0.66
+            0.66
         } else {
-            ratio = 0.60
+            0.60
         }
         return max(9, round(size * ratio))
     }
-    
+
     var body: some View {
         if parts.decimal.isEmpty {
             Text(parts.integer)
                 .font(.system(size: size, weight: weight, design: design))
                 .foregroundColor(color)
         } else {
-            Text("\(Text(parts.integer).font(.system(size: size, weight: weight, design: design)))\(Text(parts.decimal).font(.system(size: decimalSize, weight: weight, design: design)))")
-                .foregroundColor(color)
+            Text(
+                "\(Text(parts.integer).font(.system(size: size, weight: weight, design: design)))\(Text(parts.decimal).font(.system(size: decimalSize, weight: weight, design: design)))"
+            )
+            .foregroundColor(color)
         }
     }
 }

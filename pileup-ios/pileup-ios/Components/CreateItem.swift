@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 import UIKit
 
@@ -7,7 +15,7 @@ struct PickerTypeOption: Identifiable, Equatable {
     let title: String
     let iconName: String
     let color: Color?
-    
+
     init(id: String, title: String, iconName: String, color: Color? = nil) {
         self.id = id
         self.title = title
@@ -23,26 +31,33 @@ struct CreateItem: View {
     let nameLabel: String
     let namePlaceholder: String
     var initialName: String = ""
-    
+
     let typeLabel: String
     let typeOptions: [PickerTypeOption]
     var initialTypeId: String = ""
-    
+
     var initialColorHex: String = AppTheme.Palette.presets.first ?? "#1FBC9C"
     var availableColors: [String] = AppTheme.Palette.presets
-    
+
     let onSave: (_ name: String, _ typeId: String, _ colorHex: String) async throws -> Void
-    
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var name: String = ""
-    @State private var selectedTypeId: String = ""
-    @State private var selectedHex: String = ""
-    @State private var customColor: Color = Color(hex: "#1FBC9C")
-    
-    @State private var isSubmitting: Bool = false
-    @State private var errorMessage: String? = nil
-    
+
+    @Environment(\.dismiss)
+    private var dismiss
+
+    @State
+    private var name: String = ""
+    @State
+    private var selectedTypeId: String = ""
+    @State
+    private var selectedHex: String = ""
+    @State
+    private var customColor: Color = Color(hex: "#1FBC9C")
+
+    @State
+    private var isSubmitting: Bool = false
+    @State
+    private var errorMessage: String? = nil
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -53,7 +68,7 @@ struct CreateItem: View {
                             .font(.system(size: 11, weight: .bold))
                             .tracking(1.5)
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        
+
                         TextField(namePlaceholder, text: $name)
                             .font(.system(size: 15))
                             .padding(.horizontal, 16)
@@ -65,7 +80,7 @@ struct CreateItem: View {
                                     .stroke(AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
                             )
                     }
-                    
+
                     // Type Selection (if options provided)
                     if !typeOptions.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
@@ -73,12 +88,12 @@ struct CreateItem: View {
                                 .font(.system(size: 11, weight: .bold))
                                 .tracking(1.5)
                                 .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                            
+
                             HStack(spacing: 8) {
                                 ForEach(typeOptions) { option in
                                     let isSelected = selectedTypeId == option.id
                                     let optionColor = option.color ?? AppTheme.Colors.primary
-                                    
+
                                     Button(action: {
                                         HapticHelper.selection()
                                         withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
@@ -100,7 +115,10 @@ struct CreateItem: View {
                                         )
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                .stroke(isSelected ? optionColor.opacity(0.5) : AppTheme.Colors.dynamicBorder.opacity(0.6), lineWidth: 1)
+                                                .stroke(
+                                                    isSelected ? optionColor.opacity(0.5) : AppTheme.Colors.dynamicBorder.opacity(0.6),
+                                                    lineWidth: 1
+                                                )
                                         )
                                     }
                                     .buttonStyle(.plain)
@@ -108,7 +126,7 @@ struct CreateItem: View {
                             }
                         }
                     }
-                    
+
                     // Color Section
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
@@ -116,9 +134,9 @@ struct CreateItem: View {
                                 .font(.system(size: 11, weight: .bold))
                                 .tracking(1.5)
                                 .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                            
+
                             Spacer()
-                            
+
                             ColorPicker("", selection: $customColor, supportsOpacity: false)
                                 .labelsHidden()
                                 .onChange(of: customColor) { _, newColor in
@@ -127,7 +145,7 @@ struct CreateItem: View {
                                     }
                                 }
                         }
-                        
+
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 7), spacing: 10) {
                             ForEach(availableColors, id: \.self) { hex in
                                 let isSelected = selectedHex.caseInsensitiveCompare(hex) == .orderedSame
@@ -140,7 +158,7 @@ struct CreateItem: View {
                                         Circle()
                                             .fill(Color(hex: hex))
                                             .frame(width: 32, height: 32)
-                                        
+
                                         if isSelected {
                                             Circle()
                                                 .stroke(Color.white, lineWidth: 2)
@@ -156,7 +174,7 @@ struct CreateItem: View {
                         }
                         .padding(.vertical, 4)
                     }
-                    
+
                     if let error = errorMessage {
                         InputError(message: error, type: .error)
                     }
@@ -173,7 +191,7 @@ struct CreateItem: View {
                     }
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
                 }
-                
+
                 ToolbarItem(placement: .confirmationAction) {
                     if isSubmitting {
                         ProgressView()
@@ -197,7 +215,7 @@ struct CreateItem: View {
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
-    
+
     private func save() {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
@@ -205,10 +223,10 @@ struct CreateItem: View {
             HapticHelper.warning()
             return
         }
-        
+
         isSubmitting = true
         errorMessage = nil
-        
+
         Task {
             do {
                 try await onSave(trimmed, selectedTypeId, selectedHex)
@@ -227,13 +245,13 @@ struct CreateItem: View {
 // MARK: - Specialized Sheets for Category and Account
 
 struct CreateCategorySheet: View {
-    var categoryId: Int? = nil
+    var categoryId: Int?
     var initialName: String = ""
     var initialType: String = "uscita"
-    var initialColorHex: String? = nil
+    var initialColorHex: String?
     var availableColors: [String] = AppTheme.Palette.presets
-    var onSaved: ((CategoryItem) -> Void)? = nil
-    
+    var onSaved: ((CategoryItem) -> Void)?
+
     var body: some View {
         CreateItem(
             title: categoryId == nil ? "Nuova Categoria" : "Modifica Categoria",
@@ -248,16 +266,15 @@ struct CreateCategorySheet: View {
             initialColorHex: initialColorHex ?? AppTheme.Palette.defaultCategoryColor,
             availableColors: availableColors,
             onSave: { name, typeId, hex in
-                let item: CategoryItem
-                if let id = categoryId {
-                    item = try await CategoryAPI.shared.updateCategory(
+                let item: CategoryItem = if let id = categoryId {
+                    try await CategoryAPI.shared.updateCategory(
                         id: id,
                         nome: name,
                         tipo: typeId,
                         color: hex
                     )
                 } else {
-                    item = try await CategoryAPI.shared.createCategory(
+                    try await CategoryAPI.shared.createCategory(
                         nome: name,
                         tipo: typeId,
                         color: hex
@@ -270,13 +287,13 @@ struct CreateCategorySheet: View {
 }
 
 struct CreateAccountSheet: View {
-    var accountId: Int? = nil
+    var accountId: Int?
     var initialName: String = ""
     var initialType: String = "conto_corrente"
-    var initialColorHex: String? = nil
+    var initialColorHex: String?
     var availableColors: [String] = AppTheme.Palette.presets
-    var onSaved: ((AccountItem) -> Void)? = nil
-    
+    var onSaved: ((AccountItem) -> Void)?
+
     var body: some View {
         CreateItem(
             title: accountId == nil ? "Nuovo Conto" : "Modifica Conto",
@@ -292,16 +309,15 @@ struct CreateAccountSheet: View {
             initialColorHex: initialColorHex ?? AppTheme.Palette.defaultAccountColor,
             availableColors: availableColors,
             onSave: { name, typeId, hex in
-                let item: AccountItem
-                if let id = accountId {
-                    item = try await AccountAPI.shared.updateAccount(
+                let item: AccountItem = if let id = accountId {
+                    try await AccountAPI.shared.updateAccount(
                         id: id,
                         nome: name,
                         tipo: typeId,
                         color: hex
                     )
                 } else {
-                    item = try await AccountAPI.shared.createAccount(
+                    try await AccountAPI.shared.createAccount(
                         nome: name,
                         tipo: typeId,
                         color: hex
@@ -323,6 +339,7 @@ extension Color {
         var b: CGFloat = 0
         var a: CGFloat = 0
         guard uic.getRed(&r, green: &g, blue: &b, alpha: &a) else { return nil }
+
         return String(format: "#%02lX%02lX%02lX", lroundf(Float(r * 255)), lroundf(Float(g * 255)), lroundf(Float(b * 255)))
     }
 }

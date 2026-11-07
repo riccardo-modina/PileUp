@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import Foundation
 import NaturalLanguage
 
@@ -36,7 +44,7 @@ let merchants = [
     "Leroy Merlin",
     "Zara",
     "H&M",
-    
+
     // E-commerce & Subscriptions
     "AMAZON EU",
     "Amazon Prime",
@@ -53,7 +61,7 @@ let merchants = [
     "Just Eat",
     "Glovo",
     "Uber",
-    
+
     // Bars, Food & Bakeries
     "Bar Centrale",
     "Bar San Marco",
@@ -66,13 +74,13 @@ let merchants = [
     "Burger King",
     "Poke House",
     "Le Golosie",
-    
+
     // Health & Pharmacies
     "Farmacia San Carlo",
     "Farmacia Comunale",
     "Farmacia Centrale",
     "Parafarmacia Conad",
-    
+
     // Transport & Fuel
     "Eni Station",
     "Q8 Easy",
@@ -82,7 +90,7 @@ let merchants = [
     "Trenitalia",
     "Italo Treno",
     "Ryanair",
-    
+
     // P2P Contacts (for transfers)
     "Lorenzo Riva",
     "Marco Rossi",
@@ -122,19 +130,19 @@ let bankTemplateGroups: [BankTemplateGroup] = [
     BankTemplateGroup(
         provider: "Fineco",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Fineco - SMS Gratuito: Autorizzato utilizzo Carta ***\(c) Importo: \(a) EUR, per: \(m). Info: 0228992899",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Fineco: autorizzato pagamento con Carta ***\(c) di EUR \(a) presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Fineco: autorizzata operazione di EUR \(a) con Carta ***\(c) per: \(m)",
                     provider: p, amount: a, merchant: m
@@ -142,24 +150,24 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 2. Nexi
     BankTemplateGroup(
         provider: "Nexi",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Nexi Informa: autorizzata spesa di EUR \(a) con carta che termina per \(c) presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Spesa autorizzata di EUR \(a) effettuata con carta ***\(c) c/o \(m)",
                     provider: nil, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, d, _ in
                 TaggedSentence(
                     text: "Nexi: autorizzato pagamento di \(a) EUR presso \(m) il \(d)",
                     provider: p, amount: a, merchant: m
@@ -167,7 +175,7 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 3. Intesa Sanpaolo / Isybank
     BankTemplateGroup(
         provider: "Intesa Sanpaolo",
@@ -178,13 +186,13 @@ let bankTemplateGroups: [BankTemplateGroup] = [
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Intesa Sanpaolo: autorizzata operazione di EUR \(a) presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Isybank: Hai effettuato un pagamento di \(a) € presso \(m) con la tua carta",
                     provider: "Isybank", amount: a, merchant: m
@@ -192,24 +200,24 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 4. UniCredit
     BankTemplateGroup(
         provider: "UniCredit",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "UniCredit Informa: autorizzata operazione di EUR \(a) con carta ***\(c) a favore di \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "UniCredit: Pagamento autorizzato di \(a) € presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "UniCredit Informa: spesa di EUR \(a) con carta *\(c) presso \(m)",
                     provider: p, amount: a, merchant: m
@@ -217,18 +225,18 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 5. PostePay / BancoPosta
     BankTemplateGroup(
         provider: "Postepay",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, c, d, _ in
                 TaggedSentence(
                     text: "Postepay Informa: operazione di \(a) EUR eseguita il \(d) con la carta ***\(c) presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Postepay: pagamento di \(a) € autorizzato presso \(m)",
                     provider: p, amount: a, merchant: m
@@ -236,24 +244,24 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 6. BBVA
     BankTemplateGroup(
         provider: "BBVA",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Acquisto autorizzato con la tua carta BBVA per \(a) € presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "BBVA: Hai effettuato un acquisto di \(a) EUR presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "BBVA: Hai inviato \(a) € a \(m)",
                     provider: p, amount: a, merchant: m
@@ -261,24 +269,24 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 7. HYPE
     BankTemplateGroup(
         provider: "HYPE",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "HYPE: Hai pagato \(a) € a \(m) con la tua carta",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "HYPE: Spesa di \(a) € effettuata presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "\(m) \(a) €",
                     provider: nil, amount: a, merchant: m
@@ -286,30 +294,30 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 8. Revolut
     BankTemplateGroup(
         provider: "Revolut",
         templates: [
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Hai speso \(a) € da \(m) con la tua carta virtuale",
                     provider: nil, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Hai speso \(a) € da \(m)",
                     provider: nil, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Hai inviato \(a) € a \(m)",
                     provider: nil, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Revolut: \(a) EUR spesi presso \(m)",
                     provider: p, amount: a, merchant: m
@@ -317,36 +325,36 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 9. PayPal (Push app & Generic)
     BankTemplateGroup(
         provider: "PayPal",
         templates: [
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Hai inviato \(a) € EUR a \(m)",
                     provider: nil, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Hai inviato \(a) EUR a \(m)",
                     provider: nil, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Hai pagato \(a) EUR a \(m)",
                     provider: nil, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Spesi \(a) € presso \(m)",
                     provider: nil, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "PayPal: pagamento di \(a) EUR a \(m)",
                     provider: p, amount: a, merchant: m
@@ -354,18 +362,18 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 10. American Express (Amex)
     BankTemplateGroup(
         provider: "Amex",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Amex: autorizzata spesa di EUR \(a) con la tua Carta che termina con \(c) presso \(m)",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "American Express Informa: autorizzato pagamento di EUR \(a) c/o \(m)",
                     provider: "American Express", amount: a, merchant: m
@@ -373,12 +381,12 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 11. Banca Sella
     BankTemplateGroup(
         provider: "Banca Sella",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Banca Sella: autorizzato pagamento di EUR \(a) con carta *\(c) presso \(m)",
                     provider: p, amount: a, merchant: m
@@ -386,12 +394,12 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 12. Banco BPM
     BankTemplateGroup(
         provider: "Banco BPM",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Banco BPM Informa: autorizzato pagamento con carta ***\(c) di EUR \(a) presso \(m)",
                     provider: p, amount: a, merchant: m
@@ -399,12 +407,12 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 13. Banca Mediolanum
     BankTemplateGroup(
         provider: "Banca Mediolanum",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, c, _, _ in
                 TaggedSentence(
                     text: "Banca Mediolanum: operazione di \(a) EUR autorizzata con carta *\(c) presso \(m)",
                     provider: p, amount: a, merchant: m
@@ -412,12 +420,12 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 14. ING
     BankTemplateGroup(
         provider: "ING",
         templates: [
-            { p, m, a, c, d, t in
+            { _, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Alert Arancio: effettuato pagamento con carta di EUR \(a) presso \(m)",
                     provider: "ING", amount: a, merchant: m
@@ -425,18 +433,18 @@ let bankTemplateGroups: [BankTemplateGroup] = [
             }
         ]
     ),
-    
+
     // 15. N26
     BankTemplateGroup(
         provider: "N26",
         templates: [
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "Hai speso \(a) € da \(m) con la tua Mastercard N26",
                     provider: p, amount: a, merchant: m
                 )
             },
-            { p, m, a, c, d, t in
+            { p, m, a, _, _, _ in
                 TaggedSentence(
                     text: "N26: Pagamento di \(a) EUR presso \(m)",
                     provider: p, amount: a, merchant: m
@@ -451,23 +459,24 @@ let bankTemplateGroups: [BankTemplateGroup] = [
 func tokenizeAndTag(sample: TaggedSentence) -> TrainingEntry? {
     let tagger = NLTagger(tagSchemes: [.tokenType])
     tagger.string = sample.text
-    
+
     var tokens: [String] = []
     var labels: [String] = []
-    
+
     guard let amountRange = sample.text.range(of: sample.amount),
-          let merchantRange = sample.text.range(of: sample.merchant) else {
+          let merchantRange = sample.text.range(of: sample.merchant)
+    else {
         return nil
     }
-    
+
     let providerRange = sample.provider.flatMap { sample.text.range(of: $0) }
-    
-    tagger.enumerateTags(in: sample.text.startIndex..<sample.text.endIndex, unit: .word, scheme: .tokenType) { tag, range in
+
+    tagger.enumerateTags(in: sample.text.startIndex ..< sample.text.endIndex, unit: .word, scheme: .tokenType) { tag, range in
         guard tag != .whitespace else { return true }
-        
+
         let token = String(sample.text[range])
         tokens.append(token)
-        
+
         if range.lowerBound >= amountRange.lowerBound && range.upperBound <= amountRange.upperBound {
             labels.append("AMOUNT")
         } else if range.lowerBound >= merchantRange.lowerBound && range.upperBound <= merchantRange.upperBound {
@@ -479,12 +488,12 @@ func tokenizeAndTag(sample: TaggedSentence) -> TrainingEntry? {
         }
         return true
     }
-    
+
     // Sanity check: must contain at least 1 AMOUNT and 1 MERCHANT token
     guard labels.contains("AMOUNT") && labels.contains("MERCHANT") && tokens.count == labels.count else {
         return nil
     }
-    
+
     return TrainingEntry(tokens: tokens, labels: labels)
 }
 
@@ -495,13 +504,13 @@ var dataset: [TrainingEntry] = []
 for group in bankTemplateGroups {
     for template in group.templates {
         // Generate 10 variations for each template
-        for _ in 0..<10 {
+        for _ in 0 ..< 10 {
             let m = merchants.randomElement()!
             let a = amounts.randomElement()!
             let c = cardDigits.randomElement()!
             let d = dates.randomElement()!
             let t = times.randomElement()!
-            
+
             let sample = template(group.provider ?? "", m, a, c, d, t)
             if let entry = tokenizeAndTag(sample: sample) {
                 dataset.append(entry)

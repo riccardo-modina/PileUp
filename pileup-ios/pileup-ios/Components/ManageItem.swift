@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 import UIKit
 
@@ -5,50 +13,62 @@ import UIKit
 /// Displays three prominent actions: Create, Edit (requires selection), Delete (requires selection).
 struct ManageItem: View {
     let pickerType: CustomPickerType
-    @Binding var items: [CustomPickerItem]
+    @Binding
+    var items: [CustomPickerItem]
     var availableColors: [String] = AppTheme.Palette.presets
-    var onCreated: ((CustomPickerItem) -> Void)? = nil
-    var onUpdated: ((CustomPickerItem) -> Void)? = nil
-    var onDeleted: ((Int) -> Void)? = nil
-    
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
-    
-    @State private var selectedItemId: Int? = nil
-    @State private var isCreatePresented: Bool = false
-    @State private var isEditPresented: Bool = false
-    @State private var showDeleteConfirmation: Bool = false
-    @State private var isDeleting: Bool = false
-    @State private var errorMessage: String? = nil
-    
+    var onCreated: ((CustomPickerItem) -> Void)?
+    var onUpdated: ((CustomPickerItem) -> Void)?
+    var onDeleted: ((Int) -> Void)?
+
+    @Environment(\.dismiss)
+    private var dismiss
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @State
+    private var selectedItemId: Int? = nil
+    @State
+    private var isCreatePresented: Bool = false
+    @State
+    private var isEditPresented: Bool = false
+    @State
+    private var showDeleteConfirmation: Bool = false
+    @State
+    private var isDeleting: Bool = false
+    @State
+    private var errorMessage: String? = nil
+
     private var isCategory: Bool {
-        if case .category = pickerType { return true }
+        if case .category = pickerType {
+            return true
+        }
         return false
     }
-    
+
     private var entityNameSingle: String {
         isCategory ? "categoria" : "conto"
     }
-    
+
     private var entityTitleSingle: String {
         isCategory ? "Categoria" : "Conto"
     }
-    
+
     private var sheetTitle: String {
         isCategory ? "Gestisci Categorie" : "Gestisci Conti"
     }
-    
+
     private var selectedItem: CustomPickerItem? {
         guard let id = selectedItemId else { return nil }
+
         return items.first(where: { $0.id == id })
     }
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 AppTheme.Colors.dynamicBackground
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 16) {
                     // Top Action Controls
                     VStack(spacing: 10) {
@@ -72,13 +92,14 @@ struct ManageItem: View {
                             )
                         }
                         .buttonStyle(.plain)
-                        
+
                         // 2. Contextual Actions: Edit & Delete (Enabled only when an item is selected)
                         HStack(spacing: 10) {
                             // Edit Button
                             let canEdit = selectedItem != nil
                             Button(action: {
                                 guard canEdit else { return }
+
                                 HapticHelper.light()
                                 isEditPresented = true
                             }) {
@@ -97,16 +118,20 @@ struct ManageItem: View {
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .stroke(canEdit ? AppTheme.Colors.dynamicBorder : AppTheme.Colors.dynamicBorder.opacity(0.3), lineWidth: 1)
+                                        .stroke(
+                                            canEdit ? AppTheme.Colors.dynamicBorder : AppTheme.Colors.dynamicBorder.opacity(0.3),
+                                            lineWidth: 1
+                                        )
                                 )
                             }
                             .buttonStyle(.plain)
                             .disabled(!canEdit)
-                            
+
                             // Delete Button
                             let canDelete = selectedItem != nil && !(selectedItem?.isSystem ?? false)
                             Button(action: {
                                 guard canDelete else { return }
+
                                 HapticHelper.warning()
                                 showDeleteConfirmation = true
                             }) {
@@ -125,13 +150,16 @@ struct ManageItem: View {
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .stroke(canDelete ? AppTheme.Colors.negative.opacity(0.4) : AppTheme.Colors.dynamicBorder.opacity(0.3), lineWidth: 1)
+                                        .stroke(
+                                            canDelete ? AppTheme.Colors.negative.opacity(0.4) : AppTheme.Colors.dynamicBorder.opacity(0.3),
+                                            lineWidth: 1
+                                        )
                                 )
                             }
                             .buttonStyle(.plain)
                             .disabled(!canDelete)
                         }
-                        
+
                         // Status helper text
                         HStack {
                             if let selected = selectedItem {
@@ -141,7 +169,7 @@ struct ManageItem: View {
                                     Text(selected.name)
                                         .fontWeight(.bold)
                                         .foregroundColor(AppTheme.Colors.dynamicText)
-                                    
+
                                     if selected.isSystem {
                                         Text("(Sistema - non eliminabile)")
                                             .font(.system(size: 11))
@@ -149,9 +177,9 @@ struct ManageItem: View {
                                     }
                                 }
                                 .font(.system(size: 12))
-                                
+
                                 Spacer()
-                                
+
                                 Button("Deseleziona") {
                                     withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                                         selectedItemId = nil
@@ -171,12 +199,12 @@ struct ManageItem: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 12)
-                    
+
                     if let err = errorMessage {
                         InputError(message: err, type: .error)
                             .padding(.horizontal, 20)
                     }
-                    
+
                     // List of Items
                     ScrollView(.vertical, showsIndicators: true) {
                         if items.isEmpty {
@@ -222,7 +250,7 @@ struct ManageItem: View {
                                                         .fill(item.color)
                                                         .frame(width: 14, height: 14)
                                                 }
-                                                
+
                                                 // Name and subtitle
                                                 VStack(alignment: .leading, spacing: 2) {
                                                     HStack(spacing: 6) {
@@ -230,7 +258,7 @@ struct ManageItem: View {
                                                             .font(.system(size: 15, weight: .semibold))
                                                             .foregroundColor(AppTheme.Colors.dynamicText)
                                                             .lineLimit(1)
-                                                        
+
                                                         if item.isSystem {
                                                             Text("Sistema")
                                                                 .font(.system(size: 10, weight: .bold))
@@ -241,22 +269,26 @@ struct ManageItem: View {
                                                                 .clipShape(Capsule())
                                                         }
                                                     }
-                                                    
+
                                                     if let sub = item.subtitle {
                                                         Text(sub)
                                                             .font(.system(size: 12, weight: .regular))
                                                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
                                                     }
                                                 }
-                                                
+
                                                 Spacer()
-                                                
+
                                                 // Selection Radio Indicator
                                                 ZStack {
                                                     Circle()
-                                                        .stroke(isSelected ? (colorScheme == .dark ? Color.white : Color(hex: "#0f172a")) : AppTheme.Colors.dynamicBorder, lineWidth: 1.5)
+                                                        .stroke(
+                                                            isSelected ? (colorScheme == .dark ? Color.white : Color(hex: "#0f172a")) :
+                                                                AppTheme.Colors.dynamicBorder,
+                                                            lineWidth: 1.5
+                                                        )
                                                         .frame(width: 20, height: 20)
-                                                    
+
                                                     if isSelected {
                                                         Circle()
                                                             .fill(colorScheme == .dark ? Color.white : Color(hex: "#0f172a"))
@@ -270,7 +302,7 @@ struct ManageItem: View {
                                             .contentShape(Rectangle())
                                         }
                                         .buttonStyle(.plain)
-                                        
+
                                         if index < items.count - 1 {
                                             Divider()
                                                 .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
@@ -294,7 +326,7 @@ struct ManageItem: View {
                         }
                     }
                 }
-                
+
                 // Delete confirmation sheet
                 if showDeleteConfirmation, let itemToDelete = selectedItem {
                     ConfirmationBottomSheet(
@@ -335,7 +367,7 @@ struct ManageItem: View {
         .sheet(isPresented: $isCreatePresented) {
             if isCategory {
                 let defaultType: String = {
-                    if case .category(let tipo) = pickerType {
+                    if case let .category(tipo) = pickerType {
                         return tipo ?? "uscita"
                     }
                     return "uscita"
@@ -370,7 +402,7 @@ struct ManageItem: View {
             if let item = selectedItem, let itemId = item.id {
                 if isCategory {
                     let tipo: String = {
-                        if case .category(let t) = item.itemType {
+                        if case let .category(t) = item.itemType {
                             return t ?? "uscita"
                         }
                         return "uscita"
@@ -416,13 +448,13 @@ struct ManageItem: View {
             }
         }
     }
-    
+
     private func deleteSelectedItem() {
         guard let item = selectedItem, let itemId = item.id else { return }
-        
+
         isDeleting = true
         errorMessage = nil
-        
+
         Task {
             do {
                 if isCategory {
@@ -432,7 +464,7 @@ struct ManageItem: View {
                     try await AccountAPI.shared.deleteAccount(id: itemId)
                     NotificationCenter.default.post(name: NSNotification.Name("AccountsUpdated"), object: nil)
                 }
-                
+
                 await MainActor.run {
                     items.removeAll(where: { $0.id == itemId })
                     selectedItemId = nil

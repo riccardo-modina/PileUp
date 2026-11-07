@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Breakdown card displaying "Money in" and "Money out" with color square tags and chevrons,
@@ -5,13 +13,13 @@ import SwiftUI
 struct CashFlowBreakdownList: View {
     let income: Double
     let expense: Double
-    var onIncomeTap: (() -> Void)? = nil
-    var onExpenseTap: (() -> Void)? = nil
-    
+    var onIncomeTap: (() -> Void)?
+    var onExpenseTap: (() -> Void)?
+
     private var netAmount: Double {
         income - expense
     }
-    
+
     private func formattedCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -19,7 +27,7 @@ struct CashFlowBreakdownList: View {
         formatter.maximumFractionDigits = 2
         return formatter.string(from: NSNumber(value: value)) ?? "€ 0,00"
     }
-    
+
     private func formattedNetCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -28,7 +36,7 @@ struct CashFlowBreakdownList: View {
         let absFormatted = formatter.string(from: NSNumber(value: abs(value))) ?? "€ 0,00"
         return (value >= 0 ? "+" : "-") + absFormatted
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // Net Amount Header Section
@@ -36,7 +44,7 @@ struct CashFlowBreakdownList: View {
                 Text("Netto")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                
+
                 CurrencyAmountText(
                     formattedNetCurrency(netAmount),
                     size: 29,
@@ -51,12 +59,12 @@ struct CashFlowBreakdownList: View {
             .padding(.horizontal, 16)
             .padding(.top, 16)
             .padding(.bottom, 14)
-            
+
             // Divider between Net and Breakdown rows
             Divider()
                 .background(AppTheme.Colors.dynamicBorder.opacity(0.6))
                 .padding(.horizontal, 16)
-            
+
             // Money In Row
             Button(action: {
                 let generator = UIImpactFeedbackGenerator(style: .light)
@@ -68,17 +76,17 @@ struct CashFlowBreakdownList: View {
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .fill(AppTheme.Colors.moneyIn)
                         .frame(width: 22, height: 22)
-                    
+
                     Text("Entrate")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(AppTheme.Colors.dynamicText)
-                    
+
                     Spacer()
-                    
+
                     Text("+\(formattedCurrency(income))")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(AppTheme.Colors.dynamicText)
-                    
+
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.7))
@@ -88,13 +96,13 @@ struct CashFlowBreakdownList: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            
+
             // Subtle Divider
             Divider()
                 .background(AppTheme.Colors.dynamicBorder.opacity(0.6))
                 .padding(.leading, 52)
                 .padding(.trailing, 16)
-            
+
             // Money Out Row
             Button(action: {
                 let generator = UIImpactFeedbackGenerator(style: .light)
@@ -106,17 +114,17 @@ struct CashFlowBreakdownList: View {
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .fill(AppTheme.Colors.moneyOut)
                         .frame(width: 22, height: 22)
-                    
+
                     Text("Uscite")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(AppTheme.Colors.dynamicText)
-                    
+
                     Spacer()
-                    
+
                     Text("-\(formattedCurrency(expense))")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(AppTheme.Colors.dynamicText)
-                    
+
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext.opacity(0.7))

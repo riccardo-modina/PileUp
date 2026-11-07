@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2024-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 
 /// Modifier to apply horizontal shaking animation to a view for error/validation feedback.
@@ -7,9 +15,11 @@ struct ShakeEffect: GeometryEffect {
     var animatableData: CGFloat
 
     func effectValue(size: CGSize) -> ProjectionTransform {
-        ProjectionTransform(CGAffineTransform(translationX:
+        ProjectionTransform(CGAffineTransform(
+            translationX:
             amount * sin(animatableData * .pi * shakesPerUnit),
-            y: 0))
+            y: 0
+        ))
     }
 }
 
