@@ -1,0 +1,63 @@
+--swiftversion 6.4
+
+--assetliterals visual-width
+--computedvarattrs prev-line
+--funcattributes prev-line
+--ifdef no-indent 
+--maxwidth 140
+--semicolons never
+--shortoptionals "always"
+--storedvarattrs prev-line
+--stripunusedargs closure-only
+--tabwidth 4
+--trailingclosures
+--typeattributes prev-line
+--wraparguments before-first
+--wrapcollections before-first
+--wrapconditions after-first
+--wrapparameters before-first
+--xcodeindentation enabled
+
+--enable blankLineAfterSwitchCase,     \
+    blankLinesAfterGuardStatements,    \
+    blankLinesAroundMark,              \
+    isEmpty,                            \
+    leadingDelimiters,                  \
+    preferContains,                     \
+    preferCountWhere,                   \
+    preferFirstWhere,                   \
+    preferFlatMap,                      \
+    preferMinOverSorted,                \
+    preferSwiftStringAPI,               \
+    redundantInit,                      \
+    redundantLet,                       \
+    spaceInsideBraces,                  \
+    spaceInsideBrackets,                \
+    spaceInsideComments,                \
+    spaceInsideGenerics,                \
+    spaceInsideParens,                  \
+    trailingSpace,                      \
+    typeSugar,                          \
+    void,                               \
+    wrapEnumCases,                      \
+    wrapMultilineFunctionChains
+
+--disable andOperator,       \
+    blankLinesAtStartOfScope,\
+    docComments,             \
+    redundantClosure,       \
+    redundantFileprivate,   \
+    redundantSelf,          \
+    redundantType,          \
+    redundantViewBuilder,   \
+    strongOutlets,          \
+    trailingCommas,         \
+    yodaConditions
+
+--exclude build/,            \
+    DerivedSources/,         \
+    DerivedData/,            \
+    node_modules/,           \
+    fastlane/
+
+--header "\nPileUp - Personal finance tracking platform\nCopyright (C) 2024-{year} PileUp\n\nLicensed under the GNU Affero General Public License v3.0.\nSee LICENSE in the project root for full license details.\n"
