@@ -60,4 +60,4 @@
     node_modules/,           \
     fastlane/
 
---header "\nPileUp - Personal finance tracking platform\nCopyright (C) 2024-{year} PileUp\n\nLicensed under the GNU Affero General Public License v3.0.\nSee LICENSE in the project root for full license details.\n"
+--header "\nPileUp - Personal finance tracking platform\nCopyright (C) 2025-{year} PileUp\n\nLicensed under the GNU Affero General Public License v3.0.\nSee LICENSE in the project root for full license details.\n"
