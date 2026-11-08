@@ -1,3 +1,11 @@
+//
+// PileUp - Personal finance tracking platform
+// Copyright (C) 2025-2026 PileUp
+//
+// Licensed under the GNU Affero General Public License v3.0.
+// See LICENSE in the project root for full license details.
+//
+
 import SwiftUI
 import UIKit
 
@@ -8,16 +16,25 @@ struct CustomPickerItem: Identifiable, Equatable {
     let subtitle: String?
     let icon: String?
     let color: Color
-    var colorHex: String? = nil
+    var colorHex: String?
     var isSystem: Bool = false
-    var itemType: ItemType? = nil
-    
+    var itemType: ItemType?
+
     enum ItemType: Equatable {
         case category(tipo: String?)
         case account
     }
-    
-    init(id: Int?, name: String, subtitle: String? = nil, icon: String? = nil, color: Color = AppTheme.Colors.primary, colorHex: String? = nil, isSystem: Bool = false, itemType: ItemType? = nil) {
+
+    init(
+        id: Int?,
+        name: String,
+        subtitle: String? = nil,
+        icon: String? = nil,
+        color: Color = AppTheme.Colors.primary,
+        colorHex: String? = nil,
+        isSystem: Bool = false,
+        itemType: ItemType? = nil
+    ) {
         self.id = id
         self.name = name
         self.subtitle = subtitle
@@ -27,7 +44,7 @@ struct CustomPickerItem: Identifiable, Equatable {
         self.isSystem = isSystem
         self.itemType = itemType
     }
-    
+
     init(category: CategoryItem) {
         self.id = category.id
         self.name = category.nome
@@ -38,7 +55,7 @@ struct CustomPickerItem: Identifiable, Equatable {
         self.isSystem = category.isSystem
         self.itemType = .category(tipo: category.tipo)
     }
-    
+
     init(account: AccountItem) {
         self.id = account.id
         self.name = account.nome
@@ -49,7 +66,7 @@ struct CustomPickerItem: Identifiable, Equatable {
         self.isSystem = account.isSystem
         self.itemType = .account
     }
-    
+
     init(slice: CategoryPieSlice) {
         self.id = slice.categoryId
         self.name = slice.name
@@ -62,7 +79,6 @@ struct CustomPickerItem: Identifiable, Equatable {
     }
 }
 
-
 /// Defines the type of entity managed by the picker when allowing creation
 enum CustomPickerType: Equatable {
     case category(defaultType: String? = nil)
@@ -73,39 +89,42 @@ enum CustomPickerType: Equatable {
 /// Unified, clean Picker Field that opens a native Bottom Sheet.
 /// Highly reusable for Categories, Accounts, or any selectable list.
 struct CustomPickerField: View {
-    var title: String? = nil
+    var title: String?
     var placeholder: String = "Seleziona..."
-    var sheetTitle: String? = nil
+    var sheetTitle: String?
     var searchPlaceholder: String = "Cerca..."
     let items: [CustomPickerItem]
-    @Binding var selectedId: Int?
-    
+    @Binding
+    var selectedId: Int?
+
     var showAllOption: Bool = false
     var allOptionLabel: String = "Tutti i movimenti"
     var allowClear: Bool = false
     var showError: Bool = false
-    var errorMessage: String? = nil
-    var customBackgroundColor: Color? = nil
-    var customBorderColor: Color? = nil
-    var onTap: (() -> Void)? = nil
-    var onSelect: ((Int?) -> Void)? = nil
-    
+    var errorMessage: String?
+    var customBackgroundColor: Color?
+    var customBorderColor: Color?
+    var onTap: (() -> Void)?
+    var onSelect: ((Int?) -> Void)?
+
     // Add option configuration
-    var pickerType: CustomPickerType? = nil
-    var allowAdd: Bool? = nil
-    var onCategoryCreated: ((CategoryItem) -> Void)? = nil
-    var onAccountCreated: ((AccountItem) -> Void)? = nil
-    var onAddNew: (() -> Void)? = nil
-    
-    @State private var isSheetPresented: Bool = false
-    @State private var newlyAddedItems: [CustomPickerItem] = []
-    
+    var pickerType: CustomPickerType?
+    var allowAdd: Bool?
+    var onCategoryCreated: ((CategoryItem) -> Void)?
+    var onAccountCreated: ((AccountItem) -> Void)?
+    var onAddNew: (() -> Void)?
+
+    @State
+    private var isSheetPresented: Bool = false
+    @State
+    private var newlyAddedItems: [CustomPickerItem] = []
+
     private var resolvedPickerType: CustomPickerType? {
         if let explicit = pickerType {
             return explicit
         }
         for item in items {
-            if case .category(let tipo) = item.itemType {
+            if case let .category(tipo) = item.itemType {
                 return .category(defaultType: tipo ?? "uscita")
             } else if item.itemType == .account {
                 return .account
@@ -120,14 +139,14 @@ struct CustomPickerField: View {
         }
         return nil
     }
-    
+
     private var shouldAllowAdd: Bool {
         if let explicit = allowAdd {
             return explicit
         }
         return !showAllOption && resolvedPickerType != nil
     }
-    
+
     private var combinedItems: [CustomPickerItem] {
         var result = items
         for item in newlyAddedItems {
@@ -137,21 +156,22 @@ struct CustomPickerField: View {
         }
         return result
     }
-    
+
     private var selectedItem: CustomPickerItem? {
         guard let id = selectedId else { return nil }
+
         return combinedItems.first(where: { $0.id == id })
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let title = title, !title.isEmpty {
+            if let title, !title.isEmpty {
                 Text(title)
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.5)
                     .foregroundColor(AppTheme.Colors.dynamicSubtext)
             }
-            
+
             Button(action: {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 HapticHelper.light()
@@ -169,14 +189,14 @@ struct CustomPickerField: View {
                                 .fill(selected.color)
                                 .frame(width: 14, height: 14)
                         }
-                        
+
                         Text(selected.name)
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(AppTheme.Colors.dynamicText)
                             .lineLimit(1)
-                        
+
                         Spacer()
-                        
+
                         if allowClear {
                             Button(action: {
                                 HapticHelper.light()
@@ -196,20 +216,20 @@ struct CustomPickerField: View {
                         Text(allOptionLabel)
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(AppTheme.Colors.dynamicText)
-                        
+
                         Spacer()
                     } else {
                         Circle()
                             .fill(AppTheme.Colors.dynamicSubtext.opacity(0.35))
                             .frame(width: 14, height: 14)
-                        
+
                         Text(placeholder)
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                        
+
                         Spacer()
                     }
-                    
+
                     Image(systemName: "chevron.down")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
@@ -228,7 +248,7 @@ struct CustomPickerField: View {
                 .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
             }
             .buttonStyle(.plain)
-            
+
             if showError, let msg = errorMessage, !msg.isEmpty {
                 InputError(message: msg, type: .error)
                     .padding(.horizontal, 4)
@@ -270,29 +290,35 @@ struct CustomSelectionSheet: View {
     let title: String
     var searchPlaceholder: String = "Cerca..."
     let items: [CustomPickerItem]
-    @Binding var selectedId: Int?
+    @Binding
+    var selectedId: Int?
     var showAllOption: Bool = false
     var allOptionLabel: String = "Tutti i movimenti"
-    var onSelect: ((Int?) -> Void)? = nil
-    
-    var pickerType: CustomPickerType? = nil
+    var onSelect: ((Int?) -> Void)?
+
+    var pickerType: CustomPickerType?
     var allowAdd: Bool = false
-    var onCategoryCreated: ((CategoryItem) -> Void)? = nil
-    var onAccountCreated: ((AccountItem) -> Void)? = nil
-    var onAddNew: (() -> Void)? = nil
-    
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
-    
-    @State private var searchQuery: String = ""
-    @State private var localItems: [CustomPickerItem] = []
-    
-    @State private var isManageSheetPresented: Bool = false
-    
+    var onCategoryCreated: ((CategoryItem) -> Void)?
+    var onAccountCreated: ((AccountItem) -> Void)?
+    var onAddNew: (() -> Void)?
+
+    @Environment(\.dismiss)
+    private var dismiss
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @State
+    private var searchQuery: String = ""
+    @State
+    private var localItems: [CustomPickerItem] = []
+
+    @State
+    private var isManageSheetPresented: Bool = false
+
     private var currentItems: [CustomPickerItem] {
         localItems.isEmpty ? items : localItems
     }
-    
+
     private var filteredItems: [CustomPickerItem] {
         let query = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if query.isEmpty {
@@ -302,18 +328,18 @@ struct CustomSelectionSheet: View {
             item.name.lowercased().contains(query) || (item.subtitle?.lowercased().contains(query) ?? false)
         }
     }
-    
+
     private func manageButtonTitle(for type: CustomPickerType) -> String {
         switch type {
         case .category:
-            return "Gestisci categorie"
+            "Gestisci categorie"
         case .account:
-            return "Gestisci conti"
-        case .generic(let title):
-            return "Gestisci \(title.lowercased())"
+            "Gestisci conti"
+        case let .generic(title):
+            "Gestisci \(title.lowercased())"
         }
     }
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
@@ -322,13 +348,13 @@ struct CustomSelectionSheet: View {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 15))
                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
-                    
+
                     TextField(searchPlaceholder, text: $searchQuery)
                         .font(.system(size: 15))
                         .foregroundColor(AppTheme.Colors.dynamicText)
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
-                    
+
                     if !searchQuery.isEmpty {
                         Button(action: {
                             HapticHelper.light()
@@ -349,12 +375,12 @@ struct CustomSelectionSheet: View {
                 )
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
-                
+
                 // Manage Button under Search Bar
                 if allowAdd, let type = pickerType {
                     Button(action: {
                         HapticHelper.light()
-                        if let onAddNew = onAddNew {
+                        if let onAddNew {
                             onAddNew()
                         } else {
                             isManageSheetPresented = true
@@ -363,13 +389,13 @@ struct CustomSelectionSheet: View {
                         HStack(spacing: 8) {
                             Image(systemName: "slider.horizontal.3")
                                 .font(.system(size: 15, weight: .semibold))
-                            
+
                             Text(manageButtonTitle(for: type))
                                 .font(.system(size: 14, weight: .bold))
                                 .lineLimit(1)
-                            
+
                             Spacer()
-                            
+
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 12, weight: .semibold))
                                 .opacity(0.6)
@@ -385,7 +411,7 @@ struct CustomSelectionSheet: View {
                     .buttonStyle(.plain)
                     .padding(.horizontal, 20)
                 }
-                
+
                 // List of Items
                 ScrollView(.vertical, showsIndicators: true) {
                     if filteredItems.isEmpty && (!showAllOption || !searchQuery.isEmpty) {
@@ -415,9 +441,9 @@ struct CustomSelectionSheet: View {
                                         Text(allOptionLabel)
                                             .font(.system(size: 15, weight: .semibold))
                                             .foregroundColor(AppTheme.Colors.dynamicText)
-                                        
+
                                         Spacer()
-                                        
+
                                         if isAllSelected {
                                             Image(systemName: "checkmark")
                                                 .font(.system(size: 14, weight: .bold))
@@ -430,14 +456,14 @@ struct CustomSelectionSheet: View {
                                     .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
-                                
+
                                 if !filteredItems.isEmpty {
                                     Divider()
                                         .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
                                         .padding(.horizontal, 16)
                                 }
                             }
-                            
+
                             ForEach(Array(filteredItems.enumerated()), id: \.element.id) { index, item in
                                 let isSelected = selectedId != nil && selectedId == item.id
                                 VStack(spacing: 0) {
@@ -462,22 +488,22 @@ struct CustomSelectionSheet: View {
                                                     .fill(item.color)
                                                     .frame(width: 12, height: 12)
                                             }
-                                            
+
                                             VStack(alignment: .leading, spacing: 2) {
                                                 Text(item.name)
                                                     .font(.system(size: 15, weight: .semibold))
                                                     .foregroundColor(AppTheme.Colors.dynamicText)
                                                     .lineLimit(1)
-                                                
+
                                                 if let sub = item.subtitle {
                                                     Text(sub)
                                                         .font(.system(size: 12, weight: .regular))
                                                         .foregroundColor(AppTheme.Colors.dynamicSubtext)
                                                 }
                                             }
-                                            
+
                                             Spacer()
-                                            
+
                                             if isSelected {
                                                 Image(systemName: "checkmark")
                                                     .font(.system(size: 14, weight: .bold))
@@ -490,7 +516,7 @@ struct CustomSelectionSheet: View {
                                         .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
-                                    
+
                                     if index < filteredItems.count - 1 {
                                         Divider()
                                             .background(AppTheme.Colors.dynamicBorder.opacity(0.5))
@@ -544,7 +570,7 @@ struct CustomSelectionSheet: View {
                         selectedId = newItem.id
                         onSelect?(newItem.id)
                     },
-                    onUpdated: { updatedItem in
+                    onUpdated: { _ in
                         // Items list is updated via binding
                     },
                     onDeleted: { deletedId in
@@ -557,7 +583,7 @@ struct CustomSelectionSheet: View {
             }
         }
     }
-    
+
     private var dynamicPaletteColors: [String] {
         var set: [String] = []
         for hex in AppTheme.Palette.presets {
@@ -573,4 +599,3 @@ struct CustomSelectionSheet: View {
         return set
     }
 }
-
