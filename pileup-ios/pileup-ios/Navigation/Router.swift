@@ -17,7 +17,7 @@ struct Router {
     // We use weak to avoid ownershipt of the coordinator by the router,
     // the container holds the ownership of the coordinator via the @StateObject wrapper.
     //
-    // Used to add a screen to the navigationCoordinator, while the container observes its 
+    // Used to add a screen to the navigationCoordinator, while the container observes its
     // state to update the actual NavigationStack so the screen that the user sees
     weak var coordinator: NavigationCoordinator?
 
@@ -48,17 +48,20 @@ struct Router {
 // defined here since we access it in the property wrapper defined in the next lines
 // but the navigation container creates the new instance of the coordinator
 extension EnvironmentValues {
-    @Entry var coordinator: NavigationCoordinator? = nil
+    @Entry
+    var coordinator: NavigationCoordinator? = nil
 }
 
 // Property Wrapper used to access the "global" coordinator and the dismiss action.
-// It is dynamic because it needs to observe changes in the environment. 
+// It is dynamic because it needs to observe changes in the environment.
 // It needs to be able to recognize when a new coordinator is created by the
 // navigation container (for example when a modal is opened)
 @propertyWrapper
 struct NavigationRouter: DynamicProperty {
-    @Environment(\.coordinator) private var coordinator
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.coordinator)
+    private var coordinator
+    @Environment(\.dismiss)
+    private var dismiss
 
     var wrappedValue: Router {
         Router(

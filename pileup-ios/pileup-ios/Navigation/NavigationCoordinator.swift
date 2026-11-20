@@ -12,20 +12,25 @@ import SwiftUI
 final class NavigationCoordinator: ObservableObject {
 
     // Struct to represent a new view with a new navigation stack
-    // Modal coming from the bottom while a simple left push is a n.r. to add to the stack 
+    // Modal coming from the bottom while a simple left push is a n.r. to add to the stack
     struct PresentedRoute: Identifiable {
         let route: NavigationRoute
         let coordinator: NavigationCoordinator
 
-        var id: String { route.id }
+        var id: String {
+            route.id
+        }
     }
 
     // The stack of navigation routes
-    @Published var path: [NavigationRoute] = []
+    @Published
+    var path: [NavigationRoute] = []
 
-    //The current View displayed
-    @Published var presentedSheet: PresentedRoute?
-    @Published var presentedFullScreen: PresentedRoute?
+    // The current View displayed
+    @Published
+    var presentedSheet: PresentedRoute?
+    @Published
+    var presentedFullScreen: PresentedRoute?
 
     // MARK: - Stack manipulation
 
@@ -36,7 +41,7 @@ final class NavigationCoordinator: ObservableObject {
             path.append(route)
 
         case .sheet:
-            // New stack for the sheet, a modal, come from the bottom usually 
+            // New stack for the sheet, a modal, come from the bottom usually
             presentedSheet = PresentedRoute(
                 route: route,
                 coordinator: NavigationCoordinator()
@@ -57,19 +62,22 @@ final class NavigationCoordinator: ObservableObject {
     // Remove the last view from the stack
     func pop() {
         guard !path.isEmpty else { return }
+
         path.removeLast()
     }
-    // Empty stack 
+
+    // Empty stack
     func popToRoot() {
         path.removeAll()
     }
+
     // Close the sheet
     func dismissSheet() {
         presentedSheet = nil
     }
+
     // Close the full screen modal
     func dismissFullScreen() {
         presentedFullScreen = nil
     }
 }
-

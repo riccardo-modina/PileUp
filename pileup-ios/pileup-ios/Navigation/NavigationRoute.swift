@@ -27,6 +27,7 @@ struct NavigationRoute: Identifiable, Hashable {
     let transitionStyle: TransitionStyle
 
     // MARK: init
+
     init(
         id: String,
         style: TransitionStyle = .push,
@@ -45,7 +46,8 @@ struct NavigationRoute: Identifiable, Hashable {
         lhs.id == rhs.id
     }
 
-    // MARK:View to be displayed
+    // MARK: View to be displayed
+
     var destination: some View {
         content
     }
